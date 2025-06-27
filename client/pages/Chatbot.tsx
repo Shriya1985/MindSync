@@ -9,6 +9,13 @@ import { Progress } from "@/components/ui/progress";
 import { useData, type ChatMessage } from "@/contexts/DataContext";
 import { showNotification } from "@/components/ui/notification-system";
 import {
+  analyzeEmotionalState,
+  generateEmotionAwareResponse,
+  getCopingStrategies,
+} from "@/utils/emotionAI";
+import { useMoodTheme } from "@/hooks/useMoodTheme";
+import { CopingStrategies } from "@/components/CopingStrategies";
+import {
   MessageCircle,
   Send,
   Mic,
