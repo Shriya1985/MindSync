@@ -16,6 +16,10 @@ import Dashboard from "./pages/Dashboard";
 import Journal from "./pages/Journal";
 import Resources from "./pages/Resources";
 import Profile from "./pages/Profile";
+import About from "./pages/About";
+import FAQ from "./pages/FAQ";
+import Privacy from "./pages/Privacy";
+import Terms from "./pages/Terms";
 import Auth from "./pages/Auth";
 import NotFound from "./pages/NotFound";
 
