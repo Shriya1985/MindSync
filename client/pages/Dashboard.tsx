@@ -167,9 +167,9 @@ export default function Dashboard() {
     getStreakInfo,
   } = useData();
 
-  const averageMood = 6.8;
-  const moodTrend = "+12%";
-  const totalEntries = moodData.length;
+  const averageMood = userStats.averageMood || 0;
+  const moodTrend = averageMood >= 6 ? "+12%" : "-8%";
+  const totalEntries = userStats.totalEntries;
 
   const quickMoodOptions = [
     { emoji: "😊", label: "Happy", value: "happy" },
