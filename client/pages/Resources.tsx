@@ -1,6 +1,12 @@
 import { useState } from "react";
 import { Navigation } from "@/components/ui/navigation";
 import { Footer } from "@/components/ui/footer";
+import { GuidedMeditation } from "@/components/GuidedMeditation";
+import { MoodSoother } from "@/components/MoodSoother";
+import { MoodPlaylists } from "@/components/MoodPlaylists";
+import { DailyAffirmation } from "@/components/DailyAffirmation";
+import { EmotionEncyclopedia } from "@/components/EmotionEncyclopedia";
+import { useMoodTheme } from "@/hooks/useMoodTheme";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
