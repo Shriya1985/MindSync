@@ -130,21 +130,89 @@ export default function Journal() {
   const handleSaveEntry = () => {
     if (!currentEntry.title.trim() || !currentEntry.content.trim()) return;
 
-    // Simulate sentiment analysis
-    const mockAnalysis: SentimentAnalysis = {
-      overall: "positive",
-      confidence: 0.87,
-      keywords: ["happy", "grateful", "progress"],
-      emotions: [
-        { emotion: "joy", strength: 0.8 },
-        { emotion: "contentment", strength: 0.6 },
-        { emotion: "hope", strength: 0.7 },
-      ],
+    // Calculate word count
+    const wordCount = currentEntry.content.split(/\s+/).filter(Boolean).length;
+
+    // Determine sentiment based on content
+    const content = currentEntry.content.toLowerCase();
+    let sentiment: "positive" | "neutral" | "negative" = "neutral";
+
+    const positiveWords = [
+      "happy",
+      "grateful",
+      "joy",
+      "love",
+      "amazing",
+      "wonderful",
+      "great",
+      "good",
+      "excited",
+      "proud",
+    ];
+    const negativeWords = [
+      "sad",
+      "angry",
+      "frustrated",
+      "depressed",
+      "anxious",
+      "worried",
+      "terrible",
+      "awful",
+      "hate",
+    ];
+
+    const positiveCount = positiveWords.filter((word) =>
+      content.includes(word),
+    ).length;
+    const negativeCount = negativeWords.filter((word) =>
+      content.includes(word),
+    ).length;
+
+    if (positiveCount > negativeCount) sentiment = "positive";
+    else if (negativeCount > positiveCount) sentiment = "negative";
+
+    // Create new journal entry
+    const newEntry: Omit<JournalEntry, "id"> = {
+      title: currentEntry.title,
+      content: currentEntry.content,
+      date: new Date().toISOString().split("T")[0],
+      sentiment,
+      tags: currentEntry.tags
+        .split(",")
+        .map((tag) => tag.trim())
+        .filter(Boolean),
+      wordCount,
     };
 
-    // In a real app, this would save to backend
-    console.log("Saving entry:", currentEntry);
-    console.log("AI Analysis:", mockAnalysis);
+    addJournalEntry(newEntry);
+
+    // Show success notification
+    showNotification({
+      type: "encouragement",
+      title: "Journal Entry Saved! 📖",
+      message: `Great work! You wrote ${wordCount} words and earned 10 points. Keep reflecting!`,
+      duration: 5000,
+    });
+
+    // Check for achievements
+    const streakInfo = getStreakInfo();
+    if (streakInfo.current > 0 && streakInfo.current % 5 === 0) {
+      showNotification({
+        type: "achievement",
+        title: "Writing Streak Achievement! ✨",
+        message: `Incredible! You've been journaling for ${streakInfo.current} days straight!`,
+        duration: 6000,
+      });
+    }
+
+    if (wordCount >= 500) {
+      showNotification({
+        type: "milestone",
+        title: "Word Milestone! 📝",
+        message: `Amazing! You wrote ${wordCount} words in this entry. That's some deep reflection!`,
+        duration: 4000,
+      });
+    }
 
     // Reset form
     setCurrentEntry({ title: "", content: "", tags: "" });
