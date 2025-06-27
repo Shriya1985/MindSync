@@ -316,7 +316,6 @@ export default function Chatbot() {
 
     // Also add mood entry if mood was selected
     if (selectedMood && selectedMoodOption) {
-      const { addMoodEntry } = useData();
       addMoodEntry({
         date: new Date().toISOString().split("T")[0],
         mood: selectedMoodOption.label,
