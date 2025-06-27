@@ -345,11 +345,23 @@ export default function Auth() {
 
                   <Button
                     type="submit"
-                    className="w-full bg-gradient-to-r from-mint-500 to-sky-500 hover:from-mint-600 hover:to-sky-600 text-white shadow-lg hover:shadow-xl transition-all duration-300"
+                    disabled={isLoading}
+                    className="w-full bg-gradient-to-r from-mint-500 to-sky-500 hover:from-mint-600 hover:to-sky-600 text-white shadow-lg hover:shadow-xl transition-all duration-300 disabled:opacity-50"
                     size="lg"
                   >
-                    {mode === "login" ? "Sign In" : "Create Account"}
-                    <ArrowRight className="w-4 h-4 ml-2" />
+                    {isLoading ? (
+                      <>
+                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                        {mode === "login"
+                          ? "Signing In..."
+                          : "Creating Account..."}
+                      </>
+                    ) : (
+                      <>
+                        {mode === "login" ? "Sign In" : "Create Account"}
+                        <ArrowRight className="w-4 h-4 ml-2" />
+                      </>
+                    )}
                   </Button>
 
                   {mode === "login" && (
