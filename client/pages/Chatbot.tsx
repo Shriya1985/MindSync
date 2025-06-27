@@ -394,10 +394,10 @@ export default function Chatbot() {
                 <Brain className="w-5 h-5 text-white" />
               </div>
               <div>
-                <h3 className="font-semibold text-gray-900">MindSync AI</h3>
+                <h3 className="font-semibold text-gray-900">Buddy</h3>
                 <div className="flex items-center space-x-1 text-sm text-green-600">
                   <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
-                  <span>Ready to Listen & Support</span>
+                  <span>Your AI Companion • Ready to Listen</span>
                 </div>
               </div>
             </div>
