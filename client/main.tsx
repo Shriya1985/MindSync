@@ -15,6 +15,7 @@ import Chatbot from "./pages/Chatbot";
 import Dashboard from "./pages/Dashboard";
 import Journal from "./pages/Journal";
 import Resources from "./pages/Resources";
+import Profile from "./pages/Profile";
 import Auth from "./pages/Auth";
 import NotFound from "./pages/NotFound";
 
