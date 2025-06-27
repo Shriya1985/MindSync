@@ -74,9 +74,17 @@ export function Navigation() {
                       <User className="w-4 h-4 text-mint-600" />
                     </div>
                   )}
-                  <span className="text-sm font-medium text-gray-700 hover:text-mint-600">
-                    {user?.name}
-                  </span>
+                  <div className="flex flex-col">
+                    <span className="text-sm font-medium text-gray-700 hover:text-mint-600">
+                      {user?.name}
+                    </span>
+                    {streakInfo.current > 0 && (
+                      <div className="flex items-center space-x-1 text-xs text-orange-600">
+                        <Flame className="w-3 h-3" />
+                        <span>{streakInfo.current} day streak</span>
+                      </div>
+                    )}
+                  </div>
                 </Link>
                 <Button
                   variant="outline"
