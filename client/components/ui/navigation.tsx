@@ -55,7 +55,10 @@ export function Navigation() {
           <div className="hidden md:flex items-center space-x-4">
             {isAuthenticated ? (
               <div className="flex items-center space-x-3">
-                <div className="flex items-center space-x-2">
+                <Link
+                  to="/profile"
+                  className="flex items-center space-x-2 hover:bg-gray-50 rounded-lg px-2 py-1 transition-colors"
+                >
                   {user?.avatar ? (
                     <img
                       src={user.avatar}
@@ -67,10 +70,10 @@ export function Navigation() {
                       <User className="w-4 h-4 text-mint-600" />
                     </div>
                   )}
-                  <span className="text-sm font-medium text-gray-700">
+                  <span className="text-sm font-medium text-gray-700 hover:text-mint-600">
                     {user?.name}
                   </span>
-                </div>
+                </Link>
                 <Button
                   variant="outline"
                   size="sm"
