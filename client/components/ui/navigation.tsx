@@ -13,7 +13,6 @@ const navigation = [
   { name: "Dashboard", href: "/dashboard" },
   { name: "Journal", href: "/journal" },
   { name: "Resources", href: "/resources" },
-  { name: "Profile", href: "/profile" },
 ];
 
 export function Navigation() {
