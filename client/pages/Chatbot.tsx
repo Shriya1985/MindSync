@@ -342,7 +342,7 @@ export default function Chatbot() {
       {
         id: "welcome",
         content:
-          "Hello! I'm your MindSync AI companion. I'm here to listen, support, and help you explore your thoughts and feelings. How are you doing today? 💚",
+          "Hello! I'm Buddy, your MindSync AI companion. I'm here to listen, support, and help you explore your thoughts and feelings. How are you doing today? 💚",
         sender: "ai",
         timestamp: new Date(),
       },
