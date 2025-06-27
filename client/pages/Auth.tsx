@@ -36,6 +36,8 @@ const motivationalTexts = [
 export default function Auth() {
   const [mode, setMode] = useState<AuthMode>("login");
   const [showPassword, setShowPassword] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -47,6 +49,17 @@ export default function Auth() {
   const [currentMotivation] = useState(
     motivationalTexts[Math.floor(Math.random() * motivationalTexts.length)],
   );
+
+  const { login, register, isAuthenticated } = useAuth();
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  // Redirect if already authenticated
+  if (isAuthenticated) {
+    const from = location.state?.from?.pathname || "/dashboard";
+    navigate(from, { replace: true });
+    return null;
+  }
 
   const handleInputChange = (field: string, value: string | boolean) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
