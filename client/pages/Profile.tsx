@@ -50,7 +50,7 @@ export default function Profile() {
   const { userStats, moodEntries, journalEntries } = useData();
 
   // Initialize form data with user info
-  useState(() => {
+  useEffect(() => {
     if (user) {
       setFormData((prev) => ({
         ...prev,
@@ -58,7 +58,7 @@ export default function Profile() {
         email: user.email,
       }));
     }
-  });
+  }, [user]);
 
   const handleSaveProfile = async () => {
     try {
