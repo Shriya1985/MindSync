@@ -597,6 +597,8 @@ export default function Journal() {
 
           {/* Sidebar */}
           <div className="space-y-6">
+            {/* AI Journal Summary */}
+            <JournalSummarizer />
             {/* AI Prompts */}
             <Card className="shadow-lg border-0 bg-white/90 backdrop-blur-sm">
               <CardHeader>
