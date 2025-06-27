@@ -628,6 +628,11 @@ export default function Chatbot() {
           </div>
         </Card>
 
+        {/* Coping Strategies */}
+        <div className="mt-8">
+          <CopingStrategies />
+        </div>
+
         {/* Features Info */}
         <div className="mt-8 grid grid-cols-1 md:grid-cols-3 gap-4 text-center">
           <div className="flex items-center justify-center space-x-2 text-sm text-gray-600">
