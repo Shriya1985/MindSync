@@ -16,6 +16,7 @@ const navigation = [
 export function Navigation() {
   const [isOpen, setIsOpen] = useState(false);
   const location = useLocation();
+  const { user, isAuthenticated, logout } = useAuth();
 
   return (
     <nav className="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-mint-200">
