@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { Navigation } from "@/components/ui/navigation";
 import { Footer } from "@/components/ui/footer";
 import { Button } from "@/components/ui/button";
@@ -228,6 +229,7 @@ export default function Chatbot() {
   const [sessionMessages, setSessionMessages] = useState<ChatMessage[]>([]);
   const [showProgress, setShowProgress] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const navigate = useNavigate();
 
   const {
     chatMessages,
@@ -321,9 +323,13 @@ export default function Chatbot() {
           setTimeout(() => {
             showNotification({
               type: "encouragement",
-              title: "Coping Strategies Available 🌟",
-              message: `I've prepared some personalized techniques that might help you feel better. Check them out below!`,
-              duration: 5000,
+              title: "Coping Techniques Available 🌟",
+              message: `I've prepared some personalized techniques that might help you feel better. Would you like to practice them now?`,
+              duration: 8000,
+              action: {
+                label: "Practice Techniques",
+                onClick: () => navigate("/techniques"),
+              },
             });
           }, 2000);
         }

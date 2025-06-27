@@ -15,6 +15,7 @@ import Chatbot from "./pages/Chatbot";
 import Dashboard from "./pages/Dashboard";
 import Journal from "./pages/Journal";
 import Resources from "./pages/Resources";
+import Techniques from "./pages/Techniques";
 import Profile from "./pages/Profile";
 import About from "./pages/About";
 import FAQ from "./pages/FAQ";
@@ -65,6 +66,14 @@ const App = () => (
                 element={
                   <ProtectedRoute>
                     <Resources />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/techniques"
+                element={
+                  <ProtectedRoute>
+                    <Techniques />
                   </ProtectedRoute>
                 }
               />

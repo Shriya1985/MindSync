@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { X, Trophy, Flame, Star, Gift } from "lucide-react";
@@ -42,6 +43,7 @@ let notifyCallback: ((notifications: Notification[]) => void) | null = null;
 
 export function NotificationSystem() {
   const [notifications, setNotifications] = useState<Notification[]>([]);
+  const navigate = useNavigate();
 
   useEffect(() => {
     notifyCallback = setNotifications;
@@ -67,49 +69,50 @@ export function NotificationSystem() {
   }, [notifications]);
 
   return (
-    <div className="fixed top-4 right-4 z-50 space-y-2 max-w-sm">
+    <div className="fixed top-4 right-4 z-50 space-y-3 max-w-sm">
       {notifications.map((notification) => {
         const IconComponent = notificationIcons[notification.type];
         return (
           <Card
             key={notification.id}
             className={cn(
-              "shadow-2xl border-0 overflow-hidden animate-in slide-in-from-right-full duration-300",
-              "bg-white/95 backdrop-blur-sm",
+              "shadow-2xl border-2 border-white/20 overflow-hidden animate-in slide-in-from-right-full duration-500",
+              "bg-white backdrop-blur-md",
+              "hover:shadow-3xl transition-all duration-200",
             )}
           >
             <div
               className={cn(
-                "h-1 bg-gradient-to-r",
+                "h-2 bg-gradient-to-r",
                 notificationColors[notification.type],
               )}
             />
-            <CardContent className="p-4">
-              <div className="flex items-start space-x-3">
+            <CardContent className="p-5">
+              <div className="flex items-start space-x-4">
                 <div
                   className={cn(
-                    "w-10 h-10 rounded-full flex items-center justify-center bg-gradient-to-r",
+                    "w-12 h-12 rounded-xl flex items-center justify-center bg-gradient-to-r shadow-lg",
                     notificationColors[notification.type],
                   )}
                 >
                   {notification.icon ? (
-                    <span className="text-lg">{notification.icon}</span>
+                    <span className="text-xl">{notification.icon}</span>
                   ) : (
-                    <IconComponent className="w-5 h-5 text-white" />
+                    <IconComponent className="w-6 h-6 text-white" />
                   )}
                 </div>
                 <div className="flex-1 min-w-0">
-                  <h4 className="text-sm font-semibold text-gray-900 mb-1">
+                  <h4 className="text-base font-bold text-gray-900 mb-2">
                     {notification.title}
                   </h4>
-                  <p className="text-sm text-gray-600 leading-relaxed">
+                  <p className="text-sm text-gray-700 leading-relaxed mb-3">
                     {notification.message}
                   </p>
                   {notification.action && (
                     <Button
                       size="sm"
                       onClick={notification.action.onClick}
-                      className="mt-2 bg-gradient-to-r from-mint-500 to-sky-500 hover:from-mint-600 hover:to-sky-600 text-white"
+                      className="mt-2 bg-gradient-to-r from-mint-500 to-sky-500 hover:from-mint-600 hover:to-sky-600 text-white font-medium shadow-md hover:shadow-lg transition-all"
                     >
                       {notification.action.label}
                     </Button>
@@ -119,7 +122,7 @@ export function NotificationSystem() {
                   variant="ghost"
                   size="sm"
                   onClick={() => removeNotification(notification.id)}
-                  className="text-gray-400 hover:text-gray-600 p-1"
+                  className="text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-full p-2"
                 >
                   <X className="w-4 h-4" />
                 </Button>
