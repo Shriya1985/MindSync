@@ -222,7 +222,13 @@ export default function Chatbot() {
   const [showProgress, setShowProgress] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  const { chatMessages, addChatMessage, userStats, getStreakInfo } = useData();
+  const {
+    chatMessages,
+    addChatMessage,
+    addMoodEntry,
+    userStats,
+    getStreakInfo,
+  } = useData();
 
   // Initialize with welcome message
   useEffect(() => {
