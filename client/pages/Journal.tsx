@@ -114,6 +114,9 @@ export default function Journal() {
   const [showAnalysis, setShowAnalysis] = useState<string | null>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
+  const { journalEntries, addJournalEntry, userStats, getStreakInfo } =
+    useData();
+
   const filteredEntries = journalEntries.filter((entry) => {
     const matchesSearch =
       entry.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
