@@ -184,8 +184,52 @@ export default function Dashboard() {
 
   const handleQuickMoodLog = (mood: string) => {
     setCurrentMood(mood);
-    // In a real app, this would save the mood entry
-    console.log("Mood logged:", mood);
+
+    const moodOption = quickMoodOptions.find((option) => option.value === mood);
+    if (moodOption) {
+      addMoodEntry({
+        date: new Date().toISOString().split("T")[0],
+        mood: moodOption.label,
+        rating:
+          moodOption.value === "happy"
+            ? 8
+            : moodOption.value === "excited"
+              ? 9
+              : moodOption.value === "calm"
+                ? 7
+                : moodOption.value === "sad"
+                  ? 3
+                  : moodOption.value === "anxious"
+                    ? 4
+                    : moodOption.value === "frustrated"
+                      ? 4
+                      : moodOption.value === "tired"
+                        ? 5
+                        : 5,
+        emoji: moodOption.emoji,
+        source: "dashboard",
+      });
+
+      // Show encouraging notification
+      showNotification({
+        type: "encouragement",
+        title: "Mood Logged! 🎉",
+        message: `Thanks for checking in! You've earned 5 points. Current level: ${userStats.level}`,
+        duration: 4000,
+      });
+
+      // Check for streak milestone
+      const streakInfo = getStreakInfo();
+      if (streakInfo.current > 0 && streakInfo.current % 7 === 0) {
+        showNotification({
+          type: "achievement",
+          title: "Streak Achievement! 🔥",
+          message: `Amazing! You've maintained a ${streakInfo.current}-day wellness streak!`,
+          duration: 6000,
+        });
+      }
+    }
+
     setTimeout(() => setCurrentMood(null), 2000);
   };
 
