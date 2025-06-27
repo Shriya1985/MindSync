@@ -167,10 +167,12 @@ export default function Dashboard() {
   const {
     moodEntries,
     journalEntries,
+    chatMessages,
     userStats,
     addMoodEntry,
     getStreakInfo,
   } = useData();
+  const { currentTheme } = useMoodTheme();
 
   const averageMood = userStats.averageMood || 0;
   const moodTrend = averageMood >= 6 ? "+12%" : "-8%";
