@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { useData } from "@/contexts/DataContext";
 import { showNotification } from "@/components/ui/notification-system";
+import { EncouragingInsights } from "@/components/EncouragingInsights";
 import {
   BarChart3,
   TrendingUp,
