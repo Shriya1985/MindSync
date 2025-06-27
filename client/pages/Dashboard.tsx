@@ -159,6 +159,14 @@ export default function Dashboard() {
   const [selectedPeriod, setSelectedPeriod] = useState("7d");
   const [currentMood, setCurrentMood] = useState<string | null>(null);
 
+  const {
+    moodEntries,
+    journalEntries,
+    userStats,
+    addMoodEntry,
+    getStreakInfo,
+  } = useData();
+
   const averageMood = 6.8;
   const moodTrend = "+12%";
   const totalEntries = moodData.length;
