@@ -1,10 +1,12 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Navigation } from "@/components/ui/navigation";
 import { Footer } from "@/components/ui/footer";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
+import { useData } from "@/contexts/DataContext";
+import { showNotification } from "@/components/ui/notification-system";
 import {
   BarChart3,
   TrendingUp,
