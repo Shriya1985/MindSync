@@ -209,25 +209,36 @@ export function DataProvider({ children }: { children: ReactNode }) {
 
   const calculateCurrentStreak = () => {
     const today = new Date().toISOString().split("T")[0];
-    const allEntryDates = [
-      ...moodEntries.map((entry) => entry.date),
-      ...journalEntries.map((entry) => entry.date),
+
+    // Get unique dates and sort from most recent to oldest
+    const uniqueDates = [
+      ...new Set([
+        ...moodEntries.map((entry) => entry.date),
+        ...journalEntries.map((entry) => entry.date),
+      ]),
     ].sort((a, b) => new Date(b).getTime() - new Date(a).getTime());
 
+    if (uniqueDates.length === 0) return 0;
+
     let streak = 0;
-    let currentDate = new Date(today);
+    let expectedDate = new Date(today);
 
-    for (const dateStr of allEntryDates) {
+    for (const dateStr of uniqueDates) {
       const entryDate = new Date(dateStr);
-      const daysDiff = Math.floor(
-        (currentDate.getTime() - entryDate.getTime()) / (1000 * 60 * 60 * 24),
-      );
+      const expectedDateStr = expectedDate.toISOString().split("T")[0];
 
-      if (daysDiff === streak) {
+      if (dateStr === expectedDateStr) {
         streak++;
-        currentDate = new Date(entryDate);
-      } else if (daysDiff > streak) {
-        break;
+        expectedDate.setDate(expectedDate.getDate() - 1);
+      } else {
+        // If there's a gap, check if today has an entry to continue from yesterday
+        if (streak === 0 && dateStr === today) {
+          streak = 1;
+          expectedDate = new Date(today);
+          expectedDate.setDate(expectedDate.getDate() - 1);
+        } else {
+          break;
+        }
       }
     }
 
