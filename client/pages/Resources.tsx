@@ -257,6 +257,10 @@ export default function Resources() {
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
   const [selectedType, setSelectedType] = useState<string>("all");
   const [bookmarkedOnly, setBookmarkedOnly] = useState(false);
+  const [activeTab, setActiveTab] = useState<"resources" | "wellness">(
+    "wellness",
+  );
+  const { currentTheme } = useMoodTheme();
 
   const filteredResources = resources.filter((resource) => {
     const matchesSearch =
