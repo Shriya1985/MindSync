@@ -46,7 +46,7 @@ export default function Profile() {
     confirmPassword: "",
   });
 
-  const { user, logout } = useAuth();
+  const { user, updateProfile, logout } = useAuth();
   const { userStats, moodEntries, journalEntries } = useData();
 
   // Initialize form data with user info
