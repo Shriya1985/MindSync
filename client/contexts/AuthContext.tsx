@@ -97,6 +97,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return false;
   };
 
+  const updateProfile = async (updates: Partial<User>): Promise<boolean> => {
+    if (!user) return false;
+
+    setIsLoading(true);
+
+    // Simulate API call
+    await new Promise((resolve) => setTimeout(resolve, 500));
+
+    const updatedUser = { ...user, ...updates };
+    setUser(updatedUser);
+    localStorage.setItem("mindSync_user", JSON.stringify(updatedUser));
+    setIsLoading(false);
+    return true;
+  };
+
   const logout = () => {
     setUser(null);
     localStorage.removeItem("mindSync_user");
@@ -108,6 +123,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     isLoading,
     login,
     register,
+    updateProfile,
     logout,
   };
 
