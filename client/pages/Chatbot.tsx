@@ -501,7 +501,7 @@ export default function Chatbot() {
                     <div className="w-5 h-5 bg-gradient-to-br from-mint-400 to-sky-400 rounded-full flex items-center justify-center">
                       <Brain className="w-3 h-3 text-white" />
                     </div>
-                    <span className="text-xs text-gray-500">MindSync AI</span>
+                    <span className="text-xs text-gray-500">Buddy</span>
                   </div>
                   <div className="flex space-x-1">
                     <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" />
