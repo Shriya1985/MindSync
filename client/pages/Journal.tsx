@@ -118,6 +118,7 @@ export default function Journal() {
 
   const { journalEntries, addJournalEntry, userStats, getStreakInfo } =
     useData();
+  const { currentTheme } = useMoodTheme();
 
   const filteredEntries = journalEntries.filter((entry) => {
     const matchesSearch =
