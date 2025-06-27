@@ -5,6 +5,9 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
+import { Progress } from "@/components/ui/progress";
+import { useData, type ChatMessage } from "@/contexts/DataContext";
+import { showNotification } from "@/components/ui/notification-system";
 import {
   MessageCircle,
   Send,
@@ -13,26 +16,18 @@ import {
   Brain,
   Heart,
   Zap,
-  Smile,
-  Frown,
-  Meh,
   RefreshCw,
+  TrendingUp,
+  Award,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-
-type Message = {
-  id: string;
-  content: string;
-  sender: "user" | "ai";
-  timestamp: Date;
-  mood?: string;
-};
 
 type MoodOption = {
   emoji: string;
   label: string;
   value: string;
   color: string;
+  rating: number;
 };
 
 const moodOptions: MoodOption[] = [
@@ -41,76 +36,207 @@ const moodOptions: MoodOption[] = [
     label: "Happy",
     value: "happy",
     color: "bg-yellow-100 text-yellow-700",
+    rating: 8,
   },
   {
     emoji: "😔",
     label: "Sad",
     value: "sad",
     color: "bg-blue-100 text-blue-700",
+    rating: 3,
   },
   {
     emoji: "😰",
     label: "Anxious",
     value: "anxious",
     color: "bg-orange-100 text-orange-700",
+    rating: 4,
   },
   {
     emoji: "😌",
     label: "Calm",
     value: "calm",
     color: "bg-green-100 text-green-700",
+    rating: 7,
   },
   {
     emoji: "😤",
     label: "Frustrated",
     value: "frustrated",
     color: "bg-red-100 text-red-700",
+    rating: 4,
   },
   {
     emoji: "😴",
     label: "Tired",
     value: "tired",
     color: "bg-purple-100 text-purple-700",
+    rating: 5,
   },
   {
     emoji: "🤔",
     label: "Confused",
     value: "confused",
     color: "bg-gray-100 text-gray-700",
+    rating: 5,
   },
   {
     emoji: "✨",
     label: "Excited",
     value: "excited",
     color: "bg-pink-100 text-pink-700",
+    rating: 9,
   },
 ];
 
-const aiResponses = [
-  "I understand how you're feeling. Can you tell me more about what's been on your mind today?",
-  "Thank you for sharing that with me. Your feelings are completely valid. 💙",
-  "It sounds like you're going through a lot right now. Remember, it's okay to take things one step at a time.",
-  "I'm here to listen and support you. Would you like to explore some coping strategies together?",
-  "That's a really insightful observation about yourself. Self-awareness is an important step in mental wellness.",
-  "I hear that you're feeling overwhelmed. Let's break this down into smaller, manageable pieces.",
-  "Your mental health journey is unique to you, and every small step forward matters.",
-  "It's wonderful that you're taking time to check in with yourself today. How can I best support you right now?",
-];
+// Enhanced AI response system
+const generateAIResponse = (userMessage: string, mood?: string): string => {
+  const message = userMessage.toLowerCase();
+
+  // Mood-specific responses
+  if (mood) {
+    const moodResponses = {
+      happy: [
+        "I'm so glad to hear you're feeling happy! What's contributing to this positive mood today? 😊",
+        "That's wonderful! Your happiness is contagious. Would you like to share what's making you feel this way?",
+        "I love hearing when you're in a good mood! Let's capture this moment - what made today special?",
+      ],
+      sad: [
+        "I hear that you're feeling sad right now, and that's completely okay. Your feelings are valid. Would you like to talk about what's on your heart? 💙",
+        "Thank you for trusting me with how you're feeling. Sadness is a natural emotion. I'm here to listen - what's weighing on you today?",
+        "I'm sorry you're going through a difficult time. Sometimes it helps to express these feelings. What would you like to share with me?",
+      ],
+      anxious: [
+        "I understand you're feeling anxious. Anxiety can be overwhelming, but you're not alone. What specifically is causing you worry today?",
+        "Anxiety is challenging, and I want you to know it's okay to feel this way. Let's work through this together - what's on your mind?",
+        "I hear your anxiety, and I'm here to support you. Sometimes talking about our worries can help. What's making you feel anxious right now?",
+      ],
+      calm: [
+        "It's beautiful that you're feeling calm. This peaceful state is so valuable. What's helping you feel centered today?",
+        "I'm glad you're experiencing calmness. These moments of peace are precious. How did you cultivate this feeling?",
+        "Your sense of calm is wonderful. What practices or thoughts are contributing to this peaceful state?",
+      ],
+      frustrated: [
+        "I can sense your frustration, and those feelings are completely understandable. What's causing this frustration for you?",
+        "Frustration can be really draining. I'm here to listen without judgment. What's been particularly challenging today?",
+        "Thank you for sharing your frustration with me. These feelings are valid. What situation is causing you to feel this way?",
+      ],
+      tired: [
+        "It sounds like you're feeling drained. Rest is so important for our wellbeing. What's been wearing you out lately?",
+        "I hear that you're tired. Sometimes our bodies and minds need extra care. What kind of tiredness are you experiencing?",
+        "Feeling tired is your body's way of asking for care. What do you think would help you feel more energized?",
+      ],
+      excited: [
+        "Your excitement is infectious! I love your energy. What's got you feeling so enthusiastic today? ✨",
+        "How wonderful that you're feeling excited! This positive energy is amazing. Tell me more about what's sparking this feeling!",
+        "I can feel your excitement through your words! What's happening that's making you feel so energized?",
+      ],
+      confused: [
+        "It's okay to feel confused - sometimes life presents us with complex situations. What's causing this uncertainty for you?",
+        "Confusion is a natural response to challenging situations. I'm here to help you think through whatever is on your mind.",
+        "Thank you for sharing that you're feeling confused. Sometimes talking through our thoughts can bring clarity. What's puzzling you?",
+      ],
+    };
+
+    const responses = moodResponses[mood as keyof typeof moodResponses];
+    if (responses) {
+      return responses[Math.floor(Math.random() * responses.length)];
+    }
+  }
+
+  // Keyword-based responses
+  if (
+    message.includes("work") ||
+    message.includes("job") ||
+    message.includes("career")
+  ) {
+    return "Work can be a significant source of both stress and fulfillment. What aspects of your work situation would you like to explore? I'm here to help you process these feelings.";
+  }
+
+  if (
+    message.includes("relationship") ||
+    message.includes("friend") ||
+    message.includes("family")
+  ) {
+    return "Relationships are such an important part of our lives and can bring both joy and challenges. What's happening in your relationships that you'd like to talk about?";
+  }
+
+  if (
+    message.includes("sleep") ||
+    message.includes("tired") ||
+    message.includes("exhausted")
+  ) {
+    return "Sleep and rest are fundamental to our mental health. How has your sleep been lately? Sometimes discussing our rest patterns can reveal important insights about our wellbeing.";
+  }
+
+  if (
+    message.includes("stress") ||
+    message.includes("overwhelmed") ||
+    message.includes("pressure")
+  ) {
+    return "Stress and feeling overwhelmed are common experiences, especially in today's world. You're not alone in feeling this way. What's contributing most to your stress right now?";
+  }
+
+  if (
+    message.includes("goal") ||
+    message.includes("future") ||
+    message.includes("plan")
+  ) {
+    return "It's wonderful that you're thinking about your goals and future! Having direction can be so empowering. What aspirations or plans are on your mind?";
+  }
+
+  if (
+    message.includes("grateful") ||
+    message.includes("thankful") ||
+    message.includes("appreciate")
+  ) {
+    return "Gratitude is such a powerful practice for mental wellness! I'm glad you're noticing things to appreciate. What are you feeling most grateful for right now?";
+  }
+
+  if (
+    message.includes("progress") ||
+    message.includes("better") ||
+    message.includes("improving")
+  ) {
+    return "Recognizing progress is so important! Every step forward, no matter how small, is worth celebrating. What improvements have you noticed in yourself lately?";
+  }
+
+  // Default empathetic responses
+  const defaultResponses = [
+    "Thank you for sharing that with me. Your thoughts and feelings matter. How has this been affecting you lately?",
+    "I appreciate you opening up about this. Sometimes just expressing our thoughts can be helpful. What would you like to explore further?",
+    "I'm here to listen and support you. Your experiences are valid and important. How are you taking care of yourself through this?",
+    "It sounds like you have a lot on your mind. I'm glad you're taking time to reflect and share. What feels most important to talk about right now?",
+    "Thank you for trusting me with your thoughts. Processing our feelings is such an important part of mental wellness. What insights are you having about this situation?",
+    "I hear you, and I want you to know that you're not alone in feeling this way. What kind of support feels most helpful to you right now?",
+  ];
+
+  return defaultResponses[Math.floor(Math.random() * defaultResponses.length)];
+};
 
 export default function Chatbot() {
-  const [messages, setMessages] = useState<Message[]>([
-    {
-      id: "1",
-      content:
-        "Hello! I'm your MindSync AI companion. I'm here to listen, support, and help you explore your thoughts and feelings. How are you doing today? 💚",
-      sender: "ai",
-      timestamp: new Date(),
-    },
-  ]);
   const [inputValue, setInputValue] = useState("");
   const [selectedMood, setSelectedMood] = useState<string | null>(null);
   const [isTyping, setIsTyping] = useState(false);
+  const [sessionMessages, setSessionMessages] = useState<ChatMessage[]>([]);
+  const [showProgress, setShowProgress] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  const { chatMessages, addChatMessage, userStats, getStreakInfo } = useData();
+
+  // Initialize with welcome message
+  useEffect(() => {
+    if (sessionMessages.length === 0) {
+      const welcomeMessage: ChatMessage = {
+        id: "welcome",
+        content:
+          "Hello! I'm your MindSync AI companion. I'm here to listen, support, and help you explore your thoughts and feelings. How are you doing today? 💚",
+        sender: "ai",
+        timestamp: new Date(),
+      };
+      setSessionMessages([welcomeMessage]);
+    }
+  }, []);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -118,22 +244,37 @@ export default function Chatbot() {
 
   useEffect(() => {
     scrollToBottom();
-  }, [messages, isTyping]);
+  }, [sessionMessages, isTyping]);
 
-  const simulateAIResponse = () => {
+  const simulateAIResponse = (userMessage: string, mood?: string) => {
     setIsTyping(true);
+    setShowProgress(true);
+
     setTimeout(
       () => {
-        const randomResponse =
-          aiResponses[Math.floor(Math.random() * aiResponses.length)];
-        const aiMessage: Message = {
+        const aiResponseContent = generateAIResponse(userMessage, mood);
+        const aiMessage: ChatMessage = {
           id: Date.now().toString(),
-          content: randomResponse,
+          content: aiResponseContent,
           sender: "ai",
           timestamp: new Date(),
         };
-        setMessages((prev) => [...prev, aiMessage]);
+
+        setSessionMessages((prev) => [...prev, aiMessage]);
+        addChatMessage(aiMessage);
         setIsTyping(false);
+        setShowProgress(false);
+
+        // Check for streak achievement
+        const streakInfo = getStreakInfo();
+        if (streakInfo.current > 0 && streakInfo.current % 3 === 0) {
+          showNotification({
+            type: "streak",
+            title: "Chat Streak! 🔥",
+            message: `Amazing! You've had ${streakInfo.current} days of wellness check-ins. Keep up the great work!`,
+            duration: 6000,
+          });
+        }
       },
       1500 + Math.random() * 1000,
     );
@@ -142,18 +283,51 @@ export default function Chatbot() {
   const handleSendMessage = () => {
     if (!inputValue.trim()) return;
 
-    const userMessage: Message = {
+    const selectedMoodOption = selectedMood
+      ? moodOptions.find((m) => m.value === selectedMood)
+      : undefined;
+
+    const userMessage: ChatMessage = {
       id: Date.now().toString(),
       content: inputValue,
       sender: "user",
       timestamp: new Date(),
       mood: selectedMood || undefined,
+      sentiment: selectedMoodOption?.rating
+        ? selectedMoodOption.rating >= 7
+          ? "positive"
+          : selectedMoodOption.rating <= 4
+            ? "negative"
+            : "neutral"
+        : undefined,
     };
 
-    setMessages((prev) => [...prev, userMessage]);
+    setSessionMessages((prev) => [...prev, userMessage]);
+    addChatMessage(userMessage);
+
+    // Also add mood entry if mood was selected
+    if (selectedMood && selectedMoodOption) {
+      const { addMoodEntry } = useData();
+      addMoodEntry({
+        date: new Date().toISOString().split("T")[0],
+        mood: selectedMoodOption.label,
+        rating: selectedMoodOption.rating,
+        emoji: selectedMoodOption.emoji,
+        source: "chatbot",
+      });
+
+      // Show encouraging notification
+      showNotification({
+        type: "encouragement",
+        title: "Mood Logged! 🎉",
+        message: `Thanks for sharing that you're feeling ${selectedMoodOption.label}. Every check-in helps build your wellness journey!`,
+        duration: 4000,
+      });
+    }
+
     setInputValue("");
     setSelectedMood(null);
-    simulateAIResponse();
+    simulateAIResponse(inputValue, selectedMood || undefined);
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
@@ -164,9 +338,9 @@ export default function Chatbot() {
   };
 
   const clearChat = () => {
-    setMessages([
+    setSessionMessages([
       {
-        id: "1",
+        id: "welcome",
         content:
           "Hello! I'm your MindSync AI companion. I'm here to listen, support, and help you explore your thoughts and feelings. How are you doing today? 💚",
         sender: "ai",
@@ -175,12 +349,14 @@ export default function Chatbot() {
     ]);
   };
 
+  const streakInfo = getStreakInfo();
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-mint-50 via-white to-sky-50">
       <Navigation />
 
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Header */}
+        {/* Header with Stats */}
         <div className="text-center mb-6">
           <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-mint-500 to-sky-500 rounded-2xl mb-4">
             <MessageCircle className="w-8 h-8 text-white" />
@@ -188,9 +364,25 @@ export default function Chatbot() {
           <h1 className="text-3xl font-bold text-gray-900 mb-2">
             AI Companion Chat
           </h1>
-          <p className="text-gray-600">
+          <p className="text-gray-600 mb-4">
             Share your thoughts and feelings in a safe, supportive space
           </p>
+
+          {/* Progress Stats */}
+          <div className="flex justify-center space-x-6 text-sm">
+            <div className="flex items-center space-x-1">
+              <Award className="w-4 h-4 text-mint-500" />
+              <span className="text-gray-600">
+                Level {userStats.level} • {userStats.points} points
+              </span>
+            </div>
+            <div className="flex items-center space-x-1">
+              <Zap className="w-4 h-4 text-orange-500" />
+              <span className="text-gray-600">
+                {streakInfo.current} day streak
+              </span>
+            </div>
+          </div>
         </div>
 
         {/* Chat Container */}
@@ -205,11 +397,19 @@ export default function Chatbot() {
                 <h3 className="font-semibold text-gray-900">MindSync AI</h3>
                 <div className="flex items-center space-x-1 text-sm text-green-600">
                   <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
-                  <span>Online & Ready to Help</span>
+                  <span>Ready to Listen & Support</span>
                 </div>
               </div>
             </div>
             <div className="flex items-center space-x-2">
+              {showProgress && (
+                <div className="flex items-center space-x-2 text-sm text-gray-500">
+                  <div className="w-16 bg-gray-200 rounded-full h-1">
+                    <div className="bg-mint-500 h-1 rounded-full animate-pulse w-1/2" />
+                  </div>
+                  <span>Processing...</span>
+                </div>
+              )}
               <Button
                 variant="ghost"
                 size="sm"
@@ -230,7 +430,7 @@ export default function Chatbot() {
 
           {/* Messages */}
           <div className="flex-1 overflow-y-auto p-4 space-y-4">
-            {messages.map((message) => (
+            {sessionMessages.map((message) => (
               <div
                 key={message.id}
                 className={cn(
@@ -318,7 +518,7 @@ export default function Chatbot() {
           <div className="px-4 py-2 border-t border-gray-100">
             <div className="flex items-center space-x-2 overflow-x-auto pb-2">
               <span className="text-sm text-gray-500 whitespace-nowrap">
-                Quick mood:
+                How are you feeling?
               </span>
               {moodOptions.map((mood) => (
                 <Button
@@ -381,11 +581,11 @@ export default function Chatbot() {
         <div className="mt-8 grid grid-cols-1 md:grid-cols-3 gap-4 text-center">
           <div className="flex items-center justify-center space-x-2 text-sm text-gray-600">
             <Heart className="w-4 h-4 text-mint-500" />
-            <span>Empathetic AI responses</span>
+            <span>Contextual AI responses</span>
           </div>
           <div className="flex items-center justify-center space-x-2 text-sm text-gray-600">
-            <Zap className="w-4 h-4 text-sky-500" />
-            <span>Real-time mood tracking</span>
+            <TrendingUp className="w-4 h-4 text-sky-500" />
+            <span>Progress tracking</span>
           </div>
           <div className="flex items-center justify-center space-x-2 text-sm text-gray-600">
             <Brain className="w-4 h-4 text-lavender-500" />
