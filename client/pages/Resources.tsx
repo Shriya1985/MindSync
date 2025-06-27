@@ -298,9 +298,37 @@ export default function Resources() {
             Mental Health Resources
           </h1>
           <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-            Curated articles, podcasts, videos, and support resources to support
-            your mental wellness journey
+            Interactive wellness tools and curated content to support your
+            mental health journey
           </p>
+        </div>
+
+        {/* Tab Navigation */}
+        <div className="flex justify-center mb-8">
+          <div className="bg-white/90 backdrop-blur-sm rounded-lg p-1 shadow-lg border border-gray-200">
+            <Button
+              onClick={() => setActiveTab("wellness")}
+              variant={activeTab === "wellness" ? "default" : "ghost"}
+              className={
+                activeTab === "wellness"
+                  ? "bg-mint-500 hover:bg-mint-600 text-white"
+                  : ""
+              }
+            >
+              🧘 Wellness Tools
+            </Button>
+            <Button
+              onClick={() => setActiveTab("resources")}
+              variant={activeTab === "resources" ? "default" : "ghost"}
+              className={
+                activeTab === "resources"
+                  ? "bg-mint-500 hover:bg-mint-600 text-white"
+                  : ""
+              }
+            >
+              📚 Learning Resources
+            </Button>
+          </div>
         </div>
 
         {/* Search and Filters */}
