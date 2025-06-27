@@ -257,9 +257,7 @@ export default function Resources() {
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
   const [selectedType, setSelectedType] = useState<string>("all");
   const [bookmarkedOnly, setBookmarkedOnly] = useState(false);
-  const [activeTab, setActiveTab] = useState<"resources" | "wellness">(
-    "wellness",
-  );
+  const [activeTab, setActiveTab] = useState<"resources" | "wellness">("wellness");
   const { currentTheme } = useMoodTheme();
 
   const filteredResources = resources.filter((resource) => {
@@ -298,8 +296,7 @@ export default function Resources() {
             Mental Health Resources
           </h1>
           <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-            Interactive wellness tools and curated content to support your
-            mental health journey
+            Interactive wellness tools and curated content to support your mental health journey
           </p>
         </div>
 
@@ -309,30 +306,45 @@ export default function Resources() {
             <Button
               onClick={() => setActiveTab("wellness")}
               variant={activeTab === "wellness" ? "default" : "ghost"}
-              className={
-                activeTab === "wellness"
-                  ? "bg-mint-500 hover:bg-mint-600 text-white"
-                  : ""
-              }
+              className={activeTab === "wellness" ? "bg-mint-500 hover:bg-mint-600 text-white" : ""}
             >
               🧘 Wellness Tools
             </Button>
             <Button
               onClick={() => setActiveTab("resources")}
               variant={activeTab === "resources" ? "default" : "ghost"}
-              className={
-                activeTab === "resources"
-                  ? "bg-mint-500 hover:bg-mint-600 text-white"
-                  : ""
-              }
+              className={activeTab === "resources" ? "bg-mint-500 hover:bg-mint-600 text-white" : ""}
             >
               📚 Learning Resources
             </Button>
           </div>
         </div>
 
-        {/* Search and Filters */}
-        <Card className="mb-8 shadow-lg border-0 bg-white/90 backdrop-blur-sm">
+        {/* Wellness Tools Tab */}
+        {activeTab === "wellness" && (
+          <div className="space-y-8">
+            {/* Daily Affirmation */}
+            <DailyAffirmation />
+
+            {/* Guided Meditation */}
+            <GuidedMeditation />
+
+            {/* Mood Soother */}
+            <MoodSoother />
+
+            {/* Music Playlists */}
+            <MoodPlaylists />
+
+            {/* Emotion Encyclopedia */}
+            <EmotionEncyclopedia />
+          </div>
+        )}
+
+        {/* Learning Resources Tab */}
+        {activeTab === "resources" && (
+          <>
+            {/* Search and Filters */}
+            <Card className="mb-8 shadow-lg border-0 bg-white/90 backdrop-blur-sm">
           <CardContent className="p-6">
             <div className="flex flex-col lg:flex-row gap-4">
               <div className="flex-1 relative">
