@@ -127,16 +127,49 @@ export function Navigation() {
                   {item.name}
                 </Link>
               ))}
-              <Button
-                asChild
-                variant="outline"
-                size="sm"
-                className="w-fit border-mint-300 text-mint-700 hover:bg-mint-50"
-              >
-                <Link to="/auth" onClick={() => setIsOpen(false)}>
-                  Login
-                </Link>
-              </Button>
+              {isAuthenticated ? (
+                <div className="pt-2 border-t border-gray-200">
+                  <div className="flex items-center space-x-2 mb-3 px-2">
+                    {user?.avatar ? (
+                      <img
+                        src={user.avatar}
+                        alt={user.name}
+                        className="w-8 h-8 rounded-full"
+                      />
+                    ) : (
+                      <div className="w-8 h-8 bg-mint-100 rounded-full flex items-center justify-center">
+                        <User className="w-4 h-4 text-mint-600" />
+                      </div>
+                    )}
+                    <span className="text-sm font-medium text-gray-700">
+                      {user?.name}
+                    </span>
+                  </div>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      logout();
+                      setIsOpen(false);
+                    }}
+                    className="w-fit border-gray-300 text-gray-600 hover:bg-gray-50"
+                  >
+                    <LogOut className="w-4 h-4 mr-2" />
+                    Logout
+                  </Button>
+                </div>
+              ) : (
+                <Button
+                  asChild
+                  variant="outline"
+                  size="sm"
+                  className="w-fit border-mint-300 text-mint-700 hover:bg-mint-50"
+                >
+                  <Link to="/auth" onClick={() => setIsOpen(false)}>
+                    Login
+                  </Link>
+                </Button>
+              )}
             </div>
           </div>
         )}
