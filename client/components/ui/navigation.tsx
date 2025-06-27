@@ -9,9 +9,10 @@ import { useData } from "@/contexts/DataContext";
 
 const navigation = [
   { name: "Home", href: "/" },
-  { name: "Chatbot", href: "/chatbot" },
   { name: "Dashboard", href: "/dashboard" },
+  { name: "Chatbot", href: "/chatbot" },
   { name: "Journal", href: "/journal" },
+  { name: "Techniques", href: "/techniques" },
   { name: "Resources", href: "/resources" },
 ];
 
