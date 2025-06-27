@@ -3,6 +3,8 @@ import { Navigation } from "@/components/ui/navigation";
 import { Footer } from "@/components/ui/footer";
 import { useData, type JournalEntry } from "@/contexts/DataContext";
 import { showNotification } from "@/components/ui/notification-system";
+import { JournalSummarizer } from "@/components/JournalSummarizer";
+import { useMoodTheme } from "@/hooks/useMoodTheme";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
