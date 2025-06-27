@@ -243,8 +243,11 @@ export default function Chatbot() {
   };
 
   useEffect(() => {
-    scrollToBottom();
-  }, [sessionMessages, isTyping]);
+    // Only scroll when a new message is added or AI is typing
+    if (sessionMessages.length > 1 || isTyping) {
+      scrollToBottom();
+    }
+  }, [sessionMessages.length, isTyping]);
 
   const simulateAIResponse = (userMessage: string, mood?: string) => {
     setIsTyping(true);
