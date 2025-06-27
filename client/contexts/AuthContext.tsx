@@ -19,6 +19,7 @@ type AuthContextType = {
   isLoading: boolean;
   login: (email: string, password: string) => Promise<boolean>;
   register: (name: string, email: string, password: string) => Promise<boolean>;
+  updateProfile: (updates: Partial<User>) => Promise<boolean>;
   logout: () => void;
 };
 
