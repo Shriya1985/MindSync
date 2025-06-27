@@ -60,15 +60,38 @@ export default function Profile() {
     }
   });
 
-  const handleSaveProfile = () => {
-    // In a real app, this would update the user profile
-    setIsEditing(false);
-    showNotification({
-      type: "encouragement",
-      title: "Profile Updated! ✨",
-      message: "Your profile has been successfully updated.",
-      duration: 3000,
-    });
+  const handleSaveProfile = async () => {
+    try {
+      const success = await updateProfile({
+        name: formData.name,
+        email: formData.email,
+      });
+
+      if (success) {
+        setIsEditing(false);
+        showNotification({
+          type: "encouragement",
+          title: "Profile Updated! ✨",
+          message: "Your profile has been successfully updated.",
+          duration: 3000,
+        });
+      } else {
+        showNotification({
+          type: "encouragement",
+          title: "Update Failed",
+          message:
+            "There was an issue updating your profile. Please try again.",
+          duration: 3000,
+        });
+      }
+    } catch (error) {
+      showNotification({
+        type: "encouragement",
+        title: "Update Failed",
+        message: "There was an issue updating your profile. Please try again.",
+        duration: 3000,
+      });
+    }
   };
 
   const handleExportData = () => {
