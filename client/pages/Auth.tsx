@@ -65,11 +65,46 @@ export default function Auth() {
     setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Simulate authentication
-    console.log("Auth submission:", { mode, formData });
-    // In a real app, this would handle authentication
+    setError(null);
+    setIsLoading(true);
+
+    try {
+      let success = false;
+
+      if (mode === "login") {
+        success = await login(formData.email, formData.password);
+      } else {
+        // Validate form for registration
+        if (formData.password !== formData.confirmPassword) {
+          setError("Passwords do not match");
+          setIsLoading(false);
+          return;
+        }
+        if (!formData.agreeToTerms) {
+          setError("Please agree to the terms and conditions");
+          setIsLoading(false);
+          return;
+        }
+        success = await register(
+          formData.name,
+          formData.email,
+          formData.password,
+        );
+      }
+
+      if (success) {
+        const from = location.state?.from?.pathname || "/dashboard";
+        navigate(from, { replace: true });
+      } else {
+        setError("Authentication failed. Please check your credentials.");
+      }
+    } catch (err) {
+      setError("An error occurred. Please try again.");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const features = [
