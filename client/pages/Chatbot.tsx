@@ -235,7 +235,10 @@ export default function Chatbot() {
     addMoodEntry,
     userStats,
     getStreakInfo,
+    moodEntries,
+    journalEntries,
   } = useData();
+  const { currentTheme } = useMoodTheme();
 
   // Initialize with welcome message
   useEffect(() => {
