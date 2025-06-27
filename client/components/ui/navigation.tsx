@@ -133,7 +133,11 @@ export function Navigation() {
               ))}
               {isAuthenticated ? (
                 <div className="pt-2 border-t border-gray-200">
-                  <div className="flex items-center space-x-2 mb-3 px-2">
+                  <Link
+                    to="/profile"
+                    className="flex items-center space-x-2 mb-3 px-2 py-1 rounded-md hover:bg-gray-50 transition-colors"
+                    onClick={() => setIsOpen(false)}
+                  >
                     {user?.avatar ? (
                       <img
                         src={user.avatar}
@@ -145,10 +149,10 @@ export function Navigation() {
                         <User className="w-4 h-4 text-mint-600" />
                       </div>
                     )}
-                    <span className="text-sm font-medium text-gray-700">
+                    <span className="text-sm font-medium text-gray-700 hover:text-mint-600">
                       {user?.name}
                     </span>
-                  </div>
+                  </Link>
                   <Button
                     variant="outline"
                     size="sm"
