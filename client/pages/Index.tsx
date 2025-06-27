@@ -59,6 +59,13 @@ const stats = [
 ];
 
 export default function Index() {
+  const { isAuthenticated } = useAuth();
+
+  // Redirect authenticated users to dashboard
+  if (isAuthenticated) {
+    return <Navigate to="/dashboard" replace />;
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-mint-50 via-white to-sky-50">
       <Navigation />
