@@ -27,7 +27,7 @@ import { cn } from "@/lib/utils";
 type AuthMode = "login" | "register";
 
 const motivationalTexts = [
-  "Every journey begins with a single step 🌱",
+  "Every journey begins with a single step ����",
   "Your mental wellness matters 💚",
   "You're taking care of yourself today ✨",
   "Small steps lead to big changes 🦋",
@@ -96,6 +96,16 @@ export default function Auth() {
       }
 
       if (success) {
+        // Show welcome notification
+        setTimeout(() => {
+          showNotification({
+            type: "encouragement",
+            title: `Welcome back! 🌟`,
+            message: `Great to see you again! Ready to continue your wellness journey?`,
+            duration: 5000,
+          });
+        }, 1000);
+
         const from = location.state?.from?.pathname || "/dashboard";
         navigate(from, { replace: true });
       } else {
