@@ -271,12 +271,30 @@ export default function Chatbot() {
 
     setTimeout(
       () => {
-        const aiResponseContent = generateAIResponse(userMessage, mood);
+        // Analyze emotional state from the user's message
+        const emotionalState = analyzeEmotionalState(
+          userMessage,
+          moodEntries.slice(0, 5),
+          journalEntries.slice(0, 3),
+        );
+
+        // Generate emotion-aware response
+        const aiResponseContent = generateEmotionAwareResponse(
+          userMessage,
+          emotionalState,
+          {
+            chats: chatMessages,
+            journals: journalEntries,
+            moods: moodEntries,
+          },
+        );
+
         const aiMessage: ChatMessage = {
           id: Date.now().toString(),
           content: aiResponseContent,
           sender: "ai",
           timestamp: new Date(),
+          sentiment: emotionalState.primary as any,
         };
 
         setSessionMessages((prev) => [...prev, aiMessage]);
@@ -293,6 +311,21 @@ export default function Chatbot() {
             message: `Amazing! You've had ${streakInfo.current} days of wellness check-ins. Keep up the great work!`,
             duration: 6000,
           });
+        }
+
+        // Show coping strategies if high intensity negative emotion
+        if (
+          emotionalState.intensity >= 6 &&
+          ["anxiety", "depression", "anger"].includes(emotionalState.primary)
+        ) {
+          setTimeout(() => {
+            showNotification({
+              type: "encouragement",
+              title: "Coping Strategies Available 🌟",
+              message: `I've prepared some personalized techniques that might help you feel better. Check them out below!`,
+              duration: 5000,
+            });
+          }, 2000);
         }
       },
       1500 + Math.random() * 1000,
