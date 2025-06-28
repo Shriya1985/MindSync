@@ -6,6 +6,21 @@ const supabaseUrl =
 const supabaseAnonKey =
   import.meta.env.VITE_SUPABASE_ANON_KEY || "your-anon-key";
 
+// Debug: Log configuration (remove in production)
+console.log("Supabase URL:", supabaseUrl);
+console.log(
+  "Supabase Key (first 20 chars):",
+  supabaseAnonKey?.substring(0, 20) + "...",
+);
+
+// Validate configuration
+if (!supabaseUrl || supabaseUrl === "https://your-project.supabase.co") {
+  console.error("❌ VITE_SUPABASE_URL is not set properly in .env file");
+}
+if (!supabaseAnonKey || supabaseAnonKey === "your-anon-key") {
+  console.error("❌ VITE_SUPABASE_ANON_KEY is not set properly in .env file");
+}
+
 // Create Supabase client
 export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
   auth: {
