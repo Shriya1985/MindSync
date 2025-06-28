@@ -69,7 +69,7 @@ export function NotificationSystem() {
   }, [notifications]);
 
   return (
-    <div className="fixed top-8 right-4 z-50 space-y-3 max-w-sm">
+    <div className="fixed top-12 right-4 z-50 space-y-3 max-w-sm">
       {notifications.map((notification) => {
         const IconComponent = notificationIcons[notification.type];
         return (
