@@ -1,138 +1,247 @@
-import {
-  createContext,
-  useContext,
-  useState,
-  useEffect,
-  ReactNode,
-} from "react";
+import { createContext, useContext, useEffect, useState } from "react";
+import { supabase } from "@/lib/supabase";
+import { User, Session } from "@supabase/supabase-js";
+import { showNotification } from "@/components/ui/notification-system";
 
-type User = {
+type AuthUser = {
   id: string;
-  name: string;
   email: string;
+  name: string;
   avatar?: string;
 };
 
 type AuthContextType = {
-  user: User | null;
+  user: AuthUser | null;
+  session: Session | null;
   isAuthenticated: boolean;
   isLoading: boolean;
-  login: (email: string, password: string) => Promise<boolean>;
-  register: (name: string, email: string, password: string) => Promise<boolean>;
-  updateProfile: (updates: Partial<User>) => Promise<boolean>;
-  logout: () => void;
-};
-
-const AuthContext = createContext<AuthContextType | undefined>(undefined);
-
-export function AuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<User | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-
-  // Check for existing authentication on app load
-  useEffect(() => {
-    const savedUser = localStorage.getItem("mindSync_user");
-    if (savedUser) {
-      try {
-        setUser(JSON.parse(savedUser));
-      } catch (error) {
-        console.error("Error parsing saved user:", error);
-        localStorage.removeItem("mindSync_user");
-      }
-    }
-    setIsLoading(false);
-  }, []);
-
-  const login = async (email: string, password: string): Promise<boolean> => {
-    setIsLoading(true);
-
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-
-    // For demo purposes, accept any email/password combination
-    if (email && password) {
-      const userData: User = {
-        id: "demo-user-1",
-        name: email.split("@")[0] || "User",
-        email: email,
-        avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${email}`,
-      };
-
-      setUser(userData);
-      localStorage.setItem("mindSync_user", JSON.stringify(userData));
-      setIsLoading(false);
-      return true;
-    }
-
-    setIsLoading(false);
-    return false;
-  };
-
-  const register = async (
-    name: string,
+  login: (
     email: string,
     password: string,
-  ): Promise<boolean> => {
-    setIsLoading(true);
+  ) => Promise<{ success: boolean; error?: string }>;
+  register: (
+    email: string,
+    password: string,
+    name: string,
+  ) => Promise<{ success: boolean; error?: string }>;
+  logout: () => Promise<void>;
+  updateProfile: (
+    updates: Partial<AuthUser>,
+  ) => Promise<{ success: boolean; error?: string }>;
+};
 
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 1000));
+const AuthContext = createContext<AuthContextType | null>(null);
 
-    // For demo purposes, accept any valid input
-    if (name && email && password) {
-      const userData: User = {
-        id: `demo-user-${Date.now()}`,
-        name: name,
-        email: email,
-        avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${email}`,
+export function AuthProvider({ children }: { children: React.ReactNode }) {
+  const [user, setUser] = useState<AuthUser | null>(null);
+  const [session, setSession] = useState<Session | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+
+  const isAuthenticated = !!user && !!session;
+
+  // Load user profile from database
+  const loadUserProfile = async (userId: string) => {
+    try {
+      const { data, error } = await supabase
+        .from("users")
+        .select("*")
+        .eq("id", userId)
+        .single();
+
+      if (error) {
+        console.error("Error loading user profile:", error);
+        return null;
+      }
+
+      return {
+        id: data.id,
+        email: data.email,
+        name: data.name,
+        avatar: data.avatar,
       };
+    } catch (error) {
+      console.error("Error loading user profile:", error);
+      return null;
+    }
+  };
 
-      setUser(userData);
-      localStorage.setItem("mindSync_user", JSON.stringify(userData));
+  // Initialize auth state
+  useEffect(() => {
+    // Get initial session
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(session);
+      if (session?.user) {
+        loadUserProfile(session.user.id).then(setUser);
+      }
       setIsLoading(false);
-      return true;
+    });
+
+    // Listen for auth changes
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange(async (event, session) => {
+      setSession(session);
+
+      if (session?.user) {
+        const userProfile = await loadUserProfile(session.user.id);
+        setUser(userProfile);
+
+        if (event === "SIGNED_IN") {
+          showNotification({
+            type: "encouragement",
+            title: "Welcome back! 🌟",
+            message:
+              "Great to see you again! Ready to continue your wellness journey?",
+            duration: 4000,
+          });
+        }
+      } else {
+        setUser(null);
+      }
+
+      setIsLoading(false);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
+  const login = async (email: string, password: string) => {
+    try {
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+
+      if (error) {
+        return { success: false, error: error.message };
+      }
+
+      if (data.user) {
+        const userProfile = await loadUserProfile(data.user.id);
+        setUser(userProfile);
+      }
+
+      return { success: true };
+    } catch (error) {
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : "Login failed",
+      };
+    }
+  };
+
+  const register = async (email: string, password: string, name: string) => {
+    try {
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          data: {
+            name: name,
+          },
+        },
+      });
+
+      if (error) {
+        return { success: false, error: error.message };
+      }
+
+      if (data.user) {
+        // Profile will be created automatically by trigger
+        showNotification({
+          type: "achievement",
+          title: "Welcome to MindSync! 🎉",
+          message:
+            "Your account has been created successfully. Start your wellness journey!",
+          duration: 6000,
+        });
+      }
+
+      return { success: true };
+    } catch (error) {
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : "Registration failed",
+      };
+    }
+  };
+
+  const logout = async () => {
+    try {
+      await supabase.auth.signOut();
+      setUser(null);
+      setSession(null);
+
+      showNotification({
+        type: "encouragement",
+        title: "See you soon! 👋",
+        message: "Thanks for taking care of your mental health today.",
+        duration: 3000,
+      });
+    } catch (error) {
+      console.error("Logout error:", error);
+    }
+  };
+
+  const updateProfile = async (updates: Partial<AuthUser>) => {
+    if (!user) {
+      return { success: false, error: "Not authenticated" };
     }
 
-    setIsLoading(false);
-    return false;
+    try {
+      const { error } = await supabase
+        .from("users")
+        .update({
+          name: updates.name,
+          avatar: updates.avatar,
+          updated_at: new Date().toISOString(),
+        })
+        .eq("id", user.id);
+
+      if (error) {
+        return { success: false, error: error.message };
+      }
+
+      // Update local user state
+      setUser((prev) => (prev ? { ...prev, ...updates } : null));
+
+      showNotification({
+        type: "achievement",
+        title: "Profile Updated! ✨",
+        message: "Your profile changes have been saved successfully.",
+        duration: 3000,
+      });
+
+      return { success: true };
+    } catch (error) {
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : "Update failed",
+      };
+    }
   };
 
-  const updateProfile = async (updates: Partial<User>): Promise<boolean> => {
-    if (!user) return false;
-
-    setIsLoading(true);
-
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 500));
-
-    const updatedUser = { ...user, ...updates };
-    setUser(updatedUser);
-    localStorage.setItem("mindSync_user", JSON.stringify(updatedUser));
-    setIsLoading(false);
-    return true;
-  };
-
-  const logout = () => {
-    setUser(null);
-    localStorage.removeItem("mindSync_user");
-  };
-
-  const value: AuthContextType = {
-    user,
-    isAuthenticated: !!user,
-    isLoading,
-    login,
-    register,
-    updateProfile,
-    logout,
-  };
-
-  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+  return (
+    <AuthContext.Provider
+      value={{
+        user,
+        session,
+        isAuthenticated,
+        isLoading,
+        login,
+        register,
+        logout,
+        updateProfile,
+      }}
+    >
+      {children}
+    </AuthContext.Provider>
+  );
 }
 
 export function useAuth() {
   const context = useContext(AuthContext);
-  if (context === undefined) {
+  if (!context) {
     throw new Error("useAuth must be used within an AuthProvider");
   }
   return context;
