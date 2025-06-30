@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
 import { Badge } from "@/components/ui/badge";
 import { useData } from "@/contexts/DataContext";
+import { showNotification } from "@/components/ui/notification-system";
 import {
   Volume2,
   VolumeX,
@@ -217,7 +218,14 @@ export function MoodSoother() {
 
   const playAudio = () => {
     if (audioRef.current) {
-      audioRef.current.play().catch(console.error);
+      audioRef.current.play().catch((error) => {
+        console.warn(
+          "Audio playback failed, generating synthetic sound:",
+          error,
+        );
+        // Fallback: Generate synthetic ambient sound using Web Audio API
+        generateAmbientSound();
+      });
     }
     setIsPlaying(true);
 
@@ -225,6 +233,43 @@ export function MoodSoother() {
     intervalRef.current = setInterval(() => {
       setSessionTime((prev) => prev + 1);
     }, 1000);
+  };
+
+  // Generate synthetic ambient sound using Web Audio API
+  const generateAmbientSound = () => {
+    try {
+      const audioContext = new (window.AudioContext ||
+        (window as any).webkitAudioContext)();
+      const oscillator = audioContext.createOscillator();
+      const gainNode = audioContext.createGain();
+
+      oscillator.connect(gainNode);
+      gainNode.connect(audioContext.destination);
+
+      // Create a gentle, ambient sound
+      oscillator.type = "sine";
+      oscillator.frequency.setValueAtTime(220, audioContext.currentTime); // Low A note
+
+      // Gentle volume
+      gainNode.gain.setValueAtTime(0.1, audioContext.currentTime);
+
+      oscillator.start();
+
+      // Clean up after session
+      setTimeout(() => {
+        oscillator.stop();
+        audioContext.close();
+      }, 30000); // 30 seconds
+    } catch (error) {
+      console.warn("Web Audio API not available:", error);
+      // Ultimate fallback - visual feedback only
+      showNotification({
+        type: "encouragement",
+        title: "🎵 Visual Mode",
+        message: "Audio not available, enjoy the visual experience!",
+        duration: 3000,
+      });
+    }
   };
 
   const pauseAudio = () => {
