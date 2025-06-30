@@ -208,8 +208,7 @@ export function MoodSoother() {
 
   const playAudio = () => {
     setIsPlaying(true);
-    // In a real app, we would play actual audio files
-    // audioRef.current?.play();
+    // Audio functionality disabled - visual only
 
     // Start session timer
     intervalRef.current = setInterval(() => {
@@ -219,7 +218,7 @@ export function MoodSoother() {
 
   const pauseAudio = () => {
     setIsPlaying(false);
-    // audioRef.current?.pause();
+    // Audio functionality disabled - visual only
 
     if (intervalRef.current) {
       clearInterval(intervalRef.current);
@@ -488,13 +487,7 @@ export function MoodSoother() {
           </div>
         </CardContent>
 
-        {/* Hidden audio element for real implementation */}
-        <audio
-          ref={audioRef}
-          loop
-          volume={volume[0] / 100}
-          src={selectedSound?.audioUrl}
-        />
+        {/* Audio functionality disabled - visual experience only */}
       </Card>
     </div>
   );
