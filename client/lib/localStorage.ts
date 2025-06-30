@@ -124,8 +124,11 @@ class LocalStorageService {
     password: string,
     name: string,
   ): { success: boolean; user?: LocalUser; error?: string } {
+    console.log("📝 Registering new user:", email);
+
     // Check if user already exists
     if (this.findUserByEmail(email)) {
+      console.log("❌ User already exists");
       return { success: false, error: "User already exists" };
     }
 
@@ -137,6 +140,7 @@ class LocalStorageService {
       createdAt: new Date().toISOString(),
     };
 
+    console.log("💾 Saving user to localStorage");
     this.addUser(user);
     this.setCurrentUser(user);
 
@@ -149,6 +153,7 @@ class LocalStorageService {
       lastActivity: new Date().toISOString().split("T")[0],
     });
 
+    console.log("✅ Registration successful");
     return { success: true, user };
   }
 
