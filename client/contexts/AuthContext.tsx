@@ -1,5 +1,5 @@
 import { createContext, useContext, useEffect, useState } from "react";
-import { xanoClient, TokenManager, type XanoUser } from "@/lib/xano";
+import { localStorageService, type LocalUser } from "@/lib/localStorage";
 import { showNotification } from "@/components/ui/notification-system";
 
 type AuthUser = {
@@ -36,62 +36,51 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const isAuthenticated = !!user;
 
-  // Convert XanoUser to AuthUser
-  const convertXanoUser = (xanoUser: XanoUser): AuthUser => ({
-    id: xanoUser.id.toString(),
-    email: xanoUser.email,
-    name: xanoUser.name,
-    avatar: xanoUser.avatar,
+  // Convert LocalUser to AuthUser
+  const convertLocalUser = (localUser: LocalUser): AuthUser => ({
+    id: localUser.id,
+    email: localUser.email,
+    name: localUser.name,
+    avatar: localUser.avatar,
   });
 
-  // Initialize auth state
+  // Initialize auth state from localStorage
   useEffect(() => {
-    const initializeAuth = async () => {
-      const token = TokenManager.getToken();
-
-      if (token) {
-        try {
-          const xanoUser = await xanoClient.getProfile();
-          setUser(convertXanoUser(xanoUser));
-        } catch (error) {
-          console.error("Failed to get user profile:", error);
-          TokenManager.removeToken();
-        }
-      }
-
-      setIsLoading(false);
-    };
-
-    initializeAuth();
+    const currentUser = localStorageService.getCurrentUser();
+    if (currentUser) {
+      setUser(convertLocalUser(currentUser));
+    }
+    setIsLoading(false);
   }, []);
 
   const login = async (email: string, password: string) => {
     try {
       console.log("🔐 Attempting login for:", email);
 
-      const response = await xanoClient.login(email, password);
+      const result = localStorageService.login(email, password);
 
-      // Store the auth token
-      TokenManager.setToken(response.authToken);
+      if (!result.success) {
+        return { success: false, error: result.error };
+      }
 
-      // Set user state
-      const authUser = convertXanoUser(response.user);
-      setUser(authUser);
+      if (result.user) {
+        const authUser = convertLocalUser(result.user);
+        setUser(authUser);
 
-      console.log("✅ Login successful for user:", authUser.id);
+        console.log("✅ Login successful for user:", authUser.id);
 
-      showNotification({
-        type: "encouragement",
-        title: "Welcome back! 🌟",
-        message:
-          "Great to see you again! Ready to continue your wellness journey?",
-        duration: 4000,
-      });
+        showNotification({
+          type: "encouragement",
+          title: "Welcome back! 🌟",
+          message:
+            "Great to see you again! Ready to continue your wellness journey?",
+          duration: 4000,
+        });
+      }
 
       return { success: true };
     } catch (error) {
       console.error("❌ Login error:", error);
-
       return {
         success: false,
         error: error instanceof Error ? error.message : "Login failed",
@@ -101,22 +90,24 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const register = async (email: string, password: string, name: string) => {
     try {
-      const response = await xanoClient.signup(email, password, name);
+      const result = localStorageService.register(email, password, name);
 
-      // Store the auth token
-      TokenManager.setToken(response.authToken);
+      if (!result.success) {
+        return { success: false, error: result.error };
+      }
 
-      // Set user state
-      const authUser = convertXanoUser(response.user);
-      setUser(authUser);
+      if (result.user) {
+        const authUser = convertLocalUser(result.user);
+        setUser(authUser);
 
-      showNotification({
-        type: "achievement",
-        title: "Welcome to MindSync! 🎉",
-        message:
-          "Your account has been created successfully. Start your wellness journey!",
-        duration: 6000,
-      });
+        showNotification({
+          type: "achievement",
+          title: "Welcome to MindSync! 🎉",
+          message:
+            "Your account has been created successfully. Start your wellness journey!",
+          duration: 6000,
+        });
+      }
 
       return { success: true };
     } catch (error) {
@@ -129,11 +120,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const logout = async () => {
     try {
-      await xanoClient.logout();
-    } catch (error) {
-      console.error("Logout error:", error);
-    } finally {
-      TokenManager.removeToken();
+      localStorageService.logout();
       setUser(null);
 
       showNotification({
@@ -142,6 +129,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         message: "Thanks for taking care of your mental health today.",
         duration: 3000,
       });
+    } catch (error) {
+      console.error("Logout error:", error);
     }
   };
 
@@ -151,16 +140,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
 
     try {
-      const xanoUpdates = {
-        name: updates.name,
-        avatar: updates.avatar,
-      };
+      const updatedUser = localStorageService.updateUser(user.id, updates);
 
-      const updatedXanoUser = await xanoClient.updateProfile(xanoUpdates);
+      if (!updatedUser) {
+        return { success: false, error: "Failed to update profile" };
+      }
 
       // Update local user state
-      const updatedAuthUser = convertXanoUser(updatedXanoUser);
-      setUser(updatedAuthUser);
+      setUser(convertLocalUser(updatedUser));
 
       showNotification({
         type: "achievement",

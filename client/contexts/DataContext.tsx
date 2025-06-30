@@ -1,5 +1,8 @@
 import { createContext, useContext, useEffect, useState } from "react";
-import { xanoClient } from "@/lib/xano";
+import {
+  localStorageService,
+  generateFakeAIResponse,
+} from "@/lib/localStorage";
 import { useAuth } from "@/contexts/AuthContext";
 import { showNotification } from "@/components/ui/notification-system";
 
@@ -145,142 +148,83 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
   const [isLoading, setIsLoading] = useState(false);
   const [isInitialized, setIsInitialized] = useState(false);
 
-  // Helper function to convert API responses to our types
-  const convertApiTimestamp = (timestamp: any): Date => {
-    if (timestamp instanceof Date) return timestamp;
-    if (typeof timestamp === "string") return new Date(timestamp);
-    if (typeof timestamp === "number") return new Date(timestamp);
-    return new Date();
-  };
-
-  // Load all user data from Xano
+  // Load all user data from localStorage
   const loadUserData = async () => {
     if (!user?.id) return;
 
     setIsLoading(true);
+
     try {
-      // Load all data in parallel
-      const [
-        moodsData,
-        journalsData,
-        chatsData,
-        achievementsData,
-        statsData,
-        questsData,
-        sessionsData,
-      ] = await Promise.all([
-        xanoClient.getMoodEntries(),
-        xanoClient.getJournalEntries(),
-        xanoClient.getChatMessages(),
-        xanoClient.getAchievements(),
-        xanoClient.getUserStats(),
-        xanoClient.getDailyQuests(),
-        xanoClient.getCopingSessions(),
-      ]);
+      // Small delay to simulate loading (for better UX)
+      await new Promise((resolve) => setTimeout(resolve, 300));
 
-      // Process mood entries
-      setMoodEntries(
-        moodsData.map((mood: any) => ({
-          id: mood.id.toString(),
-          date: mood.date,
-          mood: mood.mood,
-          rating: mood.rating,
-          emoji: mood.emoji,
-          source: mood.source,
-          notes: mood.notes,
-        })),
+      // Load user stats
+      const stats = localStorageService.getUserStats(user.id);
+      setUserStats(stats);
+
+      // Load all user data
+      const moods = localStorageService.getUserData<MoodEntry>(
+        user.id,
+        "MOOD_ENTRIES",
+        [],
+      );
+      const journals = localStorageService.getUserData<JournalEntry>(
+        user.id,
+        "JOURNAL_ENTRIES",
+        [],
+      );
+      const chats = localStorageService.getUserData<any>(
+        user.id,
+        "CHAT_MESSAGES",
+        [],
+      );
+      const achievementsData = localStorageService.getUserData<any>(
+        user.id,
+        "ACHIEVEMENTS",
+        [],
+      );
+      const quests = localStorageService.getUserData<any>(
+        user.id,
+        "DAILY_QUESTS",
+        [],
+      );
+      const sessions = localStorageService.getUserData<any>(
+        user.id,
+        "COPING_SESSIONS",
+        [],
       );
 
-      // Process journal entries
-      setJournalEntries(
-        journalsData.map((journal: any) => ({
-          id: journal.id.toString(),
-          date: journal.date,
-          title: journal.title,
-          content: journal.content,
-          sentiment: journal.sentiment,
-          wordCount: journal.word_count || journal.wordCount || 0,
-          tags: journal.tags || [],
-        })),
+      // Convert timestamp strings back to Date objects where needed
+      const convertedChats = chats.map((chat: any) => ({
+        ...chat,
+        timestamp: new Date(chat.timestamp),
+      }));
+
+      const convertedAchievements = achievementsData.map(
+        (achievement: any) => ({
+          ...achievement,
+          earnedAt: new Date(achievement.earnedAt),
+        }),
       );
 
-      // Process chat messages
-      setChatMessages(
-        chatsData.map((chat: any) => ({
-          id: chat.id.toString(),
-          content: chat.content,
-          sender: chat.sender,
-          timestamp: convertApiTimestamp(chat.timestamp || chat.created_at),
-          sentiment: chat.sentiment,
-          mood: chat.mood,
-          emotionalState: chat.emotional_state || chat.emotionalState,
-        })),
-      );
+      const convertedQuests = quests.map((quest: any) => ({
+        ...quest,
+        completedAt: quest.completedAt
+          ? new Date(quest.completedAt)
+          : undefined,
+      }));
 
-      // Process achievements
-      setAchievements(
-        achievementsData.map((achievement: any) => ({
-          id: achievement.id.toString(),
-          type: achievement.achievement_type || achievement.type,
-          achievementId:
-            achievement.achievement_id || achievement.achievementId,
-          title: achievement.title,
-          description: achievement.description,
-          icon: achievement.icon,
-          rarity: achievement.rarity,
-          earnedAt: convertApiTimestamp(
-            achievement.earned_at || achievement.earnedAt,
-          ),
-          metadata: achievement.metadata,
-        })),
-      );
+      setMoodEntries(moods);
+      setJournalEntries(journals);
+      setChatMessages(convertedChats);
+      setAchievements(convertedAchievements);
+      setDailyQuests(convertedQuests);
+      setCopingSessions(sessions);
 
-      // Process user stats
-      if (statsData) {
-        setUserStats({
-          level: statsData.level || 1,
-          points: statsData.points || 0,
-          currentStreak:
-            statsData.current_streak || statsData.currentStreak || 0,
-          longestStreak:
-            statsData.longest_streak || statsData.longestStreak || 0,
-          lastActivity:
-            statsData.last_activity ||
-            statsData.lastActivity ||
-            new Date().toISOString().split("T")[0],
-        });
+      // Generate daily quests if none exist for today
+      if (quests.length === 0) {
+        await generateDailyQuests();
       }
-
-      // Process daily quests
-      setDailyQuests(
-        questsData.map((quest: any) => ({
-          id: quest.id.toString(),
-          questId: quest.quest_id || quest.questId,
-          title: quest.title,
-          description: quest.description,
-          category: quest.category,
-          xpReward: quest.xp_reward || quest.xpReward || 0,
-          completedAt:
-            quest.completed_at || quest.completedAt
-              ? convertApiTimestamp(quest.completed_at || quest.completedAt)
-              : undefined,
-          date: quest.date,
-        })),
-      );
-
-      // Process coping sessions
-      setCopingSessions(
-        sessionsData.map((session: any) => ({
-          id: session.id.toString(),
-          strategyId: session.strategy_id || session.strategyId,
-          strategyTitle: session.strategy_title || session.strategyTitle,
-          durationSeconds:
-            session.duration_seconds || session.durationSeconds || 0,
-          completed: session.completed || false,
-          xpEarned: session.xp_earned || session.xpEarned || 0,
-          sessionDate: session.session_date || session.sessionDate,
-        })),
-      );
     } catch (error) {
       console.error("Error loading user data:", error);
     } finally {
@@ -316,78 +260,52 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
   const addMoodEntry = async (entry: Omit<MoodEntry, "id">) => {
     if (!user?.id) return;
 
-    try {
-      const newEntry = await xanoClient.createMoodEntry(entry);
+    const newEntry: MoodEntry = {
+      ...entry,
+      id: localStorageService.generateId(),
+    };
 
-      const moodEntry: MoodEntry = {
-        id: newEntry.id.toString(),
-        date: newEntry.date,
-        mood: newEntry.mood,
-        rating: newEntry.rating,
-        emoji: newEntry.emoji,
-        source: newEntry.source,
-        notes: newEntry.notes,
-      };
+    localStorageService.addUserDataItem(user.id, "MOOD_ENTRIES", newEntry);
+    setMoodEntries((prev) => [newEntry, ...prev]);
 
-      setMoodEntries((prev) => [moodEntry, ...prev]);
-      await addPoints(5, "Mood check-in");
-      await updateStreak();
-    } catch (error) {
-      console.error("Error adding mood entry:", error);
-    }
+    await addPoints(5, "Mood check-in");
+    await updateStreak();
   };
 
   const updateMoodEntry = async (id: string, updates: Partial<MoodEntry>) => {
     if (!user?.id) return;
 
-    try {
-      await xanoClient.updateMoodEntry(id, updates);
-      setMoodEntries((prev) =>
-        prev.map((entry) =>
-          entry.id === id ? { ...entry, ...updates } : entry,
-        ),
-      );
-    } catch (error) {
-      console.error("Error updating mood entry:", error);
-    }
+    localStorageService.updateUserDataItem(
+      user.id,
+      "MOOD_ENTRIES",
+      id,
+      updates,
+    );
+    setMoodEntries((prev) =>
+      prev.map((entry) => (entry.id === id ? { ...entry, ...updates } : entry)),
+    );
   };
 
   const deleteMoodEntry = async (id: string) => {
     if (!user?.id) return;
 
-    try {
-      await xanoClient.deleteMoodEntry(id);
-      setMoodEntries((prev) => prev.filter((entry) => entry.id !== id));
-    } catch (error) {
-      console.error("Error deleting mood entry:", error);
-    }
+    localStorageService.deleteUserDataItem(user.id, "MOOD_ENTRIES", id);
+    setMoodEntries((prev) => prev.filter((entry) => entry.id !== id));
   };
 
   // Journal functions
   const addJournalEntry = async (entry: Omit<JournalEntry, "id">) => {
     if (!user?.id) return;
 
-    try {
-      const newEntry = await xanoClient.createJournalEntry({
-        ...entry,
-        word_count: entry.wordCount,
-      });
+    const newEntry: JournalEntry = {
+      ...entry,
+      id: localStorageService.generateId(),
+    };
 
-      const journalEntry: JournalEntry = {
-        id: newEntry.id.toString(),
-        date: newEntry.date,
-        title: newEntry.title,
-        content: newEntry.content,
-        sentiment: newEntry.sentiment,
-        wordCount: newEntry.word_count || newEntry.wordCount || 0,
-        tags: newEntry.tags || [],
-      };
+    localStorageService.addUserDataItem(user.id, "JOURNAL_ENTRIES", newEntry);
+    setJournalEntries((prev) => [newEntry, ...prev]);
 
-      setJournalEntries((prev) => [journalEntry, ...prev]);
-      await addPoints(10, "Journal entry");
-    } catch (error) {
-      console.error("Error adding journal entry:", error);
-    }
+    await addPoints(10, "Journal entry");
   };
 
   const updateJournalEntry = async (
@@ -396,62 +314,74 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
   ) => {
     if (!user?.id) return;
 
-    try {
-      const apiUpdates = { ...updates };
-      if (updates.wordCount !== undefined) {
-        (apiUpdates as any).word_count = updates.wordCount;
-      }
-
-      await xanoClient.updateJournalEntry(id, apiUpdates);
-      setJournalEntries((prev) =>
-        prev.map((entry) =>
-          entry.id === id ? { ...entry, ...updates } : entry,
-        ),
-      );
-    } catch (error) {
-      console.error("Error updating journal entry:", error);
-    }
+    localStorageService.updateUserDataItem(
+      user.id,
+      "JOURNAL_ENTRIES",
+      id,
+      updates,
+    );
+    setJournalEntries((prev) =>
+      prev.map((entry) => (entry.id === id ? { ...entry, ...updates } : entry)),
+    );
   };
 
   const deleteJournalEntry = async (id: string) => {
     if (!user?.id) return;
 
-    try {
-      await xanoClient.deleteJournalEntry(id);
-      setJournalEntries((prev) => prev.filter((entry) => entry.id !== id));
-    } catch (error) {
-      console.error("Error deleting journal entry:", error);
-    }
+    localStorageService.deleteUserDataItem(user.id, "JOURNAL_ENTRIES", id);
+    setJournalEntries((prev) => prev.filter((entry) => entry.id !== id));
   };
 
   // Chat functions
   const addChatMessage = async (message: Omit<ChatMessage, "id">) => {
     if (!user?.id) return;
 
-    try {
-      const newMessage = await xanoClient.createChatMessage({
-        ...message,
-        timestamp: message.timestamp.toISOString(),
-        emotional_state: message.emotionalState,
-      });
+    const newMessage: ChatMessage = {
+      ...message,
+      id: localStorageService.generateId(),
+    };
 
-      const chatMessage: ChatMessage = {
-        id: newMessage.id.toString(),
-        content: newMessage.content,
-        sender: newMessage.sender,
-        timestamp: convertApiTimestamp(newMessage.timestamp),
-        sentiment: newMessage.sentiment,
-        mood: newMessage.mood,
-        emotionalState: newMessage.emotional_state || newMessage.emotionalState,
-      };
+    // Convert Date to string for storage
+    const storageMessage = {
+      ...newMessage,
+      timestamp: newMessage.timestamp.toISOString(),
+    };
 
-      setChatMessages((prev) => [chatMessage, ...prev.slice(0, 99)]);
+    localStorageService.addUserDataItem(
+      user.id,
+      "CHAT_MESSAGES",
+      storageMessage,
+    );
+    setChatMessages((prev) => [newMessage, ...prev.slice(0, 99)]); // Keep only last 100 messages
 
-      if (message.sender === "user") {
-        await addPoints(2, "Chat interaction");
-      }
-    } catch (error) {
-      console.error("Error adding chat message:", error);
+    if (message.sender === "user") {
+      await addPoints(2, "Chat interaction");
+
+      // Simulate AI response after a delay
+      setTimeout(
+        async () => {
+          const aiResponse: ChatMessage = {
+            id: localStorageService.generateId(),
+            content: generateFakeAIResponse(message.content, message.mood),
+            sender: "ai",
+            timestamp: new Date(),
+            sentiment: "positive", // Most AI responses are supportive
+          };
+
+          const aiStorageMessage = {
+            ...aiResponse,
+            timestamp: aiResponse.timestamp.toISOString(),
+          };
+
+          localStorageService.addUserDataItem(
+            user.id,
+            "CHAT_MESSAGES",
+            aiStorageMessage,
+          );
+          setChatMessages((prev) => [aiResponse, ...prev.slice(0, 99)]);
+        },
+        1500 + Math.random() * 1000,
+      ); // Random delay between 1.5-2.5 seconds
     }
   };
 
@@ -459,129 +389,102 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
   const addAchievement = async (achievement: Omit<Achievement, "id">) => {
     if (!user?.id) return;
 
-    try {
-      const newAchievement = await xanoClient.createAchievement({
-        achievement_type: achievement.type,
-        achievement_id: achievement.achievementId,
-        title: achievement.title,
-        description: achievement.description,
-        icon: achievement.icon,
-        rarity: achievement.rarity,
-        earned_at: achievement.earnedAt.toISOString(),
-        metadata: achievement.metadata,
-      });
+    const newAchievement: Achievement = {
+      ...achievement,
+      id: localStorageService.generateId(),
+    };
 
-      const achievementEntry: Achievement = {
-        id: newAchievement.id.toString(),
-        type: newAchievement.achievement_type || newAchievement.type,
-        achievementId:
-          newAchievement.achievement_id || newAchievement.achievementId,
-        title: newAchievement.title,
-        description: newAchievement.description,
-        icon: newAchievement.icon,
-        rarity: newAchievement.rarity,
-        earnedAt: convertApiTimestamp(
-          newAchievement.earned_at || newAchievement.earnedAt,
-        ),
-        metadata: newAchievement.metadata,
-      };
+    // Convert Date to string for storage
+    const storageAchievement = {
+      ...newAchievement,
+      earnedAt: newAchievement.earnedAt.toISOString(),
+    };
 
-      setAchievements((prev) => [achievementEntry, ...prev]);
+    localStorageService.addUserDataItem(
+      user.id,
+      "ACHIEVEMENTS",
+      storageAchievement,
+    );
+    setAchievements((prev) => [newAchievement, ...prev]);
 
-      showNotification({
-        type: "achievement",
-        title: `${achievement.icon} Achievement Unlocked!`,
-        message: `${achievement.title} - ${achievement.description}`,
-        duration: 5000,
-      });
-    } catch (error) {
-      console.error("Error adding achievement:", error);
-    }
+    showNotification({
+      type: "achievement",
+      title: `${achievement.icon} Achievement Unlocked!`,
+      message: `${achievement.title} - ${achievement.description}`,
+      duration: 5000,
+    });
   };
 
   // Stats functions
   const addPoints = async (points: number, reason: string) => {
     if (!user?.id) return;
 
-    try {
-      const newPoints = userStats.points + points;
-      const newLevel = Math.floor(newPoints / 100) + 1;
+    const newPoints = userStats.points + points;
+    const newLevel = Math.floor(newPoints / 100) + 1;
+    const oldLevel = userStats.level;
 
-      const updatedStats = await xanoClient.updateUserStats({
-        points: newPoints,
-        level: newLevel,
+    const updatedStats = {
+      ...userStats,
+      points: newPoints,
+      level: newLevel,
+    };
+
+    localStorageService.setUserStats(user.id, updatedStats);
+    setUserStats(updatedStats);
+
+    // Check for level up
+    if (newLevel > oldLevel) {
+      await addAchievement({
+        type: "level",
+        achievementId: `level_${newLevel}`,
+        title: "Level Up!",
+        description: `Reached level ${newLevel}`,
+        icon: "🎉",
+        rarity: "common",
+        earnedAt: new Date(),
       });
-
-      const oldLevel = userStats.level;
-      setUserStats((prev) => ({
-        ...prev,
-        points: newPoints,
-        level: newLevel,
-      }));
-
-      // Check for level up
-      if (newLevel > oldLevel) {
-        await addAchievement({
-          type: "level",
-          achievementId: `level_${newLevel}`,
-          title: "Level Up!",
-          description: `Reached level ${newLevel}`,
-          icon: "🎉",
-          rarity: "common",
-          earnedAt: new Date(),
-        });
-      }
-    } catch (error) {
-      console.error("Error adding points:", error);
     }
   };
 
   const updateStreak = async () => {
     if (!user?.id) return;
 
-    try {
-      const today = new Date().toISOString().split("T")[0];
-      const yesterday = new Date();
-      yesterday.setDate(yesterday.getDate() - 1);
-      const yesterdayStr = yesterday.toISOString().split("T")[0];
+    const today = new Date().toISOString().split("T")[0];
+    const yesterday = new Date();
+    yesterday.setDate(yesterday.getDate() - 1);
+    const yesterdayStr = yesterday.toISOString().split("T")[0];
 
-      let newStreak = 1;
+    let newStreak = 1;
 
-      if (userStats.lastActivity === yesterdayStr) {
-        newStreak = userStats.currentStreak + 1;
-      } else if (userStats.lastActivity === today) {
-        return; // Already updated today
-      }
+    if (userStats.lastActivity === yesterdayStr) {
+      newStreak = userStats.currentStreak + 1;
+    } else if (userStats.lastActivity === today) {
+      return; // Already updated today
+    }
 
-      const newLongestStreak = Math.max(userStats.longestStreak, newStreak);
+    const newLongestStreak = Math.max(userStats.longestStreak, newStreak);
 
-      await xanoClient.updateUserStats({
-        current_streak: newStreak,
-        longest_streak: newLongestStreak,
-        last_activity: today,
+    const updatedStats = {
+      ...userStats,
+      currentStreak: newStreak,
+      longestStreak: newLongestStreak,
+      lastActivity: today,
+    };
+
+    localStorageService.setUserStats(user.id, updatedStats);
+    setUserStats(updatedStats);
+
+    // Check for streak achievements
+    if (newStreak === 7) {
+      await addAchievement({
+        type: "streak",
+        achievementId: "streak_7",
+        title: "Weekly Warrior",
+        description: "7 day streak!",
+        icon: "🔥",
+        rarity: "rare",
+        earnedAt: new Date(),
       });
-
-      setUserStats((prev) => ({
-        ...prev,
-        currentStreak: newStreak,
-        longestStreak: newLongestStreak,
-        lastActivity: today,
-      }));
-
-      // Check for streak achievements
-      if (newStreak === 7) {
-        await addAchievement({
-          type: "streak",
-          achievementId: "streak_7",
-          title: "Weekly Warrior",
-          description: "7 day streak!",
-          icon: "🔥",
-          rarity: "rare",
-          earnedAt: new Date(),
-        });
-      }
-    } catch (error) {
-      console.error("Error updating streak:", error);
     }
   };
 
@@ -594,59 +497,94 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
   const completeQuest = async (questId: string, xpReward: number) => {
     if (!user?.id) return;
 
-    try {
-      await xanoClient.completeDailyQuest(questId);
+    const questData = {
+      completedAt: new Date().toISOString(),
+    };
 
-      setDailyQuests((prev) =>
-        prev.map((quest) =>
-          quest.questId === questId
-            ? { ...quest, completedAt: new Date() }
-            : quest,
-        ),
-      );
+    localStorageService.updateUserDataItem(
+      user.id,
+      "DAILY_QUESTS",
+      questId,
+      questData,
+    );
 
-      await addPoints(xpReward, `Completed quest: ${questId}`);
-    } catch (error) {
-      console.error("Error completing quest:", error);
-    }
+    setDailyQuests((prev) =>
+      prev.map((quest) =>
+        quest.questId === questId
+          ? { ...quest, completedAt: new Date() }
+          : quest,
+      ),
+    );
+
+    await addPoints(xpReward, `Completed quest: ${questId}`);
   };
 
   const generateDailyQuests = async () => {
-    // Implementation depends on Xano API structure
+    if (!user?.id) return;
+
+    const today = new Date().toISOString().split("T")[0];
+
+    // Sample daily quests
+    const questTemplates = [
+      {
+        questId: "gratitude-three",
+        title: "Gratitude Practice",
+        description: "Write down 3 things you're grateful for today",
+        category: "gratitude",
+        xpReward: 15,
+      },
+      {
+        questId: "mindful-breathing",
+        title: "Mindful Breathing",
+        description: "Take 5 deep, conscious breaths",
+        category: "mindfulness",
+        xpReward: 10,
+      },
+      {
+        questId: "mood-check",
+        title: "Mood Check-In",
+        description: "Log your current mood and reflect on what influenced it",
+        category: "mindfulness",
+        xpReward: 10,
+      },
+      {
+        questId: "journal-reflection",
+        title: "Daily Reflection",
+        description: "Write about your day for at least 100 words",
+        category: "mindfulness",
+        xpReward: 20,
+      },
+    ];
+
+    // Create 3-4 random quests for today
+    const todaysQuests = questTemplates
+      .sort(() => Math.random() - 0.5)
+      .slice(0, 3)
+      .map((template) => ({
+        ...template,
+        id: localStorageService.generateId(),
+        date: today,
+        completedAt: undefined,
+      }));
+
+    localStorageService.setUserData(user.id, "DAILY_QUESTS", todaysQuests);
+    setDailyQuests(todaysQuests);
   };
 
   // Coping session functions
   const addCopingSession = async (session: Omit<CopingSession, "id">) => {
     if (!user?.id) return;
 
-    try {
-      const newSession = await xanoClient.createCopingSession({
-        strategy_id: session.strategyId,
-        strategy_title: session.strategyTitle,
-        duration_seconds: session.durationSeconds,
-        completed: session.completed,
-        xp_earned: session.xpEarned,
-        session_date: session.sessionDate,
-      });
+    const newSession: CopingSession = {
+      ...session,
+      id: localStorageService.generateId(),
+    };
 
-      const copingSession: CopingSession = {
-        id: newSession.id.toString(),
-        strategyId: newSession.strategy_id || newSession.strategyId,
-        strategyTitle: newSession.strategy_title || newSession.strategyTitle,
-        durationSeconds:
-          newSession.duration_seconds || newSession.durationSeconds,
-        completed: newSession.completed,
-        xpEarned: newSession.xp_earned || newSession.xpEarned,
-        sessionDate: newSession.session_date || newSession.sessionDate,
-      };
+    localStorageService.addUserDataItem(user.id, "COPING_SESSIONS", newSession);
+    setCopingSessions((prev) => [newSession, ...prev]);
 
-      setCopingSessions((prev) => [copingSession, ...prev]);
-
-      if (session.completed) {
-        await addPoints(session.xpEarned, "Completed coping session");
-      }
-    } catch (error) {
-      console.error("Error adding coping session:", error);
+    if (session.completed) {
+      await addPoints(session.xpEarned, "Completed coping session");
     }
   };
 
@@ -659,10 +597,19 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
     return {
       moodEntries,
       journalEntries,
-      chatMessages,
-      achievements,
+      chatMessages: chatMessages.map((msg) => ({
+        ...msg,
+        timestamp: msg.timestamp.toISOString(),
+      })),
+      achievements: achievements.map((ach) => ({
+        ...ach,
+        earnedAt: ach.earnedAt.toISOString(),
+      })),
       userStats,
-      dailyQuests,
+      dailyQuests: dailyQuests.map((quest) => ({
+        ...quest,
+        completedAt: quest.completedAt?.toISOString(),
+      })),
       copingSessions,
       exportedAt: new Date().toISOString(),
     };
