@@ -6,6 +6,7 @@ import { useState } from "react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
 import { useData } from "@/contexts/DataContext";
+import { useTheme } from "@/contexts/ThemeContext";
 
 const navigation = [
   { name: "Home", href: "/" },
