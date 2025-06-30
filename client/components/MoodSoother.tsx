@@ -556,6 +556,18 @@ export function MoodSoother() {
               audioRef.current.volume = volume[0] / 100;
             }
           }}
+          onError={(e) => {
+            console.warn("Audio loading failed:", e);
+            showNotification({
+              type: "encouragement",
+              title: "🎵 Visual Mode",
+              message: "Audio not available, enjoy the visual experience!",
+              duration: 3000,
+            });
+          }}
+          onCanPlay={() => {
+            console.log("Audio ready to play");
+          }}
         />
       </Card>
     </div>
