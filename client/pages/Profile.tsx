@@ -47,7 +47,7 @@ export default function Profile() {
   });
 
   const { user, updateProfile, logout } = useAuth();
-  const { userStats, moodEntries, journalEntries } = useData();
+  const { userStats, moodEntries, journalEntries, achievements } = useData();
 
   // Initialize form data with user info
   useEffect(() => {
@@ -259,7 +259,7 @@ export default function Profile() {
                       </span>
                     </div>
                     <span className="font-semibold">
-                      {userStats.achievements.filter((a) => a.earned).length}
+                      {achievements?.length || 0}
                     </span>
                   </div>
                 </div>
@@ -626,10 +626,7 @@ export default function Profile() {
                           </div>
                           <div>
                             <div className="text-2xl font-bold text-purple-600">
-                              {
-                                userStats.achievements.filter((a) => a.earned)
-                                  .length
-                              }
+                              {achievements?.length || 0}
                             </div>
                             <div className="text-sm text-gray-600">
                               Achievements
