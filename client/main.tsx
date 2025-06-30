@@ -37,6 +37,7 @@ const App = () => (
           <ThemeProvider>
             <BrowserRouter>
               <NotificationSystem />
+              <ThemeStatus />
               <Routes>
                 <Route path="/" element={<Index />} />
                 <Route
