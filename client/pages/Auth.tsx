@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { showNotification } from "@/components/ui/notification-system";
@@ -56,10 +56,16 @@ export default function Auth() {
   const navigate = useNavigate();
   const location = useLocation();
 
-  // Redirect if already authenticated
+  // Redirect if already authenticated - using useEffect to avoid setState during render
+  useEffect(() => {
+    if (isAuthenticated) {
+      const from = location.state?.from?.pathname || "/dashboard";
+      navigate(from, { replace: true });
+    }
+  }, [isAuthenticated, navigate, location.state?.from?.pathname]);
+
+  // Don't render the form if user is authenticated
   if (isAuthenticated) {
-    const from = location.state?.from?.pathname || "/dashboard";
-    navigate(from, { replace: true });
     return null;
   }
 
