@@ -6,6 +6,13 @@ import { MoodSoother } from "@/components/MoodSoother";
 import { MoodPlaylists } from "@/components/MoodPlaylists";
 import { DailyAffirmation } from "@/components/DailyAffirmation";
 import { EmotionEncyclopedia } from "@/components/EmotionEncyclopedia";
+import { VoiceJournaling } from "@/components/VoiceJournaling";
+import { SelfCareTaskGenerator } from "@/components/SelfCareTaskGenerator";
+import { AccessibilitySettings } from "@/components/AccessibilitySettings";
+import { MoodResponsiveUI } from "@/components/MoodResponsiveUI";
+import { AIChatModes } from "@/components/AIChatModes";
+import { DailyQuotes } from "@/components/DailyQuotes";
+import { MoodReactions } from "@/components/MoodReactions";
 import { useMoodTheme } from "@/hooks/useMoodTheme";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -334,6 +341,24 @@ export default function Resources() {
         {/* Wellness Tools Tab */}
         {activeTab === "wellness" && (
           <div className="space-y-8">
+            {/* Daily Inspiration */}
+            <DailyQuotes />
+
+            {/* Mood Reactions */}
+            <MoodReactions />
+
+            {/* AI Chat Modes */}
+            <AIChatModes />
+
+            {/* Voice Journaling */}
+            <VoiceJournaling />
+
+            {/* Self-Care Task Generator */}
+            <SelfCareTaskGenerator />
+
+            {/* Mood-Responsive UI */}
+            <MoodResponsiveUI />
+
             {/* Daily Affirmation */}
             <DailyAffirmation />
 
@@ -348,6 +373,9 @@ export default function Resources() {
 
             {/* Emotion Encyclopedia */}
             <EmotionEncyclopedia />
+
+            {/* Accessibility Settings */}
+            <AccessibilitySettings />
           </div>
         )}
 
