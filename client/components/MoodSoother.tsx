@@ -178,6 +178,15 @@ export function MoodSoother() {
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
   const { moodEntries } = useData();
 
+  // Update audio source and volume when sound or volume changes
+  useEffect(() => {
+    if (audioRef.current && selectedSound) {
+      audioRef.current.src = selectedSound.audioUrl;
+      audioRef.current.loop = true;
+      audioRef.current.volume = volume[0] / 100;
+    }
+  }, [selectedSound, volume]);
+
   useEffect(() => {
     // Auto-select scene and sound based on recent mood
     const recentMood = moodEntries[0];
@@ -188,7 +197,7 @@ export function MoodSoother() {
         setSelectedScene(visualScenes.find((s) => s.id === "ocean-sunset")!);
       } else if (recentMood.rating >= 8) {
         // High mood - energetic
-        setSelectedSound(ambientSounds.find((s) => s.id === "birds-chirping")!);
+        setSelectedSound(ambientSounds.find((s) => s.id === "forest-birds")!);
         setSelectedScene(visualScenes.find((s) => s.id === "spring-meadow")!);
       } else {
         // Neutral mood - peaceful
