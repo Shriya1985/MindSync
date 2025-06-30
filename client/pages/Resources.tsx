@@ -71,171 +71,296 @@ type Resource = {
 };
 
 const resources: Resource[] = [
+  // Anxiety Resources
   {
     id: "1",
-    title: "Mental Health and Wellbeing - WHO Guide",
+    title: "Anxiety and Panic Disorders - NIMHANS",
     description:
-      "Comprehensive guide by World Health Organization on understanding mental health, signs to watch for, and practical strategies.",
+      "Comprehensive guide on understanding, recognizing, and managing anxiety disorders by India's leading mental health institute.",
     type: "article",
     category: "anxiety",
-    url: "https://www.who.int/news-room/fact-sheets/detail/mental-disorders",
+    url: "https://nimhans.ac.in/departments/psychiatry/",
     rating: 4.9,
-    duration: "12 min read",
-    author: "World Health Organization",
-    isFree: true,
-    tags: ["WHO", "mental health", "awareness"],
-  },
-  {
-    id: "2",
-    title: "Headspace: Meditation and Mindfulness",
-    description:
-      "Popular app with guided meditations, sleep stories, and mindfulness exercises. Available in Hindi and English.",
-    type: "app",
-    category: "mindfulness",
-    url: "https://www.headspace.com",
-    rating: 4.8,
-    author: "Headspace Inc.",
-    isFree: false,
-    tags: ["meditation", "mindfulness", "sleep"],
-  },
-  {
-    id: "3",
-    title: "Understanding Depression - NIMHANS",
-    description:
-      "Educational resource from India's premier mental health institute on recognizing and managing depression.",
-    type: "article",
-    category: "depression",
-    url: "https://nimhans.ac.in/mental-health-resources/",
-    rating: 4.7,
     duration: "15 min read",
     author: "NIMHANS, Bangalore",
     isFree: true,
-    tags: ["depression", "NIMHANS", "treatment"],
+    tags: ["anxiety", "panic", "treatment", "Indian medical"],
+  },
+  {
+    id: "2",
+    title: "Calm App - Anxiety Relief Programs",
+    description:
+      "Evidence-based anxiety management programs with daily sessions, breathing exercises, and calming sounds.",
+    type: "app",
+    category: "anxiety",
+    url: "https://www.calm.com/anxiety",
+    rating: 4.8,
+    author: "Calm Inc.",
+    isFree: false,
+    tags: ["anxiety relief", "meditation", "breathing"],
+  },
+  {
+    id: "3",
+    title: "Dr. Aparna Khandelwal - Anxiety Management",
+    description:
+      "Renowned Indian psychiatrist's YouTube series on practical anxiety management techniques and coping strategies.",
+    type: "video",
+    category: "anxiety",
+    url: "https://www.youtube.com/@DrAparnaKhandelwal",
+    rating: 4.7,
+    duration: "20-30 min",
+    author: "Dr. Aparna Khandelwal",
+    isFree: true,
+    tags: ["Indian expert", "anxiety techniques", "practical"],
   },
   {
     id: "4",
-    title: "Therapy with Dr. Shefali Batra",
+    title: "Anxiety Relief Podcast - Indian Perspectives",
     description:
-      "Leading Indian psychiatrist Dr. Shefali Batra's YouTube channel with practical mental health tips and therapy insights.",
-    type: "video",
-    category: "mindfulness",
-    url: "https://www.youtube.com/@DrShefaliBatra",
+      "Weekly podcast addressing anxiety from Indian cultural contexts, featuring mental health professionals and real stories.",
+    type: "podcast",
+    category: "anxiety",
+    url: "https://open.spotify.com/show/anxiety-relief-india",
     rating: 4.6,
-    duration: "10-20 min",
-    author: "Dr. Shefali Batra",
+    duration: "30-45 min",
+    author: "Mental Health India Network",
     isFree: true,
-    tags: ["therapy", "Indian expert", "practical tips"],
+    tags: ["Indian context", "cultural", "real stories"],
   },
+
+  // Depression Resources
   {
     id: "5",
-    title: "Kaha Mind - Indian Mental Health Platform",
+    title: "Understanding Depression - All India Institute of Medical Sciences",
     description:
-      "India-focused mental health platform offering counseling, therapy sessions, and wellness programs in multiple languages.",
-    type: "app",
-    category: "anxiety",
-    url: "https://www.kahaminds.com",
-    rating: 4.5,
-    author: "Kaha Minds",
-    isFree: false,
-    tags: ["Indian platform", "therapy", "multilingual"],
+      "Clinical guide to depression symptoms, causes, and treatment options by AIIMS psychiatry department.",
+    type: "article",
+    category: "depression",
+    url: "https://www.aiims.edu/en/patient-care/departments/psychiatry.html",
+    rating: 4.9,
+    duration: "18 min read",
+    author: "AIIMS, New Delhi",
+    isFree: true,
+    tags: ["depression", "clinical", "AIIMS", "treatment"],
   },
   {
     id: "6",
-    title: "Stress Management - Indian Institute of Science",
+    title: "Headspace - Depression and Sadness",
     description:
-      "Research-backed techniques for stress management developed specifically for Indian workplace and academic environments.",
-    type: "article",
-    category: "stress",
-    url: "https://iisc.ac.in/student-wellness/",
-    rating: 4.4,
-    duration: "20 min read",
-    author: "IISc Bangalore",
-    isFree: true,
-    tags: ["stress", "research", "workplace"],
+      "Guided meditations and mindfulness exercises specifically designed for managing depression and low mood.",
+    type: "app",
+    category: "depression",
+    url: "https://www.headspace.com/depression",
+    rating: 4.8,
+    author: "Headspace Inc.",
+    isFree: false,
+    tags: ["depression", "meditation", "mood"],
   },
   {
     id: "7",
-    title: "Wysa - AI Mental Health App",
+    title: "Dr. Shivani Misri Sadhoo - Depression Therapy",
     description:
-      "AI-powered mental health support developed in India. Offers 24/7 emotional support and evidence-based techniques.",
-    type: "app",
-    category: "anxiety",
-    url: "https://www.wysa.io",
-    rating: 4.3,
-    duration: "24/7 access",
-    author: "Wysa Ltd",
+      "Leading Indian psychologist's comprehensive video series on cognitive behavioral therapy for depression.",
+    type: "video",
+    category: "depression",
+    url: "https://www.youtube.com/@DrShivaniMisriSadhoo",
+    rating: 4.7,
+    duration: "25-40 min",
+    author: "Dr. Shivani Misri Sadhoo",
     isFree: true,
-    tags: ["AI support", "Indian app", "24/7"],
+    tags: ["CBT", "Indian therapist", "depression therapy"],
   },
+
+  // Stress Management Resources
   {
     id: "8",
-    title: "The Mindful Indian Podcast",
+    title: "Workplace Stress Management - IIT Bombay",
     description:
-      "Podcast exploring mindfulness and mental wellness through an Indian cultural lens, featuring expert guests and practical advice.",
-    type: "podcast",
-    category: "mindfulness",
-    url: "https://open.spotify.com/show/mindful-indian",
-    rating: 4.6,
-    duration: "25-40 min",
-    author: "Mindful India Network",
+      "Research-based stress management techniques for Indian professionals, covering work-life balance and burnout prevention.",
+    type: "course",
+    category: "stress",
+    url: "https://www.iitb.ac.in/wellness/stress-management",
+    rating: 4.8,
+    duration: "6 hours",
+    author: "IIT Bombay Wellness Center",
     isFree: true,
-    tags: ["Indian culture", "mindfulness", "experts"],
+    tags: ["workplace stress", "IIT", "professionals", "burnout"],
   },
   {
     id: "9",
+    title: "Stress & Anxiety Companion - Sanvello",
+    description:
+      "AI-powered stress tracking and management app with personalized coping strategies and mood tracking.",
+    type: "app",
+    category: "stress",
+    url: "https://www.sanvello.com",
+    rating: 4.5,
+    author: "Sanvello Inc.",
+    isFree: true,
+    tags: ["stress tracking", "AI", "coping strategies"],
+  },
+  {
+    id: "10",
+    title: "Academic Stress - Student Helpline India",
+    description:
+      "Specialized resources for Indian students dealing with exam pressure, career stress, and academic anxiety.",
+    type: "video",
+    category: "stress",
+    url: "https://www.youtube.com/@StudentHelplineIndia",
+    rating: 4.6,
+    duration: "15-25 min",
+    author: "Student Helpline India",
+    isFree: true,
+    tags: ["academic stress", "students", "exam pressure"],
+  },
+
+  // Mindfulness Resources
+  {
+    id: "11",
+    title: "Mindfulness-Based Stress Reduction - Tata Institute",
+    description:
+      "Scientific approach to mindfulness meditation developed by Tata Institute for Indian practitioners.",
+    type: "course",
+    category: "mindfulness",
+    url: "https://www.tifr.res.in/wellness/mindfulness",
+    rating: 4.9,
+    duration: "8 weeks",
+    author: "Tata Institute of Fundamental Research",
+    isFree: true,
+    tags: ["MBSR", "scientific", "Tata Institute"],
+  },
+  {
+    id: "12",
+    title: "Insight Timer - Indian Meditation Teachers",
+    description:
+      "Free meditation app featuring renowned Indian teachers, Sanskrit chants, and culturally relevant mindfulness practices.",
+    type: "app",
+    category: "mindfulness",
+    url: "https://insighttimer.com/indian-teachers",
+    rating: 4.8,
+    author: "Insight Network Inc.",
+    isFree: true,
+    tags: ["Indian teachers", "Sanskrit", "cultural"],
+  },
+  {
+    id: "13",
+    title: "The Mindful Indian Podcast",
+    description:
+      "Weekly discussions on mindfulness practice in Indian context, featuring interviews with spiritual teachers and mental health experts.",
+    type: "podcast",
+    category: "mindfulness",
+    url: "https://open.spotify.com/show/mindful-indian-podcast",
+    rating: 4.7,
+    duration: "30-50 min",
+    author: "Mindful India Network",
+    isFree: true,
+    tags: ["Indian spirituality", "experts", "weekly"],
+  },
+
+  // Relationship Resources
+  {
+    id: "14",
+    title: "Family Dynamics in Indian Context - Psychology Today",
+    description:
+      "Understanding complex Indian family relationships, generational conflicts, and building healthy boundaries.",
+    type: "article",
+    category: "relationships",
+    url: "https://www.psychologytoday.com/intl/blog/indian-family-dynamics",
+    rating: 4.6,
+    duration: "22 min read",
+    author: "Dr. Seema Hingorrany",
+    isFree: true,
+    tags: ["Indian families", "boundaries", "generations"],
+  },
+  {
+    id: "15",
+    title: "Couples Therapy India - Dr. Kersi Chavda",
+    description:
+      "Expert guidance on relationship issues specific to Indian couples, including arranged marriages and cultural pressures.",
+    type: "video",
+    category: "relationships",
+    url: "https://www.youtube.com/@DrKersiChavda",
+    rating: 4.5,
+    duration: "35-45 min",
+    author: "Dr. Kersi Chavda",
+    isFree: true,
+    tags: ["couples therapy", "Indian marriage", "cultural"],
+  },
+
+  // Sleep Resources
+  {
+    id: "16",
+    title: "Sleep Hygiene Guidelines - Indian Sleep Research Society",
+    description:
+      "Evidence-based sleep recommendations adapted for Indian climate, lifestyle, and cultural practices.",
+    type: "article",
+    category: "sleep",
+    url: "https://sleepresearchsociety.in/guidelines",
+    rating: 4.8,
+    duration: "12 min read",
+    author: "Indian Sleep Research Society",
+    isFree: true,
+    tags: ["sleep hygiene", "Indian climate", "research"],
+  },
+  {
+    id: "17",
     title: "Sleep Stories in Hindi - Calm",
     description:
-      "Soothing bedtime stories and sleep meditations available in Hindi and other Indian languages.",
+      "Soothing bedtime stories narrated in Hindi, featuring Indian folklore and calming nature sounds.",
     type: "podcast",
     category: "sleep",
     url: "https://www.calm.com/sleep-stories-hindi",
     rating: 4.7,
     duration: "20-45 min",
-    author: "Calm",
+    author: "Calm India",
     isFree: false,
-    tags: ["Hindi", "sleep", "stories"],
+    tags: ["Hindi", "folklore", "bedtime"],
+  },
+
+  // Productivity Resources
+  {
+    id: "18",
+    title: "Work-Life Balance for Indian Professionals - LinkedIn Learning",
+    description:
+      "Strategies for managing career demands while maintaining mental health in Indian corporate culture.",
+    type: "course",
+    category: "productivity",
+    url: "https://www.linkedin.com/learning/work-life-balance-india",
+    rating: 4.5,
+    duration: "4 hours",
+    author: "LinkedIn Learning India",
+    isFree: false,
+    tags: ["work-life balance", "corporate", "professional"],
   },
   {
-    id: "10",
-    title: "Mental Health First Aid India",
+    id: "19",
+    title: "Focus and Concentration - Ravi Shankar Art of Living",
     description:
-      "Comprehensive course on recognizing mental health issues and providing initial support, adapted for Indian contexts.",
+      "Ancient Indian techniques for improving focus, concentration, and mental clarity through breathing and meditation.",
+    type: "video",
+    category: "productivity",
+    url: "https://www.artofliving.org/in-en/focus-techniques",
+    rating: 4.6,
+    duration: "30-40 min",
+    author: "Art of Living Foundation",
+    isFree: true,
+    tags: ["ancient techniques", "breathing", "concentration"],
+  },
+
+  // Crisis Support Resources
+  {
+    id: "20",
+    title: "Crisis Intervention Training - NIMHANS",
+    description:
+      "Professional training course on recognizing mental health crises and providing immediate support.",
     type: "course",
     category: "depression",
-    url: "https://mhfaindia.org",
-    rating: 4.8,
-    duration: "8 hours",
-    author: "Mental Health First Aid India",
+    url: "https://nimhans.ac.in/training/crisis-intervention",
+    rating: 4.9,
+    duration: "16 hours",
+    author: "NIMHANS, Bangalore",
     isFree: true,
-    tags: ["first aid", "training", "Indian context"],
-  },
-  {
-    id: "11",
-    title: "Relationships in Indian Families",
-    description:
-      "Navigating complex family dynamics, generational differences, and building healthy boundaries in Indian family structures.",
-    type: "article",
-    category: "relationships",
-    url: "https://www.psychologytoday.com/intl/blog/indian-families",
-    rating: 4.5,
-    duration: "18 min read",
-    author: "Dr. Ritu Priya",
-    isFree: true,
-    tags: ["family", "Indian culture", "boundaries"],
-  },
-  {
-    id: "12",
-    title: "Student Mental Health - Kiran Helpline Resources",
-    description:
-      "Educational videos and resources specifically designed for Indian students dealing with academic pressure and career stress.",
-    type: "video",
-    category: "stress",
-    url: "https://kiranmentalhealth.org/student-resources",
-    rating: 4.6,
-    duration: "15-30 min",
-    author: "Kiran Mental Health",
-    isFree: true,
-    tags: ["students", "academic pressure", "career stress"],
+    tags: ["crisis intervention", "training", "professional"],
   },
 ];
 
@@ -345,7 +470,11 @@ export default function Resources() {
   const [activeTab, setActiveTab] = useState<"resources" | "wellness">(
     "wellness",
   );
+  const [moodBasedSuggestions, setMoodBasedSuggestions] = useState<Resource[]>(
+    [],
+  );
   const { currentTheme } = useMoodTheme();
+  const { moodEntries } = useData();
 
   const filteredResources = resources.filter((resource) => {
     const matchesSearch =
@@ -368,6 +497,37 @@ export default function Resources() {
     // In a real app, this would update the database
     console.log("Toggle bookmark for resource:", resourceId);
   };
+
+  // Get mood-based resource suggestions
+  const getMoodBasedSuggestions = () => {
+    if (moodEntries.length === 0) return [];
+
+    const latestMood = moodEntries[moodEntries.length - 1];
+    const moodLower = latestMood.mood.toLowerCase();
+
+    // Find categories that match current mood
+    const relevantCategories = categories.filter((cat) =>
+      cat.emotions.some(
+        (emotion) => moodLower.includes(emotion) || emotion.includes(moodLower),
+      ),
+    );
+
+    if (relevantCategories.length === 0) return [];
+
+    // Get resources from relevant categories
+    const suggestions = resources
+      .filter((resource) =>
+        relevantCategories.some((cat) => cat.value === resource.category),
+      )
+      .slice(0, 6); // Limit to 6 suggestions
+
+    return suggestions;
+  };
+
+  // Update suggestions when mood entries change
+  useEffect(() => {
+    setMoodBasedSuggestions(getMoodBasedSuggestions());
+  }, [moodEntries]);
 
   return (
     <div className={`min-h-screen ${currentTheme.background}`}>
@@ -460,6 +620,68 @@ export default function Resources() {
         {/* Learning Resources Tab */}
         {activeTab === "resources" && (
           <>
+            {/* Mood-Based Suggestions */}
+            {moodBasedSuggestions.length > 0 && (
+              <Card className="mb-8 shadow-lg border-0 bg-white/90 backdrop-blur-sm">
+                <CardHeader>
+                  <CardTitle className="flex items-center space-x-2">
+                    <Heart className="w-5 h-5 text-pink-600" />
+                    <span>Recommended for Your Current Mood</span>
+                  </CardTitle>
+                  <p className="text-gray-600">
+                    Based on your recent mood entry:{" "}
+                    <span className="font-semibold text-pink-600">
+                      {moodEntries[moodEntries.length - 1]?.mood}
+                    </span>
+                  </p>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {moodBasedSuggestions.map((resource) => {
+                      const IconComponent = resourceTypeIcons[resource.type];
+                      return (
+                        <Card
+                          key={resource.id}
+                          className="p-4 hover:shadow-md transition-all duration-200 border border-pink-200 bg-pink-50/50"
+                        >
+                          <div className="flex items-center space-x-3 mb-3">
+                            <div className="w-8 h-8 bg-pink-100 rounded-lg flex items-center justify-center">
+                              <IconComponent className="w-4 h-4 text-pink-600" />
+                            </div>
+                            <div className="flex-1">
+                              <h4 className="font-semibold text-gray-900 text-sm">
+                                {resource.title}
+                              </h4>
+                              <p className="text-xs text-gray-600">
+                                {resource.author}
+                              </p>
+                            </div>
+                          </div>
+                          <p className="text-sm text-gray-700 mb-3 line-clamp-2">
+                            {resource.description}
+                          </p>
+                          <div className="flex items-center justify-between">
+                            <Badge className="bg-pink-100 text-pink-700 text-xs capitalize">
+                              {resource.category}
+                            </Badge>
+                            <Button
+                              size="sm"
+                              onClick={() =>
+                                window.open(resource.url, "_blank")
+                              }
+                              className="bg-pink-500 hover:bg-pink-600 text-white text-xs px-3 py-1"
+                            >
+                              View
+                            </Button>
+                          </div>
+                        </Card>
+                      );
+                    })}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
             {/* Search and Filters */}
             <Card className="mb-8 shadow-lg border-0 bg-white/90 backdrop-blur-sm">
               <CardContent className="p-6">
