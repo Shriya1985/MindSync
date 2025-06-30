@@ -602,7 +602,7 @@ export default function Profile() {
                         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
                           <div>
                             <div className="text-2xl font-bold text-mint-600">
-                              {moodEntries.length}
+                              {moodEntries?.length || 0}
                             </div>
                             <div className="text-sm text-gray-600">
                               Mood Entries
@@ -610,7 +610,7 @@ export default function Profile() {
                           </div>
                           <div>
                             <div className="text-2xl font-bold text-sky-600">
-                              {journalEntries.length}
+                              {journalEntries?.length || 0}
                             </div>
                             <div className="text-sm text-gray-600">
                               Journal Entries
