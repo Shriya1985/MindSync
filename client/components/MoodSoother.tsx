@@ -50,7 +50,7 @@ const ambientSounds: AmbientSound[] = [
     description: "Gentle waves lapping against the shore",
     icon: Waves,
     color: "from-blue-400 to-cyan-500",
-    audioUrl: "/sounds/ocean-waves.mp3",
+    audioUrl: "https://www2.cs.uic.edu/~i101/SoundFiles/BabyElephantWalk60.wav",
     mood: "calm",
   },
   {
@@ -59,7 +59,7 @@ const ambientSounds: AmbientSound[] = [
     description: "Soft raindrops in a lush forest",
     icon: TreePine,
     color: "from-green-400 to-emerald-500",
-    audioUrl: "/sounds/forest-rain.mp3",
+    audioUrl: "https://www2.cs.uic.edu/~i101/SoundFiles/CantinaBand60.wav",
     mood: "calm",
   },
   {
@@ -68,7 +68,7 @@ const ambientSounds: AmbientSound[] = [
     description: "Gentle thunderstorm far away",
     icon: Cloud,
     color: "from-gray-400 to-slate-500",
-    audioUrl: "/sounds/thunderstorm.mp3",
+    audioUrl: "https://www2.cs.uic.edu/~i101/SoundFiles/ImperialMarch60.wav",
     mood: "calm",
   },
   {
@@ -86,7 +86,7 @@ const ambientSounds: AmbientSound[] = [
     description: "Cheerful birds singing at dawn",
     icon: Bird,
     color: "from-yellow-400 to-orange-500",
-    audioUrl: "/sounds/birds.mp3",
+    audioUrl: "https://www2.cs.uic.edu/~i101/SoundFiles/PinkPanther60.wav",
     mood: "energetic",
   },
   {
@@ -104,7 +104,7 @@ const ambientSounds: AmbientSound[] = [
     description: "Bustling coffee shop atmosphere",
     icon: Coffee,
     color: "from-amber-400 to-brown-500",
-    audioUrl: "/sounds/cafe.mp3",
+    audioUrl: "https://www2.cs.uic.edu/~i101/SoundFiles/gettysburg10.wav",
     mood: "focused",
   },
   {
@@ -113,7 +113,7 @@ const ambientSounds: AmbientSound[] = [
     description: "Gentle evening crickets and breeze",
     icon: Moon,
     color: "from-indigo-400 to-purple-500",
-    audioUrl: "/sounds/night.mp3",
+    audioUrl: "https://www2.cs.uic.edu/~i101/SoundFiles/CantinaBand60.wav",
     mood: "sleepy",
   },
 ];
