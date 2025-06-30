@@ -14,6 +14,7 @@ import { AIChatModes } from "@/components/AIChatModes";
 import { DailyQuotes } from "@/components/DailyQuotes";
 import { MoodReactions } from "@/components/MoodReactions";
 import { useMoodTheme } from "@/hooks/useMoodTheme";
+import { useData } from "@/contexts/DataContext";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -444,13 +445,48 @@ const helplines = [
 
 const categories = [
   { value: "all", label: "All Resources", icon: BookOpen },
-  { value: "anxiety", label: "Anxiety", icon: Heart },
-  { value: "depression", label: "Depression", icon: Users },
-  { value: "stress", label: "Stress", icon: Headphones },
-  { value: "mindfulness", label: "Mindfulness", icon: Star },
-  { value: "relationships", label: "Relationships", icon: Users },
-  { value: "sleep", label: "Sleep", icon: Clock },
-  { value: "productivity", label: "Productivity", icon: BookOpen },
+  {
+    value: "anxiety",
+    label: "Anxiety Relief",
+    icon: Heart,
+    emotions: ["anxious", "worried", "nervous", "stressed"],
+  },
+  {
+    value: "depression",
+    label: "Mood Support",
+    icon: Users,
+    emotions: ["sad", "depressed", "low", "hopeless"],
+  },
+  {
+    value: "stress",
+    label: "Stress Management",
+    icon: Headphones,
+    emotions: ["stressed", "overwhelmed", "tense", "pressured"],
+  },
+  {
+    value: "mindfulness",
+    label: "Mindfulness",
+    icon: Star,
+    emotions: ["restless", "distracted", "unfocused"],
+  },
+  {
+    value: "relationships",
+    label: "Relationships",
+    icon: Users,
+    emotions: ["lonely", "isolated", "misunderstood"],
+  },
+  {
+    value: "sleep",
+    label: "Sleep & Rest",
+    icon: Clock,
+    emotions: ["tired", "exhausted", "restless"],
+  },
+  {
+    value: "productivity",
+    label: "Focus & Growth",
+    icon: BookOpen,
+    emotions: ["unmotivated", "procrastinating", "unfocused"],
+  },
 ];
 
 const resourceTypeIcons = {
