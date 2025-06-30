@@ -98,16 +98,23 @@ class LocalStorageService {
     email: string,
     password: string,
   ): { success: boolean; user?: LocalUser; error?: string } {
+    console.log("🔍 Looking for user with email:", email);
+
     const user = this.findUserByEmail(email);
+    console.log("👤 Found user:", user ? "Yes" : "No");
 
     if (!user) {
-      return { success: false, error: "User not found" };
+      console.log("❌ User not found in localStorage");
+      return { success: false, error: "User not found. Please sign up first." };
     }
 
+    console.log("🔑 Checking password...");
     if (user.password !== password) {
+      console.log("❌ Password mismatch");
       return { success: false, error: "Invalid password" };
     }
 
+    console.log("✅ Login successful, setting current user");
     this.setCurrentUser(user);
     return { success: true, user };
   }
