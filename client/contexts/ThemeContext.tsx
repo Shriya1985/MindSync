@@ -248,20 +248,55 @@ export function ThemeProvider({ children }: ThemeProviderProps) {
   const applyThemeToDocument = (theme: GlobalTheme) => {
     const root = document.documentElement;
 
-    // Apply CSS custom properties
+    // Apply comprehensive CSS custom properties
     Object.entries(theme.colors).forEach(([key, value]) => {
       root.style.setProperty(`--theme-${key}`, value);
+      root.style.setProperty(`--color-${key}`, value);
     });
 
-    // Apply additional theme classes to body for global styling
+    // Apply gradient custom properties
+    Object.entries(theme.gradients).forEach(([key, value]) => {
+      root.style.setProperty(`--gradient-${key}`, value);
+    });
+
+    // Apply effect custom properties
+    Object.entries(theme.effects).forEach(([key, value]) => {
+      root.style.setProperty(`--effect-${key}`, value);
+    });
+
+    // Apply theme classes to body for global styling
     document.body.className = document.body.className
       .split(" ")
       .filter((cls) => !cls.startsWith("theme-"))
       .concat([`theme-${theme.id}`])
       .join(" ");
 
-    // Update background
+    // Update main background with current theme
     document.body.style.background = `linear-gradient(135deg, ${theme.colors.background}, ${theme.colors.surface})`;
+    document.body.style.minHeight = "100vh";
+
+    // Apply to main container elements
+    const containers = document.querySelectorAll("[data-theme-container]");
+    containers.forEach((container) => {
+      (container as HTMLElement).style.background =
+        `linear-gradient(135deg, ${theme.colors.background}, ${theme.colors.surface})`;
+    });
+
+    // Update navigation and cards
+    const navElements = document.querySelectorAll("nav, .nav");
+    navElements.forEach((nav) => {
+      (nav as HTMLElement).style.background = `${theme.colors.surface}dd`;
+      (nav as HTMLElement).style.backdropFilter = "blur(12px)";
+      (nav as HTMLElement).style.borderColor = theme.colors.primary + "40";
+    });
+
+    // Update card elements
+    const cardElements = document.querySelectorAll(".card, [data-theme-card]");
+    cardElements.forEach((card) => {
+      (card as HTMLElement).style.background = `${theme.colors.surface}f0`;
+      (card as HTMLElement).style.backdropFilter = "blur(8px)";
+      (card as HTMLElement).style.borderColor = theme.colors.primary + "30";
+    });
   };
 
   // Set theme manually
