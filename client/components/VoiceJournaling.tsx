@@ -15,7 +15,7 @@ import {
   Play,
   Pause,
   FileText,
-  Waveform,
+  AudioWaveform,
   Clock,
   Edit3,
   CheckCircle,
@@ -351,7 +351,7 @@ export function VoiceJournaling() {
             <CardHeader className="pb-3">
               <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-2">
-                  <Waveform className="w-5 h-5 text-blue-600" />
+                  <AudioWaveform className="w-5 h-5 text-blue-600" />
                   <span className="font-semibold text-blue-900">
                     Live Transcription
                   </span>
