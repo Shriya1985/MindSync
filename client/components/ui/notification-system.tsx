@@ -40,6 +40,7 @@ const notificationColors = {
 
 let notificationQueue: Notification[] = [];
 let notifyCallback: ((notifications: Notification[]) => void) | null = null;
+let notificationCounter = 0;
 
 export function NotificationSystem() {
   const [notifications, setNotifications] = useState<Notification[]>([]);
@@ -138,7 +139,7 @@ export function NotificationSystem() {
 export function showNotification(notification: Omit<Notification, "id">) {
   const newNotification: Notification = {
     ...notification,
-    id: Date.now().toString(),
+    id: `notification-${Date.now()}-${++notificationCounter}`,
     duration: notification.duration || 5000,
   };
 
