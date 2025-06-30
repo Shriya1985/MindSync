@@ -73,10 +73,10 @@ export default function Auth() {
     setIsLoading(true);
 
     try {
-      let success = false;
+      let result;
 
       if (mode === "login") {
-        success = await login(formData.email, formData.password);
+        result = await login(formData.email, formData.password);
       } else {
         // Validate form for registration
         if (formData.password !== formData.confirmPassword) {
@@ -89,28 +89,21 @@ export default function Auth() {
           setIsLoading(false);
           return;
         }
-        success = await register(
-          formData.name,
+        result = await register(
           formData.email,
           formData.password,
+          formData.name,
         );
       }
 
-      if (success) {
-        // Show welcome notification
-        setTimeout(() => {
-          showNotification({
-            type: "encouragement",
-            title: `Welcome back! 🌟`,
-            message: `Great to see you again! Ready to continue your wellness journey?`,
-            duration: 5000,
-          });
-        }, 1000);
-
+      if (result.success) {
         const from = location.state?.from?.pathname || "/dashboard";
         navigate(from, { replace: true });
       } else {
-        setError("Authentication failed. Please check your credentials.");
+        setError(
+          result.error ||
+            "Authentication failed. Please check your credentials.",
+        );
       }
     } catch (err) {
       setError("An error occurred. Please try again.");
