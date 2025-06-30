@@ -491,7 +491,18 @@ export function MoodSoother() {
           </div>
         </CardContent>
 
-        {/* Audio functionality disabled - visual experience only */}
+        {/* Hidden Audio Element */}
+        <audio
+          ref={audioRef}
+          loop
+          preload="metadata"
+          style={{ display: "none" }}
+          onLoadedData={() => {
+            if (audioRef.current) {
+              audioRef.current.volume = volume[0] / 100;
+            }
+          }}
+        />
       </Card>
     </div>
   );
