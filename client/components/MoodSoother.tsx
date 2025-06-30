@@ -77,7 +77,7 @@ const ambientSounds: AmbientSound[] = [
     description: "Warm crackling fireplace",
     icon: Flame,
     color: "from-orange-400 to-red-500",
-    audioUrl: "/sounds/fireplace.mp3",
+    audioUrl: "https://www2.cs.uic.edu/~i101/SoundFiles/StarWars60.wav",
     mood: "cozy",
   },
   {
@@ -95,7 +95,7 @@ const ambientSounds: AmbientSound[] = [
     description: "Consistent background noise for focus",
     icon: Wind,
     color: "from-purple-400 to-indigo-500",
-    audioUrl: "/sounds/white-noise.mp3",
+    audioUrl: "https://www2.cs.uic.edu/~i101/SoundFiles/BabyElephantWalk60.wav",
     mood: "focused",
   },
   {
