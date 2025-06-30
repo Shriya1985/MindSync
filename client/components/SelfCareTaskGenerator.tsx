@@ -17,6 +17,7 @@ import {
   Smile,
   Star,
   Sun,
+  Wind,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
