@@ -207,8 +207,10 @@ export function MoodSoother() {
   };
 
   const playAudio = () => {
+    if (audioRef.current) {
+      audioRef.current.play().catch(console.error);
+    }
     setIsPlaying(true);
-    // Audio functionality disabled - visual only
 
     // Start session timer
     intervalRef.current = setInterval(() => {
@@ -217,8 +219,10 @@ export function MoodSoother() {
   };
 
   const pauseAudio = () => {
+    if (audioRef.current) {
+      audioRef.current.pause();
+    }
     setIsPlaying(false);
-    // Audio functionality disabled - visual only
 
     if (intervalRef.current) {
       clearInterval(intervalRef.current);
