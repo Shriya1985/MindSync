@@ -1,5 +1,5 @@
 import { createContext, useContext, useEffect, useState } from "react";
-import { supabase } from "@/lib/supabase";
+import { xanoClient } from "@/lib/xano";
 import { useAuth } from "@/contexts/AuthContext";
 import { showNotification } from "@/components/ui/notification-system";
 
@@ -145,7 +145,15 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
   const [isLoading, setIsLoading] = useState(false);
   const [isInitialized, setIsInitialized] = useState(false);
 
-  // Load all user data from Supabase
+  // Helper function to convert API responses to our types
+  const convertApiTimestamp = (timestamp: any): Date => {
+    if (timestamp instanceof Date) return timestamp;
+    if (typeof timestamp === "string") return new Date(timestamp);
+    if (typeof timestamp === "number") return new Date(timestamp);
+    return new Date();
+  };
+
+  // Load all user data from Xano
   const loadUserData = async () => {
     if (!user?.id) return;
 
@@ -153,153 +161,126 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
     try {
       // Load all data in parallel
       const [
-        moodsResult,
-        journalsResult,
-        chatsResult,
-        achievementsResult,
-        statsResult,
-        questsResult,
-        sessionsResult,
+        moodsData,
+        journalsData,
+        chatsData,
+        achievementsData,
+        statsData,
+        questsData,
+        sessionsData,
       ] = await Promise.all([
-        supabase
-          .from("mood_entries")
-          .select("*")
-          .eq("user_id", user.id)
-          .order("date", { ascending: false }),
-        supabase
-          .from("journal_entries")
-          .select("*")
-          .eq("user_id", user.id)
-          .order("date", { ascending: false }),
-        supabase
-          .from("chat_messages")
-          .select("*")
-          .eq("user_id", user.id)
-          .order("timestamp", { ascending: false })
-          .limit(100),
-        supabase
-          .from("achievements")
-          .select("*")
-          .eq("user_id", user.id)
-          .order("earned_at", { ascending: false }),
-        supabase.from("user_stats").select("*").eq("user_id", user.id).single(),
-        supabase
-          .from("daily_quests")
-          .select("*")
-          .eq("user_id", user.id)
-          .eq("date", new Date().toISOString().split("T")[0]),
-        supabase
-          .from("coping_sessions")
-          .select("*")
-          .eq("user_id", user.id)
-          .order("session_date", { ascending: false }),
+        xanoClient.getMoodEntries(),
+        xanoClient.getJournalEntries(),
+        xanoClient.getChatMessages(),
+        xanoClient.getAchievements(),
+        xanoClient.getUserStats(),
+        xanoClient.getDailyQuests(),
+        xanoClient.getCopingSessions(),
       ]);
 
       // Process mood entries
-      if (moodsResult.data) {
-        setMoodEntries(
-          moodsResult.data.map((mood) => ({
-            id: mood.id,
-            date: mood.date,
-            mood: mood.mood,
-            rating: mood.rating,
-            emoji: mood.emoji,
-            source: mood.source,
-            notes: mood.notes,
-          })),
-        );
-      }
+      setMoodEntries(
+        moodsData.map((mood: any) => ({
+          id: mood.id.toString(),
+          date: mood.date,
+          mood: mood.mood,
+          rating: mood.rating,
+          emoji: mood.emoji,
+          source: mood.source,
+          notes: mood.notes,
+        })),
+      );
 
       // Process journal entries
-      if (journalsResult.data) {
-        setJournalEntries(
-          journalsResult.data.map((journal) => ({
-            id: journal.id,
-            date: journal.date,
-            title: journal.title,
-            content: journal.content,
-            sentiment: journal.sentiment,
-            wordCount: journal.word_count,
-            tags: journal.tags,
-          })),
-        );
-      }
+      setJournalEntries(
+        journalsData.map((journal: any) => ({
+          id: journal.id.toString(),
+          date: journal.date,
+          title: journal.title,
+          content: journal.content,
+          sentiment: journal.sentiment,
+          wordCount: journal.word_count || journal.wordCount || 0,
+          tags: journal.tags || [],
+        })),
+      );
 
       // Process chat messages
-      if (chatsResult.data) {
-        setChatMessages(
-          chatsResult.data.map((chat) => ({
-            id: chat.id,
-            content: chat.content,
-            sender: chat.sender,
-            timestamp: new Date(chat.timestamp),
-            sentiment: chat.sentiment,
-            mood: chat.mood,
-            emotionalState: chat.emotional_state,
-          })),
-        );
-      }
+      setChatMessages(
+        chatsData.map((chat: any) => ({
+          id: chat.id.toString(),
+          content: chat.content,
+          sender: chat.sender,
+          timestamp: convertApiTimestamp(chat.timestamp || chat.created_at),
+          sentiment: chat.sentiment,
+          mood: chat.mood,
+          emotionalState: chat.emotional_state || chat.emotionalState,
+        })),
+      );
 
       // Process achievements
-      if (achievementsResult.data) {
-        setAchievements(
-          achievementsResult.data.map((achievement) => ({
-            id: achievement.id,
-            type: achievement.achievement_type as any,
-            achievementId: achievement.achievement_id,
-            title: achievement.title,
-            description: achievement.description,
-            icon: achievement.icon,
-            rarity: achievement.rarity as any,
-            earnedAt: new Date(achievement.earned_at),
-            metadata: achievement.metadata,
-          })),
-        );
-      }
+      setAchievements(
+        achievementsData.map((achievement: any) => ({
+          id: achievement.id.toString(),
+          type: achievement.achievement_type || achievement.type,
+          achievementId:
+            achievement.achievement_id || achievement.achievementId,
+          title: achievement.title,
+          description: achievement.description,
+          icon: achievement.icon,
+          rarity: achievement.rarity,
+          earnedAt: convertApiTimestamp(
+            achievement.earned_at || achievement.earnedAt,
+          ),
+          metadata: achievement.metadata,
+        })),
+      );
 
       // Process user stats
-      if (statsResult.data) {
+      if (statsData) {
         setUserStats({
-          level: statsResult.data.level,
-          points: statsResult.data.points,
-          currentStreak: statsResult.data.current_streak,
-          longestStreak: statsResult.data.longest_streak,
-          lastActivity: statsResult.data.last_activity,
+          level: statsData.level || 1,
+          points: statsData.points || 0,
+          currentStreak:
+            statsData.current_streak || statsData.currentStreak || 0,
+          longestStreak:
+            statsData.longest_streak || statsData.longestStreak || 0,
+          lastActivity:
+            statsData.last_activity ||
+            statsData.lastActivity ||
+            new Date().toISOString().split("T")[0],
         });
       }
 
       // Process daily quests
-      if (questsResult.data) {
-        setDailyQuests(
-          questsResult.data.map((quest) => ({
-            id: quest.id,
-            questId: quest.quest_id,
-            title: quest.title,
-            description: quest.description,
-            category: quest.category,
-            xpReward: quest.xp_reward,
-            completedAt: quest.completed_at
-              ? new Date(quest.completed_at)
+      setDailyQuests(
+        questsData.map((quest: any) => ({
+          id: quest.id.toString(),
+          questId: quest.quest_id || quest.questId,
+          title: quest.title,
+          description: quest.description,
+          category: quest.category,
+          xpReward: quest.xp_reward || quest.xpReward || 0,
+          completedAt:
+            quest.completed_at || quest.completedAt
+              ? convertApiTimestamp(quest.completed_at || quest.completedAt)
               : undefined,
-            date: quest.date,
-          })),
-        );
-      }
+          date: quest.date,
+        })),
+      );
 
       // Process coping sessions
-      if (sessionsResult.data) {
-        setCopingSessions(
-          sessionsResult.data.map((session) => ({
-            id: session.id,
-            strategyId: session.strategy_id,
-            strategyTitle: session.strategy_title,
-            durationSeconds: session.duration_seconds,
-            completed: session.completed,
-            xpEarned: session.xp_earned,
-            sessionDate: session.session_date,
-          })),
-        );
-      }
+      setCopingSessions(
+        sessionsData.map((session: any) => ({
+          id: session.id.toString(),
+          strategyId: session.strategy_id || session.strategyId,
+          strategyTitle: session.strategy_title || session.strategyTitle,
+          durationSeconds:
+            session.duration_seconds || session.durationSeconds || 0,
+          completed: session.completed || false,
+          xpEarned: session.xp_earned || session.xpEarned || 0,
+          sessionDate: session.session_date || session.sessionDate,
+        })),
+      );
     } catch (error) {
       console.error("Error loading user data:", error);
     } finally {
@@ -336,37 +317,21 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
     if (!user?.id) return;
 
     try {
-      const { data, error } = await supabase
-        .from("mood_entries")
-        .insert({
-          user_id: user.id,
-          date: entry.date,
-          mood: entry.mood,
-          rating: entry.rating,
-          emoji: entry.emoji,
-          source: entry.source,
-          notes: entry.notes,
-        })
-        .select()
-        .single();
+      const newEntry = await xanoClient.createMoodEntry(entry);
 
-      if (error) throw error;
+      const moodEntry: MoodEntry = {
+        id: newEntry.id.toString(),
+        date: newEntry.date,
+        mood: newEntry.mood,
+        rating: newEntry.rating,
+        emoji: newEntry.emoji,
+        source: newEntry.source,
+        notes: newEntry.notes,
+      };
 
-      if (data) {
-        const newEntry: MoodEntry = {
-          id: data.id,
-          date: data.date,
-          mood: data.mood,
-          rating: data.rating,
-          emoji: data.emoji,
-          source: data.source,
-          notes: data.notes,
-        };
-
-        setMoodEntries((prev) => [newEntry, ...prev]);
-        await addPoints(5, "Mood check-in");
-        await updateStreak();
-      }
+      setMoodEntries((prev) => [moodEntry, ...prev]);
+      await addPoints(5, "Mood check-in");
+      await updateStreak();
     } catch (error) {
       console.error("Error adding mood entry:", error);
     }
@@ -376,14 +341,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
     if (!user?.id) return;
 
     try {
-      const { error } = await supabase
-        .from("mood_entries")
-        .update(updates)
-        .eq("id", id)
-        .eq("user_id", user.id);
-
-      if (error) throw error;
-
+      await xanoClient.updateMoodEntry(id, updates);
       setMoodEntries((prev) =>
         prev.map((entry) =>
           entry.id === id ? { ...entry, ...updates } : entry,
@@ -398,14 +356,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
     if (!user?.id) return;
 
     try {
-      const { error } = await supabase
-        .from("mood_entries")
-        .delete()
-        .eq("id", id)
-        .eq("user_id", user.id);
-
-      if (error) throw error;
-
+      await xanoClient.deleteMoodEntry(id);
       setMoodEntries((prev) => prev.filter((entry) => entry.id !== id));
     } catch (error) {
       console.error("Error deleting mood entry:", error);
@@ -417,36 +368,23 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
     if (!user?.id) return;
 
     try {
-      const { data, error } = await supabase
-        .from("journal_entries")
-        .insert({
-          user_id: user.id,
-          date: entry.date,
-          title: entry.title,
-          content: entry.content,
-          sentiment: entry.sentiment,
-          word_count: entry.wordCount,
-          tags: entry.tags,
-        })
-        .select()
-        .single();
+      const newEntry = await xanoClient.createJournalEntry({
+        ...entry,
+        word_count: entry.wordCount,
+      });
 
-      if (error) throw error;
+      const journalEntry: JournalEntry = {
+        id: newEntry.id.toString(),
+        date: newEntry.date,
+        title: newEntry.title,
+        content: newEntry.content,
+        sentiment: newEntry.sentiment,
+        wordCount: newEntry.word_count || newEntry.wordCount || 0,
+        tags: newEntry.tags || [],
+      };
 
-      if (data) {
-        const newEntry: JournalEntry = {
-          id: data.id,
-          date: data.date,
-          title: data.title,
-          content: data.content,
-          sentiment: data.sentiment,
-          wordCount: data.word_count,
-          tags: data.tags,
-        };
-
-        setJournalEntries((prev) => [newEntry, ...prev]);
-        await addPoints(10, "Journal entry");
-      }
+      setJournalEntries((prev) => [journalEntry, ...prev]);
+      await addPoints(10, "Journal entry");
     } catch (error) {
       console.error("Error adding journal entry:", error);
     }
@@ -459,20 +397,12 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
     if (!user?.id) return;
 
     try {
-      const dbUpdates: any = { ...updates };
+      const apiUpdates = { ...updates };
       if (updates.wordCount !== undefined) {
-        dbUpdates.word_count = updates.wordCount;
-        delete dbUpdates.wordCount;
+        (apiUpdates as any).word_count = updates.wordCount;
       }
 
-      const { error } = await supabase
-        .from("journal_entries")
-        .update(dbUpdates)
-        .eq("id", id)
-        .eq("user_id", user.id);
-
-      if (error) throw error;
-
+      await xanoClient.updateJournalEntry(id, apiUpdates);
       setJournalEntries((prev) =>
         prev.map((entry) =>
           entry.id === id ? { ...entry, ...updates } : entry,
@@ -487,14 +417,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
     if (!user?.id) return;
 
     try {
-      const { error } = await supabase
-        .from("journal_entries")
-        .delete()
-        .eq("id", id)
-        .eq("user_id", user.id);
-
-      if (error) throw error;
-
+      await xanoClient.deleteJournalEntry(id);
       setJournalEntries((prev) => prev.filter((entry) => entry.id !== id));
     } catch (error) {
       console.error("Error deleting journal entry:", error);
@@ -506,38 +429,26 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
     if (!user?.id) return;
 
     try {
-      const { data, error } = await supabase
-        .from("chat_messages")
-        .insert({
-          user_id: user.id,
-          content: message.content,
-          sender: message.sender,
-          sentiment: message.sentiment,
-          mood: message.mood,
-          emotional_state: message.emotionalState,
-          timestamp: message.timestamp.toISOString(),
-        })
-        .select()
-        .single();
+      const newMessage = await xanoClient.createChatMessage({
+        ...message,
+        timestamp: message.timestamp.toISOString(),
+        emotional_state: message.emotionalState,
+      });
 
-      if (error) throw error;
+      const chatMessage: ChatMessage = {
+        id: newMessage.id.toString(),
+        content: newMessage.content,
+        sender: newMessage.sender,
+        timestamp: convertApiTimestamp(newMessage.timestamp),
+        sentiment: newMessage.sentiment,
+        mood: newMessage.mood,
+        emotionalState: newMessage.emotional_state || newMessage.emotionalState,
+      };
 
-      if (data) {
-        const newMessage: ChatMessage = {
-          id: data.id,
-          content: data.content,
-          sender: data.sender,
-          timestamp: new Date(data.timestamp),
-          sentiment: data.sentiment,
-          mood: data.mood,
-          emotionalState: data.emotional_state,
-        };
+      setChatMessages((prev) => [chatMessage, ...prev.slice(0, 99)]);
 
-        setChatMessages((prev) => [newMessage, ...prev.slice(0, 99)]);
-
-        if (message.sender === "user") {
-          await addPoints(2, "Chat interaction");
-        }
+      if (message.sender === "user") {
+        await addPoints(2, "Chat interaction");
       }
     } catch (error) {
       console.error("Error adding chat message:", error);
@@ -549,46 +460,40 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
     if (!user?.id) return;
 
     try {
-      const { data, error } = await supabase
-        .from("achievements")
-        .insert({
-          user_id: user.id,
-          achievement_type: achievement.type,
-          achievement_id: achievement.achievementId,
-          title: achievement.title,
-          description: achievement.description,
-          icon: achievement.icon,
-          rarity: achievement.rarity,
-          earned_at: achievement.earnedAt.toISOString(),
-          metadata: achievement.metadata,
-        })
-        .select()
-        .single();
+      const newAchievement = await xanoClient.createAchievement({
+        achievement_type: achievement.type,
+        achievement_id: achievement.achievementId,
+        title: achievement.title,
+        description: achievement.description,
+        icon: achievement.icon,
+        rarity: achievement.rarity,
+        earned_at: achievement.earnedAt.toISOString(),
+        metadata: achievement.metadata,
+      });
 
-      if (error) throw error;
+      const achievementEntry: Achievement = {
+        id: newAchievement.id.toString(),
+        type: newAchievement.achievement_type || newAchievement.type,
+        achievementId:
+          newAchievement.achievement_id || newAchievement.achievementId,
+        title: newAchievement.title,
+        description: newAchievement.description,
+        icon: newAchievement.icon,
+        rarity: newAchievement.rarity,
+        earnedAt: convertApiTimestamp(
+          newAchievement.earned_at || newAchievement.earnedAt,
+        ),
+        metadata: newAchievement.metadata,
+      };
 
-      if (data) {
-        const newAchievement: Achievement = {
-          id: data.id,
-          type: data.achievement_type as any,
-          achievementId: data.achievement_id,
-          title: data.title,
-          description: data.description,
-          icon: data.icon,
-          rarity: data.rarity as any,
-          earnedAt: new Date(data.earned_at),
-          metadata: data.metadata,
-        };
+      setAchievements((prev) => [achievementEntry, ...prev]);
 
-        setAchievements((prev) => [newAchievement, ...prev]);
-
-        showNotification({
-          type: "achievement",
-          title: `${achievement.icon} Achievement Unlocked!`,
-          message: `${achievement.title} - ${achievement.description}`,
-          duration: 5000,
-        });
-      }
+      showNotification({
+        type: "achievement",
+        title: `${achievement.icon} Achievement Unlocked!`,
+        message: `${achievement.title} - ${achievement.description}`,
+        duration: 5000,
+      });
     } catch (error) {
       console.error("Error adding achievement:", error);
     }
@@ -602,16 +507,10 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
       const newPoints = userStats.points + points;
       const newLevel = Math.floor(newPoints / 100) + 1;
 
-      const { error } = await supabase
-        .from("user_stats")
-        .update({
-          points: newPoints,
-          level: newLevel,
-          updated_at: new Date().toISOString(),
-        })
-        .eq("user_id", user.id);
-
-      if (error) throw error;
+      const updatedStats = await xanoClient.updateUserStats({
+        points: newPoints,
+        level: newLevel,
+      });
 
       const oldLevel = userStats.level;
       setUserStats((prev) => ({
@@ -656,17 +555,11 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
 
       const newLongestStreak = Math.max(userStats.longestStreak, newStreak);
 
-      const { error } = await supabase
-        .from("user_stats")
-        .update({
-          current_streak: newStreak,
-          longest_streak: newLongestStreak,
-          last_activity: today,
-          updated_at: new Date().toISOString(),
-        })
-        .eq("user_id", user.id);
-
-      if (error) throw error;
+      await xanoClient.updateUserStats({
+        current_streak: newStreak,
+        longest_streak: newLongestStreak,
+        last_activity: today,
+      });
 
       setUserStats((prev) => ({
         ...prev,
@@ -702,16 +595,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
     if (!user?.id) return;
 
     try {
-      const { error } = await supabase
-        .from("daily_quests")
-        .update({
-          completed_at: new Date().toISOString(),
-        })
-        .eq("user_id", user.id)
-        .eq("quest_id", questId)
-        .eq("date", new Date().toISOString().split("T")[0]);
-
-      if (error) throw error;
+      await xanoClient.completeDailyQuest(questId);
 
       setDailyQuests((prev) =>
         prev.map((quest) =>
@@ -728,8 +612,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
   };
 
   const generateDailyQuests = async () => {
-    // This would generate new daily quests
-    // Implementation depends on quest generation logic
+    // Implementation depends on Xano API structure
   };
 
   // Coping session functions
@@ -737,38 +620,30 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
     if (!user?.id) return;
 
     try {
-      const { data, error } = await supabase
-        .from("coping_sessions")
-        .insert({
-          user_id: user.id,
-          strategy_id: session.strategyId,
-          strategy_title: session.strategyTitle,
-          duration_seconds: session.durationSeconds,
-          completed: session.completed,
-          xp_earned: session.xpEarned,
-          session_date: session.sessionDate,
-        })
-        .select()
-        .single();
+      const newSession = await xanoClient.createCopingSession({
+        strategy_id: session.strategyId,
+        strategy_title: session.strategyTitle,
+        duration_seconds: session.durationSeconds,
+        completed: session.completed,
+        xp_earned: session.xpEarned,
+        session_date: session.sessionDate,
+      });
 
-      if (error) throw error;
+      const copingSession: CopingSession = {
+        id: newSession.id.toString(),
+        strategyId: newSession.strategy_id || newSession.strategyId,
+        strategyTitle: newSession.strategy_title || newSession.strategyTitle,
+        durationSeconds:
+          newSession.duration_seconds || newSession.durationSeconds,
+        completed: newSession.completed,
+        xpEarned: newSession.xp_earned || newSession.xpEarned,
+        sessionDate: newSession.session_date || newSession.sessionDate,
+      };
 
-      if (data) {
-        const newSession: CopingSession = {
-          id: data.id,
-          strategyId: data.strategy_id,
-          strategyTitle: data.strategy_title,
-          durationSeconds: data.duration_seconds,
-          completed: data.completed,
-          xpEarned: data.xp_earned,
-          sessionDate: data.session_date,
-        };
+      setCopingSessions((prev) => [copingSession, ...prev]);
 
-        setCopingSessions((prev) => [newSession, ...prev]);
-
-        if (session.completed) {
-          await addPoints(session.xpEarned, "Completed coping session");
-        }
+      if (session.completed) {
+        await addPoints(session.xpEarned, "Completed coping session");
       }
     } catch (error) {
       console.error("Error adding coping session:", error);

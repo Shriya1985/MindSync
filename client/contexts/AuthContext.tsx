@@ -1,6 +1,5 @@
 import { createContext, useContext, useEffect, useState } from "react";
-import { supabase } from "@/lib/supabase";
-import { User, Session } from "@supabase/supabase-js";
+import { xanoClient, TokenManager, type XanoUser } from "@/lib/xano";
 import { showNotification } from "@/components/ui/notification-system";
 
 type AuthUser = {
@@ -12,7 +11,6 @@ type AuthUser = {
 
 type AuthContextType = {
   user: AuthUser | null;
-  session: Session | null;
   isAuthenticated: boolean;
   isLoading: boolean;
   login: (
@@ -34,109 +32,65 @@ const AuthContext = createContext<AuthContextType | null>(null);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<AuthUser | null>(null);
-  const [session, setSession] = useState<Session | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  const isAuthenticated = !!user && !!session;
+  const isAuthenticated = !!user;
 
-  // Load user profile from database
-  const loadUserProfile = async (userId: string) => {
-    try {
-      const { data, error } = await supabase
-        .from("users")
-        .select("*")
-        .eq("id", userId)
-        .single();
-
-      if (error) {
-        console.error("Error loading user profile:", error);
-        return null;
-      }
-
-      return {
-        id: data.id,
-        email: data.email,
-        name: data.name,
-        avatar: data.avatar,
-      };
-    } catch (error) {
-      console.error("Error loading user profile:", error);
-      return null;
-    }
-  };
+  // Convert XanoUser to AuthUser
+  const convertXanoUser = (xanoUser: XanoUser): AuthUser => ({
+    id: xanoUser.id.toString(),
+    email: xanoUser.email,
+    name: xanoUser.name,
+    avatar: xanoUser.avatar,
+  });
 
   // Initialize auth state
   useEffect(() => {
-    // Get initial session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-      if (session?.user) {
-        loadUserProfile(session.user.id).then(setUser);
-      }
-      setIsLoading(false);
-    });
+    const initializeAuth = async () => {
+      const token = TokenManager.getToken();
 
-    // Listen for auth changes
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange(async (event, session) => {
-      setSession(session);
-
-      if (session?.user) {
-        const userProfile = await loadUserProfile(session.user.id);
-        setUser(userProfile);
-
-        if (event === "SIGNED_IN") {
-          showNotification({
-            type: "encouragement",
-            title: "Welcome back! 🌟",
-            message:
-              "Great to see you again! Ready to continue your wellness journey?",
-            duration: 4000,
-          });
+      if (token) {
+        try {
+          const xanoUser = await xanoClient.getProfile();
+          setUser(convertXanoUser(xanoUser));
+        } catch (error) {
+          console.error("Failed to get user profile:", error);
+          TokenManager.removeToken();
         }
-      } else {
-        setUser(null);
       }
 
       setIsLoading(false);
-    });
+    };
 
-    return () => subscription.unsubscribe();
+    initializeAuth();
   }, []);
 
   const login = async (email: string, password: string) => {
     try {
       console.log("🔐 Attempting login for:", email);
 
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
+      const response = await xanoClient.login(email, password);
+
+      // Store the auth token
+      TokenManager.setToken(response.authToken);
+
+      // Set user state
+      const authUser = convertXanoUser(response.user);
+      setUser(authUser);
+
+      console.log("✅ Login successful for user:", authUser.id);
+
+      showNotification({
+        type: "encouragement",
+        title: "Welcome back! 🌟",
+        message:
+          "Great to see you again! Ready to continue your wellness journey?",
+        duration: 4000,
       });
-
-      if (error) {
-        console.error("❌ Supabase auth error:", error);
-        return { success: false, error: error.message };
-      }
-
-      if (data.user) {
-        console.log("✅ Login successful for user:", data.user.id);
-        const userProfile = await loadUserProfile(data.user.id);
-        setUser(userProfile);
-      }
 
       return { success: true };
     } catch (error) {
-      console.error("❌ Network/Connection error:", error);
-
-      // More specific error messages
-      if (error instanceof TypeError && error.message.includes("fetch")) {
-        return {
-          success: false,
-          error:
-            "Connection failed. Please check your Supabase configuration and internet connection.",
-        };
-      }
+      console.error("❌ Login error:", error);
 
       return {
         success: false,
@@ -147,30 +101,22 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const register = async (email: string, password: string, name: string) => {
     try {
-      const { data, error } = await supabase.auth.signUp({
-        email,
-        password,
-        options: {
-          data: {
-            name: name,
-          },
-        },
+      const response = await xanoClient.signup(email, password, name);
+
+      // Store the auth token
+      TokenManager.setToken(response.authToken);
+
+      // Set user state
+      const authUser = convertXanoUser(response.user);
+      setUser(authUser);
+
+      showNotification({
+        type: "achievement",
+        title: "Welcome to MindSync! 🎉",
+        message:
+          "Your account has been created successfully. Start your wellness journey!",
+        duration: 6000,
       });
-
-      if (error) {
-        return { success: false, error: error.message };
-      }
-
-      if (data.user) {
-        // Profile will be created automatically by trigger
-        showNotification({
-          type: "achievement",
-          title: "Welcome to MindSync! 🎉",
-          message:
-            "Your account has been created successfully. Start your wellness journey!",
-          duration: 6000,
-        });
-      }
 
       return { success: true };
     } catch (error) {
@@ -183,9 +129,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const logout = async () => {
     try {
-      await supabase.auth.signOut();
+      await xanoClient.logout();
+    } catch (error) {
+      console.error("Logout error:", error);
+    } finally {
+      TokenManager.removeToken();
       setUser(null);
-      setSession(null);
 
       showNotification({
         type: "encouragement",
@@ -193,8 +142,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         message: "Thanks for taking care of your mental health today.",
         duration: 3000,
       });
-    } catch (error) {
-      console.error("Logout error:", error);
     }
   };
 
@@ -204,21 +151,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
 
     try {
-      const { error } = await supabase
-        .from("users")
-        .update({
-          name: updates.name,
-          avatar: updates.avatar,
-          updated_at: new Date().toISOString(),
-        })
-        .eq("id", user.id);
+      const xanoUpdates = {
+        name: updates.name,
+        avatar: updates.avatar,
+      };
 
-      if (error) {
-        return { success: false, error: error.message };
-      }
+      const updatedXanoUser = await xanoClient.updateProfile(xanoUpdates);
 
       // Update local user state
-      setUser((prev) => (prev ? { ...prev, ...updates } : null));
+      const updatedAuthUser = convertXanoUser(updatedXanoUser);
+      setUser(updatedAuthUser);
 
       showNotification({
         type: "achievement",
@@ -240,7 +182,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     <AuthContext.Provider
       value={{
         user,
-        session,
         isAuthenticated,
         isLoading,
         login,
