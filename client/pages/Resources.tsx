@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Navigation } from "@/components/ui/navigation";
 import { Footer } from "@/components/ui/footer";
 import { GuidedMeditation } from "@/components/GuidedMeditation";
