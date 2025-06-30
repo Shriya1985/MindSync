@@ -197,6 +197,29 @@ export function MoodReactions() {
     }
   }, [moodEntries, autoTrigger]);
 
+  // Listen for mood reaction events from theme system
+  useEffect(() => {
+    const handleMoodReaction = (event: CustomEvent) => {
+      const { mood } = event.detail;
+      const reaction = findReactionForMood(mood);
+      if (reaction && autoTrigger) {
+        setTimeout(() => {
+          triggerReaction(reaction);
+        }, 2000); // Delay to happen after theme change
+      }
+    };
+
+    window.addEventListener(
+      "triggerMoodReaction",
+      handleMoodReaction as EventListener,
+    );
+    return () =>
+      window.removeEventListener(
+        "triggerMoodReaction",
+        handleMoodReaction as EventListener,
+      );
+  }, [autoTrigger]);
+
   // Find appropriate reaction for mood
   const findReactionForMood = (mood: string): MoodReaction | null => {
     const moodLower = mood.toLowerCase();
