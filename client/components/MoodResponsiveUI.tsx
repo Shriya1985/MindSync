@@ -88,26 +88,31 @@ export function MoodResponsiveUI() {
         {/* Current Theme Display */}
         <div
           className={cn(
-            "p-6 rounded-xl bg-gradient-to-br",
-            currentTheme.background,
-            "border-2 border-white/50",
+            "p-6 rounded-xl border-2 border-white/50",
+            `bg-gradient-to-br ${currentTheme.gradients.background}`,
           )}
         >
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center space-x-3">
               <div
                 className={cn(
-                  "w-12 h-12 rounded-full bg-gradient-to-r flex items-center justify-center",
-                  currentTheme.accent,
+                  "w-12 h-12 rounded-full flex items-center justify-center",
+                  `bg-gradient-to-r ${currentTheme.gradients.primary}`,
                 )}
               >
-                <currentTheme.icon className="w-6 h-6 text-white" />
+                <Palette className="w-6 h-6 text-white" />
               </div>
               <div>
-                <h3 className={cn("text-xl font-bold", currentTheme.text)}>
+                <h3
+                  className="text-xl font-bold"
+                  style={{ color: currentTheme.colors.text }}
+                >
                   {currentTheme.name}
                 </h3>
-                <p className={cn("text-sm opacity-80", currentTheme.text)}>
+                <p
+                  className="text-sm opacity-80"
+                  style={{ color: currentTheme.colors.text }}
+                >
                   {currentTheme.description}
                 </p>
               </div>
@@ -122,7 +127,8 @@ export function MoodResponsiveUI() {
 
           {lastMoodUsed && (
             <Badge
-              className={cn("bg-white/20 backdrop-blur-sm", currentTheme.text)}
+              className="bg-white/20 backdrop-blur-sm"
+              style={{ color: currentTheme.colors.text }}
             >
               Based on your "{lastMoodUsed}" mood
             </Badge>
