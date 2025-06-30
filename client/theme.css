@@ -1,0 +1,203 @@
+/* Theme-aware global styles */
+
+/* Base theme variables - will be overridden by ThemeContext */
+:root {
+  --theme-primary: #6b7280;
+  --theme-secondary: #9ca3af;
+  --theme-accent: #4b5563;
+  --theme-background: #f9fafb;
+  --theme-surface: #ffffff;
+  --theme-text: #374151;
+  --theme-muted: #6b7280;
+
+  --gradient-primary: from-gray-400 to-slate-400;
+  --gradient-background: from-gray-50 via-slate-50 to-zinc-50;
+  --gradient-hero: from-gray-100 to-slate-100;
+
+  --effect-blur: backdrop-blur-sm;
+  --effect-shadow: shadow-gray-200/50;
+  --effect-border: border-gray-200;
+}
+
+/* Global background with theme */
+body {
+  background: linear-gradient(
+    135deg,
+    var(--theme-background),
+    var(--theme-surface)
+  );
+  min-height: 100vh;
+  transition: background 0.5s ease-in-out;
+}
+
+/* Navigation theming */
+nav,
+.navigation {
+  background: color-mix(in srgb, var(--theme-surface) 90%, transparent);
+  backdrop-filter: blur(12px);
+  border-color: color-mix(in srgb, var(--theme-primary) 25%, transparent);
+  transition: all 0.3s ease;
+}
+
+/* Card theming */
+.card,
+[data-theme-card] {
+  background: color-mix(in srgb, var(--theme-surface) 95%, transparent);
+  backdrop-filter: blur(8px);
+  border-color: color-mix(in srgb, var(--theme-primary) 20%, transparent);
+  transition: all 0.3s ease;
+}
+
+/* Button theming */
+.btn-theme-primary {
+  background: linear-gradient(
+    135deg,
+    var(--theme-primary),
+    var(--theme-secondary)
+  );
+  color: white;
+  border: none;
+}
+
+.btn-theme-primary:hover {
+  background: linear-gradient(
+    135deg,
+    var(--theme-secondary),
+    var(--theme-accent)
+  );
+  transform: translateY(-1px);
+}
+
+/* Theme-aware text colors */
+.text-theme-primary {
+  color: var(--theme-primary);
+}
+.text-theme-secondary {
+  color: var(--theme-secondary);
+}
+.text-theme-accent {
+  color: var(--theme-accent);
+}
+.text-theme-muted {
+  color: var(--theme-muted);
+}
+
+/* Theme-aware background colors */
+.bg-theme-primary {
+  background-color: var(--theme-primary);
+}
+.bg-theme-secondary {
+  background-color: var(--theme-secondary);
+}
+.bg-theme-surface {
+  background-color: var(--theme-surface);
+}
+.bg-theme-background {
+  background-color: var(--theme-background);
+}
+
+/* Gradient utilities */
+.bg-gradient-theme-primary {
+  background: linear-gradient(
+    135deg,
+    var(--theme-primary),
+    var(--theme-secondary)
+  );
+}
+
+.bg-gradient-theme-background {
+  background: linear-gradient(
+    135deg,
+    var(--theme-background),
+    var(--theme-surface)
+  );
+}
+
+/* Theme-specific overrides */
+.theme-happy {
+  --glow-color: #f59e0b;
+}
+
+.theme-happy .card {
+  box-shadow: 0 4px 20px
+    color-mix(in srgb, var(--theme-primary) 15%, transparent);
+}
+
+.theme-relaxed {
+  --glow-color: #0ea5e9;
+}
+
+.theme-relaxed .card {
+  box-shadow: 0 4px 20px
+    color-mix(in srgb, var(--theme-primary) 15%, transparent);
+}
+
+.theme-excited {
+  --glow-color: #a855f7;
+}
+
+.theme-excited .card {
+  box-shadow: 0 4px 20px
+    color-mix(in srgb, var(--theme-primary) 15%, transparent);
+  animation: subtle-pulse 3s ease-in-out infinite;
+}
+
+.theme-peaceful {
+  --glow-color: #10b981;
+}
+
+.theme-motivated {
+  --glow-color: #f97316;
+}
+
+.theme-motivated .card {
+  box-shadow: 0 4px 20px
+    color-mix(in srgb, var(--theme-primary) 15%, transparent);
+}
+
+/* Animations */
+@keyframes subtle-pulse {
+  0%,
+  100% {
+    box-shadow: 0 4px 20px
+      color-mix(in srgb, var(--theme-primary) 15%, transparent);
+  }
+  50% {
+    box-shadow: 0 6px 25px
+      color-mix(in srgb, var(--theme-primary) 25%, transparent);
+  }
+}
+
+/* Container theming */
+[data-theme-container] {
+  background: linear-gradient(
+    135deg,
+    var(--theme-background),
+    var(--theme-surface)
+  );
+  transition: background 0.5s ease-in-out;
+}
+
+/* Responsive theme adjustments */
+@media (max-width: 768px) {
+  .card {
+    backdrop-filter: blur(4px);
+  }
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  .card {
+    border-width: 2px;
+    backdrop-filter: none;
+    background: var(--theme-surface);
+  }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    transition: none !important;
+    animation: none !important;
+  }
+}
