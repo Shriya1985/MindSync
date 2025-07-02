@@ -149,6 +149,8 @@ export default function Profile() {
 
   const tabs = [
     { id: "profile", label: "Profile", icon: User },
+    { id: "appearance", label: "Appearance", icon: Palette },
+    { id: "activities", label: "Activities & Points", icon: Trophy },
     { id: "privacy", label: "Privacy", icon: Shield },
     { id: "notifications", label: "Notifications", icon: Bell },
     { id: "data", label: "Data & Export", icon: Download },
