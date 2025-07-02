@@ -9,8 +9,6 @@ import { EmotionEncyclopedia } from "@/components/EmotionEncyclopedia";
 import { VoiceJournaling } from "@/components/VoiceJournaling";
 import { SelfCareTaskGenerator } from "@/components/SelfCareTaskGenerator";
 import { AccessibilitySettings } from "@/components/AccessibilitySettings";
-import { MoodResponsiveUI } from "@/components/MoodResponsiveUI";
-import { AIChatModes } from "@/components/AIChatModes";
 import { DailyQuotes } from "@/components/DailyQuotes";
 import { MoodReactions } from "@/components/MoodReactions";
 import { useMoodTheme } from "@/hooks/useMoodTheme";
@@ -621,17 +619,11 @@ export default function Resources() {
             {/* Mood Reactions */}
             <MoodReactions />
 
-            {/* AI Chat Modes */}
-            <AIChatModes />
-
             {/* Voice Journaling */}
             <VoiceJournaling />
 
             {/* Self-Care Task Generator */}
             <SelfCareTaskGenerator />
-
-            {/* Mood-Responsive UI */}
-            <MoodResponsiveUI />
 
             {/* Daily Affirmation */}
             <DailyAffirmation />
@@ -647,9 +639,6 @@ export default function Resources() {
 
             {/* Emotion Encyclopedia */}
             <EmotionEncyclopedia />
-
-            {/* Accessibility Settings */}
-            <AccessibilitySettings />
           </div>
         )}
 
