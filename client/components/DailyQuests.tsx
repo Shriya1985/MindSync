@@ -71,7 +71,7 @@ export function DailyQuests() {
     }
   }, [journalEntries, moodEntries, chatMessages, completedToday]);
 
-  const completeQuest = (questId: string) => {
+  const completeQuest = async (questId: string) => {
     const quest = quests.find((q) => q.id === questId);
     if (!quest || quest.completed) return;
 
@@ -87,6 +87,9 @@ export function DailyQuests() {
       prev.map((q) => (q.id === questId ? { ...q, completed: true } : q)),
     );
 
+    // Award XP through data context
+    await addPoints(quest.xp, `Daily Quest: ${quest.title}`);
+
     // Show celebration notification
     showNotification({
       type: "achievement",
@@ -98,6 +101,7 @@ export function DailyQuests() {
     // Check for daily completion bonus
     const completedCount = newCompleted.length;
     if (completedCount === quests.length && quests.length > 0) {
+      await addPoints(50, "Daily Quest Completion Bonus");
       setTimeout(() => {
         showNotification({
           type: "milestone",
@@ -110,10 +114,30 @@ export function DailyQuests() {
   };
 
   const resetQuests = () => {
-    setCompletedToday([]);
     const today = new Date().toISOString().split("T")[0];
+
+    // Clear completed status
+    setCompletedToday([]);
     localStorage.removeItem(`quests_${today}`);
-    setQuests((prev) => prev.map((quest) => ({ ...quest, completed: false })));
+    localStorage.removeItem(`daily_quests_${today}`);
+
+    // Generate fresh quests
+    const userHistory = {
+      journals: journalEntries,
+      moods: moodEntries,
+      chats: chatMessages,
+    };
+
+    const newQuests = generateDailyQuests(userHistory, []);
+    localStorage.setItem(`daily_quests_${today}`, JSON.stringify(newQuests));
+    setQuests(newQuests);
+
+    showNotification({
+      type: "encouragement",
+      title: "Fresh Quests Generated! 🔄",
+      message: "Your daily quests have been refreshed with new challenges!",
+      duration: 3000,
+    });
   };
 
   const getDifficultyColor = (difficulty: string) => {
