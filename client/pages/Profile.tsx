@@ -11,6 +11,9 @@ import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/contexts/AuthContext";
 import { useData } from "@/contexts/DataContext";
 import { showNotification } from "@/components/ui/notification-system";
+import { MoodResponsiveUI } from "@/components/MoodResponsiveUI";
+import { AccessibilitySettings } from "@/components/AccessibilitySettings";
+import { AIChatModes } from "@/components/AIChatModes";
 import {
   User,
   Settings,
@@ -31,7 +34,13 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-type SettingsTab = "profile" | "privacy" | "notifications" | "data";
+type SettingsTab =
+  | "profile"
+  | "appearance"
+  | "activities"
+  | "privacy"
+  | "notifications"
+  | "data";
 
 export default function Profile() {
   const [activeTab, setActiveTab] = useState<SettingsTab>("profile");
