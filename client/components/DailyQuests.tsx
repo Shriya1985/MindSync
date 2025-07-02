@@ -21,7 +21,8 @@ import { cn } from "@/lib/utils";
 export function DailyQuests() {
   const [quests, setQuests] = useState<DailyQuest[]>([]);
   const [completedToday, setCompletedToday] = useState<string[]>([]);
-  const { journalEntries, moodEntries, chatMessages, userStats } = useData();
+  const { journalEntries, moodEntries, chatMessages, userStats, addPoints } =
+    useData();
 
   // Load completed quests from localStorage
   useEffect(() => {
@@ -32,23 +33,42 @@ export function DailyQuests() {
     }
   }, []);
 
-  // Generate quests based on user history
+  // Generate or load daily quests
   useEffect(() => {
-    const userHistory = {
-      journals: journalEntries,
-      moods: moodEntries,
-      chats: chatMessages,
-    };
+    const today = new Date().toISOString().split("T")[0];
+    const savedQuests = localStorage.getItem(`daily_quests_${today}`);
 
-    const dailyQuests = generateDailyQuests(userHistory, completedToday);
+    if (savedQuests) {
+      // Load saved quests for today
+      const parsedQuests = JSON.parse(savedQuests);
+      const updatedQuests = parsedQuests.map((quest: DailyQuest) => ({
+        ...quest,
+        completed: completedToday.includes(quest.id),
+      }));
+      setQuests(updatedQuests);
+    } else {
+      // Generate new quests for today
+      const userHistory = {
+        journals: journalEntries,
+        moods: moodEntries,
+        chats: chatMessages,
+      };
 
-    // Mark completed quests
-    const updatedQuests = dailyQuests.map((quest) => ({
-      ...quest,
-      completed: completedToday.includes(quest.id),
-    }));
+      const dailyQuests = generateDailyQuests(userHistory, completedToday);
 
-    setQuests(updatedQuests);
+      // Save new quests for today
+      localStorage.setItem(
+        `daily_quests_${today}`,
+        JSON.stringify(dailyQuests),
+      );
+
+      const updatedQuests = dailyQuests.map((quest) => ({
+        ...quest,
+        completed: completedToday.includes(quest.id),
+      }));
+
+      setQuests(updatedQuests);
+    }
   }, [journalEntries, moodEntries, chatMessages, completedToday]);
 
   const completeQuest = (questId: string) => {
@@ -171,16 +191,18 @@ export function DailyQuests() {
       </CardHeader>
 
       <CardContent>
-        <div className="space-y-4">
-          {quests.map((quest) => (
+        <div className="space-y-3">
+          {quests.map((quest, index) => (
             <div
               key={quest.id}
               className={cn(
-                "p-4 rounded-lg border-2 transition-all duration-300",
+                "p-4 rounded-xl border-2 transition-all duration-300 transform hover:scale-[1.01]",
                 quest.completed
-                  ? "border-green-200 bg-green-50"
-                  : "border-gray-200 bg-white hover:border-mint-200 hover:bg-mint-50",
+                  ? "border-green-300 bg-gradient-to-r from-green-50 to-emerald-50 shadow-md"
+                  : "border-gray-200 bg-white hover:border-mint-300 hover:bg-gradient-to-r hover:from-mint-50 hover:to-sky-50 hover:shadow-lg",
+                "animate-in slide-in-from-top-2",
               )}
+              style={{ animationDelay: `${index * 100}ms` }}
             >
               <div className="flex items-start justify-between">
                 <div className="flex items-start space-x-3 flex-1">
