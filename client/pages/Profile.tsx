@@ -434,6 +434,220 @@ export default function Profile() {
                   </div>
                 )}
 
+                {activeTab === "appearance" && (
+                  <div className="space-y-6">
+                    <h2 className="text-2xl font-semibold text-gray-900">
+                      Appearance & Accessibility
+                    </h2>
+
+                    {/* Theme Settings */}
+                    <div className="space-y-6">
+                      <MoodResponsiveUI />
+                      <AIChatModes />
+                      <AccessibilitySettings />
+                    </div>
+                  </div>
+                )}
+
+                {activeTab === "activities" && (
+                  <div className="space-y-6">
+                    <h2 className="text-2xl font-semibold text-gray-900">
+                      Activities & Points
+                    </h2>
+
+                    {/* Points Overview */}
+                    <Card className="shadow-lg border-0 bg-white/90 backdrop-blur-sm">
+                      <CardHeader>
+                        <CardTitle className="flex items-center space-x-2">
+                          <Trophy className="w-6 h-6 text-yellow-600" />
+                          <span>Points Overview</span>
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+                          <div className="text-center">
+                            <div className="w-16 h-16 bg-gradient-to-r from-yellow-400 to-orange-400 rounded-full flex items-center justify-center mx-auto mb-3">
+                              <Trophy className="w-8 h-8 text-white" />
+                            </div>
+                            <p className="text-3xl font-bold text-yellow-600">
+                              {userStats.points}
+                            </p>
+                            <p className="text-sm text-gray-600">
+                              Total Points
+                            </p>
+                          </div>
+                          <div className="text-center">
+                            <div className="w-16 h-16 bg-gradient-to-r from-purple-400 to-pink-400 rounded-full flex items-center justify-center mx-auto mb-3">
+                              <BarChart3 className="w-8 h-8 text-white" />
+                            </div>
+                            <p className="text-3xl font-bold text-purple-600">
+                              {userStats.level}
+                            </p>
+                            <p className="text-sm text-gray-600">
+                              Current Level
+                            </p>
+                          </div>
+                          <div className="text-center">
+                            <div className="w-16 h-16 bg-gradient-to-r from-green-400 to-emerald-400 rounded-full flex items-center justify-center mx-auto mb-3">
+                              <Calendar className="w-8 h-8 text-white" />
+                            </div>
+                            <p className="text-3xl font-bold text-green-600">
+                              {userStats.currentStreak}
+                            </p>
+                            <p className="text-sm text-gray-600">Day Streak</p>
+                          </div>
+                          <div className="text-center">
+                            <div className="w-16 h-16 bg-gradient-to-r from-blue-400 to-cyan-400 rounded-full flex items-center justify-center mx-auto mb-3">
+                              <Heart className="w-8 h-8 text-white" />
+                            </div>
+                            <p className="text-3xl font-bold text-blue-600">
+                              {achievements?.length || 0}
+                            </p>
+                            <p className="text-sm text-gray-600">
+                              Achievements
+                            </p>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+
+                    {/* Recent Activities */}
+                    <Card className="shadow-lg border-0 bg-white/90 backdrop-blur-sm">
+                      <CardHeader>
+                        <CardTitle>Recent Point Activities</CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="space-y-4">
+                          {/* Mock recent activities - in real app would come from data */}
+                          <div className="flex items-center justify-between p-3 bg-green-50 rounded-lg border border-green-200">
+                            <div className="flex items-center space-x-3">
+                              <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
+                                <Edit3 className="w-4 h-4 text-green-600" />
+                              </div>
+                              <div>
+                                <p className="font-medium text-gray-900">
+                                  Journal Entry Completed
+                                </p>
+                                <p className="text-sm text-gray-600">
+                                  2 hours ago
+                                </p>
+                              </div>
+                            </div>
+                            <Badge className="bg-green-100 text-green-700">
+                              +20 XP
+                            </Badge>
+                          </div>
+
+                          <div className="flex items-center justify-between p-3 bg-blue-50 rounded-lg border border-blue-200">
+                            <div className="flex items-center space-x-3">
+                              <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
+                                <Heart className="w-4 h-4 text-blue-600" />
+                              </div>
+                              <div>
+                                <p className="font-medium text-gray-900">
+                                  Mood Logged
+                                </p>
+                                <p className="text-sm text-gray-600">
+                                  5 hours ago
+                                </p>
+                              </div>
+                            </div>
+                            <Badge className="bg-blue-100 text-blue-700">
+                              +10 XP
+                            </Badge>
+                          </div>
+
+                          <div className="flex items-center justify-between p-3 bg-purple-50 rounded-lg border border-purple-200">
+                            <div className="flex items-center space-x-3">
+                              <div className="w-8 h-8 bg-purple-100 rounded-full flex items-center justify-center">
+                                <Brain className="w-4 h-4 text-purple-600" />
+                              </div>
+                              <div>
+                                <p className="font-medium text-gray-900">
+                                  Self-Care Task Completed
+                                </p>
+                                <p className="text-sm text-gray-600">
+                                  1 day ago
+                                </p>
+                              </div>
+                            </div>
+                            <Badge className="bg-purple-100 text-purple-700">
+                              +15 XP
+                            </Badge>
+                          </div>
+
+                          <div className="flex items-center justify-between p-3 bg-yellow-50 rounded-lg border border-yellow-200">
+                            <div className="flex items-center space-x-3">
+                              <div className="w-8 h-8 bg-yellow-100 rounded-full flex items-center justify-center">
+                                <Trophy className="w-4 h-4 text-yellow-600" />
+                              </div>
+                              <div>
+                                <p className="font-medium text-gray-900">
+                                  Daily Quest Completed
+                                </p>
+                                <p className="text-sm text-gray-600">
+                                  1 day ago
+                                </p>
+                              </div>
+                            </div>
+                            <Badge className="bg-yellow-100 text-yellow-700">
+                              +25 XP
+                            </Badge>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+
+                    {/* Achievements */}
+                    {achievements && achievements.length > 0 && (
+                      <Card className="shadow-lg border-0 bg-white/90 backdrop-blur-sm">
+                        <CardHeader>
+                          <CardTitle>Recent Achievements</CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            {achievements.slice(0, 4).map((achievement) => (
+                              <div
+                                key={achievement.id}
+                                className="p-4 bg-gradient-to-r from-purple-50 to-pink-50 rounded-lg border border-purple-200"
+                              >
+                                <div className="flex items-center space-x-3">
+                                  <div className="text-2xl">
+                                    {achievement.icon}
+                                  </div>
+                                  <div>
+                                    <h4 className="font-semibold text-gray-900">
+                                      {achievement.title}
+                                    </h4>
+                                    <p className="text-sm text-gray-600">
+                                      {achievement.description}
+                                    </p>
+                                    <Badge
+                                      className={cn(
+                                        "mt-1 text-xs",
+                                        achievement.rarity === "legendary" &&
+                                          "bg-yellow-100 text-yellow-700",
+                                        achievement.rarity === "epic" &&
+                                          "bg-purple-100 text-purple-700",
+                                        achievement.rarity === "rare" &&
+                                          "bg-blue-100 text-blue-700",
+                                        achievement.rarity === "common" &&
+                                          "bg-gray-100 text-gray-700",
+                                      )}
+                                    >
+                                      {achievement.rarity}
+                                    </Badge>
+                                  </div>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        </CardContent>
+                      </Card>
+                    )}
+                  </div>
+                )}
+
                 {activeTab === "privacy" && (
                   <div className="space-y-6">
                     <h2 className="text-2xl font-semibold text-gray-900">
