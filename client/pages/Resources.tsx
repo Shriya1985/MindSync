@@ -8,7 +8,6 @@ import { DailyAffirmation } from "@/components/DailyAffirmation";
 import { EmotionEncyclopedia } from "@/components/EmotionEncyclopedia";
 import { VoiceJournaling } from "@/components/VoiceJournaling";
 import { SelfCareTaskGenerator } from "@/components/SelfCareTaskGenerator";
-import { AccessibilitySettings } from "@/components/AccessibilitySettings";
 import { DailyQuotes } from "@/components/DailyQuotes";
 import { MoodReactions } from "@/components/MoodReactions";
 import { useMoodTheme } from "@/hooks/useMoodTheme";
