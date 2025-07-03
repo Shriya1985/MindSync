@@ -3,11 +3,73 @@ import { createClient } from "@supabase/supabase-js";
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
-if (!supabaseUrl || !supabaseAnonKey) {
-  throw new Error("Missing Supabase environment variables");
-}
+// Check if Supabase is configured
+export const isSupabaseConfigured = !!(supabaseUrl && supabaseAnonKey);
 
-export const supabase = createClient(supabaseUrl, supabaseAnonKey);
+// Create a fallback client for development
+const createFallbackClient = () => {
+  console.warn(
+    "🔧 Supabase not configured. Using development mode with localStorage fallback.\n" +
+      "To enable database features:\n" +
+      "1. Create a Supabase project at https://supabase.com\n" +
+      "2. Add VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY to your .env file\n" +
+      "3. Run the database migration from SUPABASE_SETUP.md",
+  );
+
+  // Return a mock client that won't crash the app
+  return {
+    auth: {
+      getSession: () =>
+        Promise.resolve({ data: { session: null }, error: null }),
+      signInWithPassword: () =>
+        Promise.resolve({
+          data: { user: null },
+          error: { message: "Supabase not configured" },
+        }),
+      signUp: () =>
+        Promise.resolve({
+          data: { user: null },
+          error: { message: "Supabase not configured" },
+        }),
+      signOut: () => Promise.resolve({ error: null }),
+      onAuthStateChange: () => ({
+        data: { subscription: { unsubscribe: () => {} } },
+      }),
+    },
+    from: () => ({
+      select: () => ({
+        eq: () => ({
+          single: () =>
+            Promise.resolve({
+              data: null,
+              error: { message: "Supabase not configured" },
+            }),
+        }),
+      }),
+      insert: () => ({
+        select: () => ({
+          single: () =>
+            Promise.resolve({
+              data: null,
+              error: { message: "Supabase not configured" },
+            }),
+        }),
+      }),
+      update: () => ({
+        eq: () =>
+          Promise.resolve({ error: { message: "Supabase not configured" } }),
+      }),
+      delete: () => ({
+        eq: () =>
+          Promise.resolve({ error: { message: "Supabase not configured" } }),
+      }),
+    }),
+  } as any;
+};
+
+export const supabase = isSupabaseConfigured
+  ? createClient(supabaseUrl!, supabaseAnonKey!)
+  : createFallbackClient();
 
 // Database Types
 export interface Database {
