@@ -241,6 +241,20 @@ class LocalStorageService {
     this.setUserData(userId, dataType, filteredData);
   }
 
+  // Mood entry specific methods for DataContext compatibility
+  async addMoodEntry(entry: any): Promise<any> {
+    const currentUser = this.getCurrentUser();
+    if (!currentUser) return null;
+
+    const moodEntry = {
+      id: this.generateId(),
+      ...entry,
+    };
+
+    this.addUserDataItem(currentUser.id, "MOOD_ENTRIES", moodEntry);
+    return moodEntry;
+  }
+
   // Get all user data for DataContext
   getAllUserData(): any {
     const currentUser = this.getCurrentUser();
