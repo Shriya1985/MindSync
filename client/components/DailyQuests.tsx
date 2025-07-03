@@ -87,8 +87,9 @@ export function DailyQuests() {
       prev.map((q) => (q.id === questId ? { ...q, completed: true } : q)),
     );
 
-    // Award XP through data context
+    // Award XP through data context and mark quest as completed
     await addPoints(quest.xp, `Daily Quest: ${quest.title}`);
+    await completeDailyQuest(questId);
 
     // Show celebration notification
     showNotification({
