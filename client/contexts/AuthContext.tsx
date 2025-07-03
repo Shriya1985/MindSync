@@ -1,191 +1,273 @@
 import { createContext, useContext, useEffect, useState } from "react";
-import { localStorageService, type LocalUser } from "@/lib/localStorage";
+import { supabase } from "@/lib/supabase";
 import { showNotification } from "@/components/ui/notification-system";
+import type { User as SupabaseUser } from "@supabase/supabase-js";
 
-type AuthUser = {
+type User = {
   id: string;
-  email: string;
   name: string;
+  email: string;
   avatar?: string;
+  bio?: string;
+  preferences?: any;
 };
 
 type AuthContextType = {
-  user: AuthUser | null;
+  user: User | null;
   isAuthenticated: boolean;
   isLoading: boolean;
-  login: (
-    email: string,
-    password: string,
-  ) => Promise<{ success: boolean; error?: string }>;
-  register: (
-    email: string,
-    password: string,
-    name: string,
-  ) => Promise<{ success: boolean; error?: string }>;
-  logout: () => Promise<void>;
-  updateProfile: (
-    updates: Partial<AuthUser>,
-  ) => Promise<{ success: boolean; error?: string }>;
+  login: (email: string, password: string) => Promise<boolean>;
+  register: (name: string, email: string, password: string) => Promise<boolean>;
+  logout: () => void;
+  updateProfile: (data: Partial<User>) => Promise<boolean>;
 };
 
-const AuthContext = createContext<AuthContextType | null>(null);
+const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [user, setUser] = useState<AuthUser | null>(null);
+export function useAuth() {
+  const context = useContext(AuthContext);
+  if (context === undefined) {
+    throw new Error("useAuth must be used within an AuthProvider");
+  }
+  return context;
+}
+
+type AuthProviderProps = {
+  children: React.ReactNode;
+};
+
+export function AuthProvider({ children }: AuthProviderProps) {
+  const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  const isAuthenticated = !!user;
-
-  // Convert LocalUser to AuthUser
-  const convertLocalUser = (localUser: LocalUser): AuthUser => ({
-    id: localUser.id,
-    email: localUser.email,
-    name: localUser.name,
-    avatar: localUser.avatar,
-  });
-
-  // Initialize auth state from localStorage
-  useEffect(() => {
-    const currentUser = localStorageService.getCurrentUser();
-    if (currentUser) {
-      setUser(convertLocalUser(currentUser));
-    }
-    setIsLoading(false);
-  }, []);
-
-  const login = async (email: string, password: string) => {
+  // Fetch user profile from Supabase
+  const fetchUserProfile = async (supabaseUser: SupabaseUser) => {
     try {
-      console.log("🔐 Attempting login for:", email);
+      const { data: profile, error } = await supabase
+        .from("profiles")
+        .select("*")
+        .eq("id", supabaseUser.id)
+        .single();
 
-      const result = localStorageService.login(email, password);
-
-      if (!result.success) {
-        return { success: false, error: result.error };
+      if (error) {
+        console.error("Error fetching profile:", error);
+        return null;
       }
 
-      if (result.user) {
-        const authUser = convertLocalUser(result.user);
-        setUser(authUser);
-
-        console.log("✅ Login successful for user:", authUser.id);
-
-        showNotification({
-          type: "encouragement",
-          title: "Welcome back! 🌟",
-          message:
-            "Great to see you again! Ready to continue your wellness journey?",
-          duration: 4000,
-        });
-      }
-
-      return { success: true };
-    } catch (error) {
-      console.error("❌ Login error:", error);
       return {
-        success: false,
-        error: error instanceof Error ? error.message : "Login failed",
+        id: profile.id,
+        name: profile.name,
+        email: profile.email,
+        avatar: profile.avatar_url,
+        bio: profile.bio,
+        preferences: profile.preferences,
       };
+    } catch (error) {
+      console.error("Error in fetchUserProfile:", error);
+      return null;
     }
   };
 
-  const register = async (email: string, password: string, name: string) => {
-    try {
-      const result = localStorageService.register(email, password, name);
+  useEffect(() => {
+    // Get initial session
+    const initializeAuth = async () => {
+      try {
+        const {
+          data: { session },
+          error,
+        } = await supabase.auth.getSession();
 
-      if (!result.success) {
-        return { success: false, error: result.error };
+        if (error) {
+          console.error("Error getting session:", error);
+          setIsLoading(false);
+          return;
+        }
+
+        if (session?.user) {
+          const userProfile = await fetchUserProfile(session.user);
+          setUser(userProfile);
+        }
+      } catch (error) {
+        console.error("Error initializing auth:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    initializeAuth();
+
+    // Listen for auth changes
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange(async (event, session) => {
+      if (event === "SIGNED_IN" && session?.user) {
+        const userProfile = await fetchUserProfile(session.user);
+        setUser(userProfile);
+      } else if (event === "SIGNED_OUT") {
+        setUser(null);
+      }
+      setIsLoading(false);
+    });
+
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, []);
+
+  const login = async (email: string, password: string): Promise<boolean> => {
+    try {
+      setIsLoading(true);
+
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+
+      if (error) {
+        showNotification({
+          type: "encouragement",
+          title: "Login Failed",
+          message: error.message,
+          duration: 3000,
+        });
+        return false;
       }
 
-      if (result.user) {
-        const authUser = convertLocalUser(result.user);
-        setUser(authUser);
+      if (data.user) {
+        const userProfile = await fetchUserProfile(data.user);
+        setUser(userProfile);
 
         showNotification({
-          type: "achievement",
-          title: "Welcome to MindSync! 🎉",
-          message:
-            "Your account has been created successfully. Start your wellness journey!",
-          duration: 6000,
+          type: "encouragement",
+          title: "Welcome back! 🎉",
+          message: `Good to see you again, ${userProfile?.name || "there"}!`,
+          duration: 3000,
         });
+        return true;
       }
 
-      return { success: true };
+      return false;
     } catch (error) {
-      return {
-        success: false,
-        error: error instanceof Error ? error.message : "Registration failed",
-      };
+      showNotification({
+        type: "encouragement",
+        title: "Login Error",
+        message: "Something went wrong. Please try again.",
+        duration: 3000,
+      });
+      return false;
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const register = async (
+    name: string,
+    email: string,
+    password: string,
+  ): Promise<boolean> => {
+    try {
+      setIsLoading(true);
+
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          data: {
+            name: name,
+          },
+        },
+      });
+
+      if (error) {
+        showNotification({
+          type: "encouragement",
+          title: "Registration Failed",
+          message: error.message,
+          duration: 3000,
+        });
+        return false;
+      }
+
+      if (data.user) {
+        // Profile will be created automatically by the database trigger
+        showNotification({
+          type: "encouragement",
+          title: "Welcome to MindSync! 🌟",
+          message: `Account created successfully for ${name}!`,
+          duration: 4000,
+        });
+        return true;
+      }
+
+      return false;
+    } catch (error) {
+      showNotification({
+        type: "encouragement",
+        title: "Registration Error",
+        message: "Something went wrong. Please try again.",
+        duration: 3000,
+      });
+      return false;
+    } finally {
+      setIsLoading(false);
     }
   };
 
   const logout = async () => {
     try {
-      localStorageService.logout();
+      await supabase.auth.signOut();
       setUser(null);
-
       showNotification({
         type: "encouragement",
         title: "See you soon! 👋",
-        message: "Thanks for taking care of your mental health today.",
-        duration: 3000,
+        message: "You've been logged out successfully.",
+        duration: 2000,
       });
     } catch (error) {
-      console.error("Logout error:", error);
+      console.error("Error during logout:", error);
     }
   };
 
-  const updateProfile = async (updates: Partial<AuthUser>) => {
-    if (!user) {
-      return { success: false, error: "Not authenticated" };
-    }
-
+  const updateProfile = async (data: Partial<User>): Promise<boolean> => {
     try {
-      const updatedUser = localStorageService.updateUser(user.id, updates);
+      if (!user) return false;
 
-      if (!updatedUser) {
-        return { success: false, error: "Failed to update profile" };
+      const updates = {
+        name: data.name,
+        bio: data.bio,
+        avatar_url: data.avatar,
+        preferences: data.preferences,
+        updated_at: new Date().toISOString(),
+      };
+
+      const { error } = await supabase
+        .from("profiles")
+        .update(updates)
+        .eq("id", user.id);
+
+      if (error) {
+        console.error("Error updating profile:", error);
+        return false;
       }
 
       // Update local user state
-      setUser(convertLocalUser(updatedUser));
-
-      showNotification({
-        type: "achievement",
-        title: "Profile Updated! ✨",
-        message: "Your profile changes have been saved successfully.",
-        duration: 3000,
-      });
-
-      return { success: true };
+      setUser({ ...user, ...data });
+      return true;
     } catch (error) {
-      return {
-        success: false,
-        error: error instanceof Error ? error.message : "Update failed",
-      };
+      console.error("Error in updateProfile:", error);
+      return false;
     }
   };
 
-  return (
-    <AuthContext.Provider
-      value={{
-        user,
-        isAuthenticated,
-        isLoading,
-        login,
-        register,
-        logout,
-        updateProfile,
-      }}
-    >
-      {children}
-    </AuthContext.Provider>
-  );
-}
+  const value: AuthContextType = {
+    user,
+    isAuthenticated: !!user,
+    isLoading,
+    login,
+    register,
+    logout,
+    updateProfile,
+  };
 
-export function useAuth() {
-  const context = useContext(AuthContext);
-  if (!context) {
-    throw new Error("useAuth must be used within an AuthProvider");
-  }
-  return context;
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
