@@ -36,8 +36,12 @@ export function CopingStrategies() {
 
   useEffect(() => {
     // Analyze current emotional state from recent data
-    const recentMoods = moodEntries.slice(0, 5);
-    const recentJournals = journalEntries.slice(0, 3);
+    const recentMoods = Array.isArray(moodEntries)
+      ? moodEntries.slice(0, 5)
+      : [];
+    const recentJournals = Array.isArray(journalEntries)
+      ? journalEntries.slice(0, 3)
+      : [];
 
     if (recentMoods.length === 0 && recentJournals.length === 0) return;
 
