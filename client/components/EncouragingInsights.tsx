@@ -20,17 +20,19 @@ export function EncouragingInsights() {
   sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
   const sevenDaysAgoStr = sevenDaysAgo.toISOString().split("T")[0];
 
-  const recentJournalEntries = (journalEntries || []).filter(
-    (entry) => entry.date >= sevenDaysAgoStr,
-  );
-  const recentMoodEntries = (moodEntries || []).filter(
-    (entry) => entry.date >= sevenDaysAgoStr,
-  );
-  const recentChatMessages = (chatMessages || []).filter(
-    (msg) =>
-      msg.sender === "user" &&
-      msg.timestamp.toISOString().split("T")[0] >= sevenDaysAgoStr,
-  );
+  const recentJournalEntries = Array.isArray(journalEntries)
+    ? journalEntries.filter((entry) => entry.date >= sevenDaysAgoStr)
+    : [];
+  const recentMoodEntries = Array.isArray(moodEntries)
+    ? moodEntries.filter((entry) => entry.date >= sevenDaysAgoStr)
+    : [];
+  const recentChatMessages = Array.isArray(chatMessages)
+    ? chatMessages.filter(
+        (msg) =>
+          msg.sender === "user" &&
+          msg.timestamp.toISOString().split("T")[0] >= sevenDaysAgoStr,
+      )
+    : [];
 
   const generatePersonalizedInsight = () => {
     const insights = [];
