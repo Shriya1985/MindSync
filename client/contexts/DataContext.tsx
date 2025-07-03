@@ -1,5 +1,6 @@
 import { createContext, useContext, useEffect, useState } from "react";
-import { supabase } from "@/lib/supabase";
+import { supabase, isSupabaseConfigured } from "@/lib/supabase";
+import { localStorageService } from "@/lib/localStorage";
 import { useAuth } from "@/contexts/AuthContext";
 import { showNotification } from "@/components/ui/notification-system";
 
@@ -179,7 +180,11 @@ export function DataProvider({ children }: DataProviderProps) {
   // Load all user data when authenticated
   useEffect(() => {
     if (isAuthenticated && user) {
-      loadAllData();
+      if (isSupabaseConfigured) {
+        loadAllData();
+      } else {
+        loadLocalStorageData();
+      }
     } else {
       // Clear data when not authenticated
       clearAllData();
@@ -202,6 +207,42 @@ export function DataProvider({ children }: DataProviderProps) {
       ]);
     } catch (error) {
       console.error("Error loading data:", error);
+    } finally {
+      setIsLoading(false);
+      setIsInitialized(true);
+    }
+  };
+
+  const loadLocalStorageData = () => {
+    if (!user) return;
+
+    setIsLoading(true);
+    try {
+      // Load data from localStorage service
+      const data = localStorageService.getAllUserData();
+
+      setMoodEntries(data.moodEntries || []);
+      setJournalEntries(data.journalEntries || []);
+      setChatMessages(data.chatMessages || []);
+      setAchievements(data.achievements || []);
+      setUserStats(
+        data.userStats || {
+          level: 1,
+          points: 0,
+          currentStreak: 0,
+          longestStreak: 0,
+          totalEntries: 0,
+          totalWords: 0,
+          lastActivity: new Date().toISOString(),
+        },
+      );
+      setDailyQuests(data.dailyQuests || []);
+      setCopingSessions(data.copingSessions || []);
+      setPointActivities(data.pointActivities || []);
+
+      console.log("✅ Loaded data from localStorage (Supabase not configured)");
+    } catch (error) {
+      console.error("Error loading localStorage data:", error);
     } finally {
       setIsLoading(false);
       setIsInitialized(true);
@@ -427,37 +468,46 @@ export function DataProvider({ children }: DataProviderProps) {
   const addMoodEntry = async (entry: Omit<MoodEntry, "id">) => {
     if (!user) return;
 
-    const { data, error } = await supabase
-      .from("mood_entries")
-      .insert({
-        user_id: user.id,
-        mood: entry.mood,
-        rating: entry.rating,
-        emoji: entry.emoji,
-        source: entry.source,
-        notes: entry.notes,
-        date: entry.date,
-      })
-      .select()
-      .single();
+    if (isSupabaseConfigured) {
+      const { data, error } = await supabase
+        .from("mood_entries")
+        .insert({
+          user_id: user.id,
+          mood: entry.mood,
+          rating: entry.rating,
+          emoji: entry.emoji,
+          source: entry.source,
+          notes: entry.notes,
+          date: entry.date,
+        })
+        .select()
+        .single();
 
-    if (error) {
-      console.error("Error adding mood entry:", error);
-      return;
+      if (error) {
+        console.error("Error adding mood entry:", error);
+        return;
+      }
+
+      const newEntry: MoodEntry = {
+        id: data.id,
+        date: data.date,
+        mood: data.mood,
+        rating: data.rating,
+        emoji: data.emoji,
+        source: data.source,
+        notes: data.notes,
+      };
+
+      setMoodEntries((prev) => [newEntry, ...prev]);
+      await updateStreak();
+    } else {
+      // Use localStorage fallback
+      const result = await localStorageService.addMoodEntry(entry);
+      if (result) {
+        setMoodEntries((prev) => [result, ...prev]);
+        await updateStreak();
+      }
     }
-
-    const newEntry: MoodEntry = {
-      id: data.id,
-      date: data.date,
-      mood: data.mood,
-      rating: data.rating,
-      emoji: data.emoji,
-      source: data.source,
-      notes: data.notes,
-    };
-
-    setMoodEntries((prev) => [newEntry, ...prev]);
-    await updateStreak();
   };
 
   const updateMoodEntry = async (id: string, updates: Partial<MoodEntry>) => {
@@ -688,21 +738,43 @@ export function DataProvider({ children }: DataProviderProps) {
   ) => {
     if (!user) return;
 
-    const { error } = await supabase.from("point_activities").insert({
-      user_id: user.id,
-      points,
-      activity,
-      source,
-    });
+    if (isSupabaseConfigured) {
+      const { error } = await supabase.from("point_activities").insert({
+        user_id: user.id,
+        points,
+        activity,
+        source,
+      });
 
-    if (error) {
-      console.error("Error adding points:", error);
-      return;
+      if (error) {
+        console.error("Error adding points:", error);
+        return;
+      }
+
+      // Reload user stats to get updated points and level
+      await loadUserStats();
+      await loadPointActivities();
+    } else {
+      // Use localStorage fallback
+      await localStorageService.addPoints(points, activity);
+
+      // Update local state
+      setUserStats((prev) => ({
+        ...prev,
+        points: prev.points + points,
+        level: Math.max(1, Math.floor((prev.points + points) / 100) + 1),
+      }));
+
+      const newActivity: PointActivity = {
+        id: Date.now().toString(),
+        points,
+        activity,
+        source,
+        createdAt: new Date(),
+      };
+
+      setPointActivities((prev) => [newActivity, ...prev]);
     }
-
-    // Reload user stats to get updated points and level
-    await loadUserStats();
-    await loadPointActivities();
   };
 
   const updateStreak = async () => {
