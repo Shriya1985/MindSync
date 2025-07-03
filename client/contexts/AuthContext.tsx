@@ -1,5 +1,6 @@
 import { createContext, useContext, useEffect, useState } from "react";
-import { supabase } from "@/lib/supabase";
+import { supabase, isSupabaseConfigured } from "@/lib/supabase";
+import { localStorageService } from "@/lib/localStorage";
 import { showNotification } from "@/components/ui/notification-system";
 import type { User as SupabaseUser } from "@supabase/supabase-js";
 
@@ -69,23 +70,31 @@ export function AuthProvider({ children }: AuthProviderProps) {
   };
 
   useEffect(() => {
-    // Get initial session
     const initializeAuth = async () => {
       try {
-        const {
-          data: { session },
-          error,
-        } = await supabase.auth.getSession();
+        if (isSupabaseConfigured) {
+          // Use Supabase authentication
+          const {
+            data: { session },
+            error,
+          } = await supabase.auth.getSession();
 
-        if (error) {
-          console.error("Error getting session:", error);
-          setIsLoading(false);
-          return;
-        }
+          if (error) {
+            console.error("Error getting session:", error);
+            setIsLoading(false);
+            return;
+          }
 
-        if (session?.user) {
-          const userProfile = await fetchUserProfile(session.user);
-          setUser(userProfile);
+          if (session?.user) {
+            const userProfile = await fetchUserProfile(session.user);
+            setUser(userProfile);
+          }
+        } else {
+          // Fallback to localStorage
+          const currentUser = localStorageService.getCurrentUser();
+          if (currentUser) {
+            setUser(currentUser);
+          }
         }
       } catch (error) {
         console.error("Error initializing auth:", error);
@@ -96,54 +105,81 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
     initializeAuth();
 
-    // Listen for auth changes
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange(async (event, session) => {
-      if (event === "SIGNED_IN" && session?.user) {
-        const userProfile = await fetchUserProfile(session.user);
-        setUser(userProfile);
-      } else if (event === "SIGNED_OUT") {
-        setUser(null);
-      }
-      setIsLoading(false);
-    });
+    if (isSupabaseConfigured) {
+      // Listen for auth changes only if Supabase is configured
+      const {
+        data: { subscription },
+      } = supabase.auth.onAuthStateChange(async (event, session) => {
+        if (event === "SIGNED_IN" && session?.user) {
+          const userProfile = await fetchUserProfile(session.user);
+          setUser(userProfile);
+        } else if (event === "SIGNED_OUT") {
+          setUser(null);
+        }
+        setIsLoading(false);
+      });
 
-    return () => {
-      subscription.unsubscribe();
-    };
+      return () => {
+        subscription.unsubscribe();
+      };
+    }
   }, []);
 
   const login = async (email: string, password: string): Promise<boolean> => {
     try {
       setIsLoading(true);
 
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      });
-
-      if (error) {
-        showNotification({
-          type: "encouragement",
-          title: "Login Failed",
-          message: error.message,
-          duration: 3000,
+      if (isSupabaseConfigured) {
+        // Use Supabase authentication
+        const { data, error } = await supabase.auth.signInWithPassword({
+          email,
+          password,
         });
-        return false;
-      }
 
-      if (data.user) {
-        const userProfile = await fetchUserProfile(data.user);
-        setUser(userProfile);
+        if (error) {
+          showNotification({
+            type: "encouragement",
+            title: "Login Failed",
+            message: error.message,
+            duration: 3000,
+          });
+          return false;
+        }
 
-        showNotification({
-          type: "encouragement",
-          title: "Welcome back! 🎉",
-          message: `Good to see you again, ${userProfile?.name || "there"}!`,
-          duration: 3000,
-        });
-        return true;
+        if (data.user) {
+          const userProfile = await fetchUserProfile(data.user);
+          setUser(userProfile);
+
+          showNotification({
+            type: "encouragement",
+            title: "Welcome back! 🎉",
+            message: `Good to see you again, ${userProfile?.name || "there"}!`,
+            duration: 3000,
+          });
+          return true;
+        }
+      } else {
+        // Fallback to localStorage
+        const result = await localStorageService.login(email, password);
+
+        if (result.success && result.user) {
+          setUser(result.user);
+          showNotification({
+            type: "encouragement",
+            title: "Welcome back! 🎉",
+            message: `Good to see you again, ${result.user.name}! (Using local storage)`,
+            duration: 3000,
+          });
+          return true;
+        } else {
+          showNotification({
+            type: "encouragement",
+            title: "Login Failed",
+            message: result.error || "Invalid credentials",
+            duration: 3000,
+          });
+          return false;
+        }
       }
 
       return false;
@@ -168,35 +204,64 @@ export function AuthProvider({ children }: AuthProviderProps) {
     try {
       setIsLoading(true);
 
-      const { data, error } = await supabase.auth.signUp({
-        email,
-        password,
-        options: {
-          data: {
-            name: name,
+      if (isSupabaseConfigured) {
+        // Use Supabase authentication
+        const { data, error } = await supabase.auth.signUp({
+          email,
+          password,
+          options: {
+            data: {
+              name: name,
+            },
           },
-        },
-      });
-
-      if (error) {
-        showNotification({
-          type: "encouragement",
-          title: "Registration Failed",
-          message: error.message,
-          duration: 3000,
         });
-        return false;
-      }
 
-      if (data.user) {
-        // Profile will be created automatically by the database trigger
-        showNotification({
-          type: "encouragement",
-          title: "Welcome to MindSync! 🌟",
-          message: `Account created successfully for ${name}!`,
-          duration: 4000,
-        });
-        return true;
+        if (error) {
+          showNotification({
+            type: "encouragement",
+            title: "Registration Failed",
+            message: error.message,
+            duration: 3000,
+          });
+          return false;
+        }
+
+        if (data.user) {
+          // Profile will be created automatically by the database trigger
+          showNotification({
+            type: "encouragement",
+            title: "Welcome to MindSync! 🌟",
+            message: `Account created successfully for ${name}!`,
+            duration: 4000,
+          });
+          return true;
+        }
+      } else {
+        // Fallback to localStorage
+        const result = await localStorageService.register(
+          name,
+          email,
+          password,
+        );
+
+        if (result.success && result.user) {
+          setUser(result.user);
+          showNotification({
+            type: "encouragement",
+            title: "Welcome to MindSync! 🌟",
+            message: `Account created successfully for ${name}! (Using local storage)`,
+            duration: 4000,
+          });
+          return true;
+        } else {
+          showNotification({
+            type: "encouragement",
+            title: "Registration Failed",
+            message: result.error || "Could not create account",
+            duration: 3000,
+          });
+          return false;
+        }
       }
 
       return false;
@@ -215,7 +280,11 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
   const logout = async () => {
     try {
-      await supabase.auth.signOut();
+      if (isSupabaseConfigured) {
+        await supabase.auth.signOut();
+      } else {
+        localStorageService.logout();
+      }
       setUser(null);
       showNotification({
         type: "encouragement",
