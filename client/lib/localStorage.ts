@@ -241,6 +241,31 @@ class LocalStorageService {
     this.setUserData(userId, dataType, filteredData);
   }
 
+  // Get all user data for DataContext
+  getAllUserData(): any {
+    const currentUser = this.getCurrentUser();
+    if (!currentUser) return {};
+
+    return {
+      userStats: this.get(STORAGE_KEYS.USER_STATS, {
+        level: 1,
+        points: 0,
+        currentStreak: 0,
+        longestStreak: 0,
+        totalEntries: 0,
+        totalWords: 0,
+        lastActivity: new Date().toISOString(),
+      }),
+      moodEntries: this.get(STORAGE_KEYS.MOOD_ENTRIES, []),
+      journalEntries: this.get(STORAGE_KEYS.JOURNAL_ENTRIES, []),
+      chatMessages: this.get(STORAGE_KEYS.CHAT_MESSAGES, []),
+      achievements: this.get(STORAGE_KEYS.ACHIEVEMENTS, []),
+      dailyQuests: this.get(STORAGE_KEYS.DAILY_QUESTS, []),
+      copingSessions: this.get(STORAGE_KEYS.COPING_SESSIONS, []),
+      pointActivities: [], // No existing point activities in localStorage
+    };
+  }
+
   // Utility methods
   generateId(): string {
     return Date.now().toString() + Math.random().toString(36).substr(2, 9);
