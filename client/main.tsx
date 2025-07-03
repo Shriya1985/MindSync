@@ -13,6 +13,7 @@ import { ThemeProvider } from "@/contexts/ThemeContext";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { NotificationSystem } from "@/components/ui/notification-system";
 import { ThemeStatus } from "@/components/ThemeStatus";
+import { DatabaseSetupNotice } from "@/components/DatabaseSetupNotice";
 import Index from "./pages/Index";
 import Chatbot from "./pages/Chatbot";
 import Dashboard from "./pages/Dashboard";
