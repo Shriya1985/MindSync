@@ -275,14 +275,17 @@ export function GamificationSystem() {
         icon: "💝",
         category: "special",
         rarity: "rare",
-        unlocked: journalEntries
-          .concat(chatMessages.map((m) => ({ tags: [m.content] })))
-          .some((entry) =>
-            (entry.tags || [entry.content || ""])
-              .join(" ")
-              .toLowerCase()
-              .includes("grateful"),
-          ),
+        unlocked:
+          Array.isArray(journalEntries) &&
+          Array.isArray(chatMessages) &&
+          journalEntries
+            .concat(chatMessages.map((m) => ({ tags: [m.content] })))
+            .some((entry) =>
+              (entry.tags || [entry.content || ""])
+                .join(" ")
+                .toLowerCase()
+                .includes("grateful"),
+            ),
       },
     ];
 
