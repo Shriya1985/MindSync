@@ -20,13 +20,13 @@ export function EncouragingInsights() {
   sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
   const sevenDaysAgoStr = sevenDaysAgo.toISOString().split("T")[0];
 
-  const recentJournalEntries = journalEntries.filter(
+  const recentJournalEntries = (journalEntries || []).filter(
     (entry) => entry.date >= sevenDaysAgoStr,
   );
-  const recentMoodEntries = moodEntries.filter(
+  const recentMoodEntries = (moodEntries || []).filter(
     (entry) => entry.date >= sevenDaysAgoStr,
   );
-  const recentChatMessages = chatMessages.filter(
+  const recentChatMessages = (chatMessages || []).filter(
     (msg) =>
       msg.sender === "user" &&
       msg.timestamp.toISOString().split("T")[0] >= sevenDaysAgoStr,
@@ -112,7 +112,7 @@ export function EncouragingInsights() {
     }
 
     // Streak insights
-    if (userStats.currentStreak > 0) {
+    if (userStats?.currentStreak > 0) {
       if (userStats.currentStreak >= 7) {
         insights.push({
           type: "consistency",
@@ -133,7 +133,7 @@ export function EncouragingInsights() {
     }
 
     // Level-based insights
-    if (userStats.level >= 3) {
+    if (userStats?.level >= 3) {
       insights.push({
         type: "achievement",
         icon: Star,

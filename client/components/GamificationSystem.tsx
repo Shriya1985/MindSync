@@ -338,7 +338,7 @@ export function GamificationSystem() {
             </div>
             <div className="text-right">
               <div className="text-2xl font-bold text-gray-900">
-                {userStats.points.toLocaleString()}
+                {(userStats?.points || 0).toLocaleString()}
               </div>
               <div className="text-sm text-gray-500">XP</div>
             </div>
