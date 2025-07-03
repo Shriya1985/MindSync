@@ -255,7 +255,9 @@ export function GamificationSystem() {
         icon: "🤔",
         category: "special",
         rarity: "epic",
-        unlocked: journalEntries.some((entry) => entry.wordCount >= 500),
+        unlocked:
+          Array.isArray(journalEntries) &&
+          journalEntries.some((entry) => entry.wordCount >= 500),
       },
       {
         id: "consistency_king",
