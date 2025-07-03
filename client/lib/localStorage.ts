@@ -255,6 +255,29 @@ class LocalStorageService {
     return moodEntry;
   }
 
+  // Points system for DataContext compatibility
+  async addPoints(points: number, activity: string): Promise<void> {
+    const currentUser = this.getCurrentUser();
+    if (!currentUser) return;
+
+    // Update user stats
+    const stats = this.get(STORAGE_KEYS.USER_STATS, {
+      level: 1,
+      points: 0,
+      currentStreak: 0,
+      longestStreak: 0,
+      totalEntries: 0,
+      totalWords: 0,
+      lastActivity: new Date().toISOString(),
+    });
+
+    stats.points += points;
+    stats.level = Math.max(1, Math.floor(stats.points / 100) + 1);
+    stats.lastActivity = new Date().toISOString();
+
+    this.set(STORAGE_KEYS.USER_STATS, stats);
+  }
+
   // Get all user data for DataContext
   getAllUserData(): any {
     const currentUser = this.getCurrentUser();
