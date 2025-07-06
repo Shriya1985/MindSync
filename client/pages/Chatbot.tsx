@@ -394,8 +394,12 @@ export default function Chatbot() {
         : undefined,
     };
 
-    setSessionMessages((prev) => [...prev, userMessage]);
-    addChatMessage(userMessage);
+    // Add to database
+    await addChatMessage({
+      content: messageText,
+      sender: "user",
+      mood: currentMood,
+    });
 
     // Also add mood entry if mood was selected
     if (selectedMood && selectedMoodOption) {
@@ -428,16 +432,10 @@ export default function Chatbot() {
     }
   };
 
-  const clearChat = () => {
-    setSessionMessages([
-      {
-        id: "welcome",
-        content:
-          "Hello! I'm Buddy, your MindSync AI companion. I'm here to listen, support, and help you explore your thoughts and feelings. How are you doing today? 💚",
-        sender: "ai",
-        timestamp: new Date(),
-      },
-    ]);
+  const clearChat = async () => {
+    // Clear chat history from database would require a clearChatHistory function
+    // For now, just reload the page to refresh
+    window.location.reload();
   };
 
   const streakInfo = getStreakInfo();
@@ -521,7 +519,7 @@ export default function Chatbot() {
 
           {/* Messages */}
           <div className="flex-1 overflow-y-auto p-4 space-y-4">
-            {sessionMessages.map((message) => (
+            {currentMessages.map((message) => (
               <div
                 key={message.id}
                 className={cn(
