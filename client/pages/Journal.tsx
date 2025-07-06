@@ -242,7 +242,10 @@ export default function Journal() {
 
   const stats = {
     totalEntries: journalEntries.length,
-    totalWords: journalEntries.reduce((sum, entry) => sum + entry.wordCount, 0),
+    totalWords: (Array.isArray(journalEntries) ? journalEntries : []).reduce(
+      (sum, entry) => sum + entry.wordCount,
+      0,
+    ),
     streakDays: 7,
     positiveEntries: (Array.isArray(journalEntries)
       ? journalEntries
