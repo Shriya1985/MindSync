@@ -929,6 +929,60 @@ export function DataProvider({ children }: DataProviderProps) {
     );
   };
 
+  // Session management functions
+  const createChatSession = async (title?: string): Promise<string> => {
+    const sessionId = `session-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+    const now = new Date();
+
+    const newSession: ChatSession = {
+      id: sessionId,
+      title: title || "New Chat",
+      createdAt: now,
+      updatedAt: now,
+      messageCount: 0,
+      isActive: true,
+    };
+
+    setChatSessions((prev) => [
+      newSession,
+      ...(Array.isArray(prev) ? prev : []),
+    ]);
+    setCurrentSessionId(sessionId);
+    return sessionId;
+  };
+
+  const getChatSessions = (): ChatSession[] => {
+    return Array.isArray(chatSessions) ? chatSessions : [];
+  };
+
+  const loadChatSession = async (sessionId: string): Promise<void> => {
+    setCurrentSessionId(sessionId);
+
+    // For now, filter existing messages by sessionId if available
+    const sessionMessages = (
+      Array.isArray(chatMessages) ? chatMessages : []
+    ).filter((msg: any) => msg.sessionId === sessionId);
+    setChatMessages(sessionMessages);
+  };
+
+  const deleteChatSession = async (sessionId: string): Promise<void> => {
+    setChatSessions((prev) =>
+      (Array.isArray(prev) ? prev : []).filter(
+        (session) => session.id !== sessionId,
+      ),
+    );
+
+    if (currentSessionId === sessionId) {
+      setCurrentSessionId(null);
+      setChatMessages([]);
+    }
+  };
+
+  const getCurrentSessionMessages = (): ChatMessage[] => {
+    if (!currentSessionId) return [];
+    return Array.isArray(chatMessages) ? chatMessages : [];
+  };
+
   // Utility functions
   const getStreakInfo = () => ({
     current: userStats.currentStreak,
