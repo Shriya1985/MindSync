@@ -54,9 +54,23 @@ CREATE TABLE IF NOT EXISTS journal_entries (
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
+CREATE TABLE IF NOT EXISTS chat_sessions (
+  id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+  user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE NOT NULL,
+  title TEXT NOT NULL,
+  message_count INTEGER DEFAULT 0,
+  last_message TEXT,
+  mood TEXT,
+  summary TEXT,
+  is_active BOOLEAN DEFAULT true,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
 CREATE TABLE IF NOT EXISTS chat_messages (
   id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
   user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE NOT NULL,
+  session_id UUID REFERENCES chat_sessions(id) ON DELETE CASCADE,
   content TEXT NOT NULL,
   sender TEXT NOT NULL CHECK (sender IN ('user', 'ai')),
   sentiment TEXT CHECK (sentiment IN ('positive', 'negative', 'neutral')),
@@ -101,145 +115,176 @@ CREATE TABLE IF NOT EXISTS point_activities (
 );
 
 -- Enable Row Level Security (RLS) only if not already enabled
-DO $$ 
+DO $$
 BEGIN
   ALTER TABLE profiles ENABLE ROW LEVEL SECURITY;
 EXCEPTION WHEN OTHERS THEN NULL;
 END $$;
 
-DO $$ 
+DO $$
 BEGIN
   ALTER TABLE user_stats ENABLE ROW LEVEL SECURITY;
 EXCEPTION WHEN OTHERS THEN NULL;
 END $$;
 
-DO $$ 
+DO $$
 BEGIN
   ALTER TABLE mood_entries ENABLE ROW LEVEL SECURITY;
 EXCEPTION WHEN OTHERS THEN NULL;
 END $$;
 
-DO $$ 
+DO $$
 BEGIN
   ALTER TABLE journal_entries ENABLE ROW LEVEL SECURITY;
 EXCEPTION WHEN OTHERS THEN NULL;
 END $$;
 
-DO $$ 
+DO $$
+BEGIN
+  ALTER TABLE chat_sessions ENABLE ROW LEVEL SECURITY;
+EXCEPTION WHEN OTHERS THEN NULL;
+END $$;
+
+DO $$
 BEGIN
   ALTER TABLE chat_messages ENABLE ROW LEVEL SECURITY;
 EXCEPTION WHEN OTHERS THEN NULL;
 END $$;
 
-DO $$ 
+DO $$
 BEGIN
   ALTER TABLE achievements ENABLE ROW LEVEL SECURITY;
 EXCEPTION WHEN OTHERS THEN NULL;
 END $$;
 
-DO $$ 
+DO $$
 BEGIN
   ALTER TABLE daily_quests ENABLE ROW LEVEL SECURITY;
 EXCEPTION WHEN OTHERS THEN NULL;
 END $$;
 
-DO $$ 
+DO $$
 BEGIN
   ALTER TABLE point_activities ENABLE ROW LEVEL SECURITY;
 EXCEPTION WHEN OTHERS THEN NULL;
 END $$;
 
 -- Create RLS policies (will ignore if they already exist)
-DO $$ 
+DO $$
 BEGIN
   CREATE POLICY "Users can view own profile" ON profiles FOR SELECT USING (auth.uid() = id);
 EXCEPTION WHEN duplicate_object THEN NULL;
 END $$;
 
-DO $$ 
+DO $$
 BEGIN
   CREATE POLICY "Users can update own profile" ON profiles FOR UPDATE USING (auth.uid() = id);
 EXCEPTION WHEN duplicate_object THEN NULL;
 END $$;
 
-DO $$ 
+DO $$
 BEGIN
   CREATE POLICY "Users can insert own profile" ON profiles FOR INSERT WITH CHECK (auth.uid() = id);
 EXCEPTION WHEN duplicate_object THEN NULL;
 END $$;
 
 -- Add policies for other tables
-DO $$ 
+DO $$
 BEGIN
   CREATE POLICY "Users can view own stats" ON user_stats FOR SELECT USING (auth.uid() = user_id);
 EXCEPTION WHEN duplicate_object THEN NULL;
 END $$;
 
-DO $$ 
+DO $$
 BEGIN
   CREATE POLICY "Users can update own stats" ON user_stats FOR UPDATE USING (auth.uid() = user_id);
 EXCEPTION WHEN duplicate_object THEN NULL;
 END $$;
 
-DO $$ 
+DO $$
 BEGIN
   CREATE POLICY "Users can insert own stats" ON user_stats FOR INSERT WITH CHECK (auth.uid() = user_id);
 EXCEPTION WHEN duplicate_object THEN NULL;
 END $$;
 
 -- Mood entries policies
-DO $$ 
+DO $$
 BEGIN
   CREATE POLICY "Users can view own mood entries" ON mood_entries FOR SELECT USING (auth.uid() = user_id);
 EXCEPTION WHEN duplicate_object THEN NULL;
 END $$;
 
-DO $$ 
+DO $$
 BEGIN
   CREATE POLICY "Users can insert own mood entries" ON mood_entries FOR INSERT WITH CHECK (auth.uid() = user_id);
 EXCEPTION WHEN duplicate_object THEN NULL;
 END $$;
 
 -- Journal entries policies
-DO $$ 
+DO $$
 BEGIN
   CREATE POLICY "Users can view own journal entries" ON journal_entries FOR SELECT USING (auth.uid() = user_id);
 EXCEPTION WHEN duplicate_object THEN NULL;
 END $$;
 
-DO $$ 
+DO $$
 BEGIN
   CREATE POLICY "Users can insert own journal entries" ON journal_entries FOR INSERT WITH CHECK (auth.uid() = user_id);
 EXCEPTION WHEN duplicate_object THEN NULL;
 END $$;
 
+-- Chat sessions policies
+DO $$
+BEGIN
+  CREATE POLICY "Users can view own chat sessions" ON chat_sessions FOR SELECT USING (auth.uid() = user_id);
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
+
+DO $$
+BEGIN
+  CREATE POLICY "Users can insert own chat sessions" ON chat_sessions FOR INSERT WITH CHECK (auth.uid() = user_id);
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
+
+DO $$
+BEGIN
+  CREATE POLICY "Users can update own chat sessions" ON chat_sessions FOR UPDATE USING (auth.uid() = user_id);
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
+
+DO $$
+BEGIN
+  CREATE POLICY "Users can delete own chat sessions" ON chat_sessions FOR DELETE USING (auth.uid() = user_id);
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
+
 -- Chat messages policies
-DO $$ 
+DO $$
 BEGIN
   CREATE POLICY "Users can view own chat messages" ON chat_messages FOR SELECT USING (auth.uid() = user_id);
 EXCEPTION WHEN duplicate_object THEN NULL;
 END $$;
 
-DO $$ 
+DO $$
 BEGIN
   CREATE POLICY "Users can insert own chat messages" ON chat_messages FOR INSERT WITH CHECK (auth.uid() = user_id);
 EXCEPTION WHEN duplicate_object THEN NULL;
 END $$;
 
 -- Other table policies
-DO $$ 
+DO $$
 BEGIN
   CREATE POLICY "Users can view own achievements" ON achievements FOR SELECT USING (auth.uid() = user_id);
 EXCEPTION WHEN duplicate_object THEN NULL;
 END $$;
 
-DO $$ 
+DO $$
 BEGIN
   CREATE POLICY "Users can view own daily quests" ON daily_quests FOR SELECT USING (auth.uid() = user_id);
 EXCEPTION WHEN duplicate_object THEN NULL;
 END $$;
 
-DO $$ 
+DO $$
 BEGIN
   CREATE POLICY "Users can view own point activities" ON point_activities FOR SELECT USING (auth.uid() = user_id);
 EXCEPTION WHEN duplicate_object THEN NULL;
@@ -252,11 +297,11 @@ BEGIN
   INSERT INTO public.profiles (id, email, name)
   VALUES (NEW.id, NEW.email, COALESCE(NEW.raw_user_meta_data->>'name', 'User'))
   ON CONFLICT (id) DO NOTHING;
-  
+
   INSERT INTO public.user_stats (user_id)
   VALUES (NEW.id)
   ON CONFLICT (user_id) DO NOTHING;
-  
+
   RETURN NEW;
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
