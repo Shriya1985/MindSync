@@ -130,6 +130,7 @@ type DataContextType = {
   loadChatSession: (sessionId: string) => Promise<void>;
   deleteChatSession: (sessionId: string) => Promise<void>;
   getCurrentSessionMessages: () => ChatMessage[];
+  getRecentChatContext: () => ChatMessage[];
 
   // Achievement functions
   addAchievement: (
@@ -193,9 +194,13 @@ export function DataProvider({ children }: DataProviderProps) {
   // Load all user data when authenticated
   useEffect(() => {
     if (isAuthenticated && user) {
+      // Always try to use Supabase first, fallback to localStorage only if needed
       if (isSupabaseConfigured) {
         loadAllData();
       } else {
+        console.warn(
+          "⚠️ Supabase not configured. Using localStorage fallback. Please configure Supabase for full functionality.",
+        );
         loadLocalStorageData();
       }
     } else {
@@ -666,7 +671,7 @@ export function DataProvider({ children }: DataProviderProps) {
     if (!user) return;
 
     if (isSupabaseConfigured) {
-      // Database mode
+      // Database mode - Always use this for chat
       const { data, error } = await supabase
         .from("chat_messages")
         .insert({
@@ -697,13 +702,21 @@ export function DataProvider({ children }: DataProviderProps) {
         emotionalState: data.emotional_state,
       };
 
+      // Update local state with new message
       setChatMessages((prev) => [
         ...(Array.isArray(prev) ? prev : []),
         newMessage,
       ]);
+
+      // After adding a message, reload chat history to ensure context
+      await loadChatMessages();
     } else {
-      // localStorage mode
-      const newMessage: ChatMessage & { sessionId?: string } = {
+      // localStorage fallback - but warn user to use Supabase
+      console.warn(
+        "💬 Chat messages should use Supabase for proper context and history. Please configure Supabase.",
+      );
+
+      const newMessage: ChatMessage = {
         id: `msg-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
         content: message.content,
         sender: message.sender,
@@ -711,7 +724,6 @@ export function DataProvider({ children }: DataProviderProps) {
         sentiment: message.sentiment,
         mood: message.mood,
         emotionalState: message.emotionalState,
-        sessionId: sessionId || currentSessionId || undefined,
       };
 
       const result = await localStorageService.addChatMessage(newMessage);
@@ -1014,8 +1026,18 @@ export function DataProvider({ children }: DataProviderProps) {
   };
 
   const getCurrentSessionMessages = (): ChatMessage[] => {
-    // For now, return all messages since session filtering isn't fully implemented
-    return Array.isArray(chatMessages) ? chatMessages : [];
+    // Return all messages for context - sorted by timestamp
+    const messages = Array.isArray(chatMessages) ? chatMessages : [];
+    return messages.sort(
+      (a, b) =>
+        new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime(),
+    );
+  };
+
+  // Get recent messages for AI context (last 5 messages)
+  const getRecentChatContext = (): ChatMessage[] => {
+    const messages = getCurrentSessionMessages();
+    return messages.slice(-5); // Last 5 messages for context
   };
 
   // Utility functions
@@ -1066,6 +1088,7 @@ export function DataProvider({ children }: DataProviderProps) {
     loadChatSession,
     deleteChatSession,
     getCurrentSessionMessages,
+    getRecentChatContext,
     addAchievement,
     addPoints,
     updateStreak,
