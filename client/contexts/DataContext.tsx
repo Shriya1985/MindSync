@@ -172,6 +172,8 @@ export function DataProvider({ children }: DataProviderProps) {
   const [moodEntries, setMoodEntries] = useState<MoodEntry[]>([]);
   const [journalEntries, setJournalEntries] = useState<JournalEntry[]>([]);
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
+  const [chatSessions, setChatSessions] = useState<ChatSession[]>([]);
+  const [currentSessionId, setCurrentSessionId] = useState<string | null>(null);
   const [achievements, setAchievements] = useState<Achievement[]>([]);
   const [userStats, setUserStats] = useState<UserStats>({
     level: 1,
