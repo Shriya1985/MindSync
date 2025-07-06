@@ -3,18 +3,6 @@ import { createClient } from "@supabase/supabase-js";
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
-// Debug logging
-console.log("🔧 Environment check:");
-console.log(
-  "- URL:",
-  supabaseUrl ? `✅ ${supabaseUrl.substring(0, 30)}...` : "❌ Missing",
-);
-console.log(
-  "- Key:",
-  supabaseAnonKey ? `✅ ${supabaseAnonKey.substring(0, 20)}...` : "❌ Missing",
-);
-console.log("- Working directory check:", window.location.origin);
-
 // Check if Supabase is configured
 export const isSupabaseConfigured = !!(
   supabaseUrl &&
