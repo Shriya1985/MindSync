@@ -226,7 +226,7 @@ export default function Chatbot() {
   const [inputValue, setInputValue] = useState("");
   const [selectedMood, setSelectedMood] = useState<string | null>(null);
   const [isTyping, setIsTyping] = useState(false);
-  // Remove local sessionMessages - use global chatMessages from DataContext
+  // Get current messages from DataContext
   const currentMessages = getCurrentSessionMessages();
   const [showProgress, setShowProgress] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
