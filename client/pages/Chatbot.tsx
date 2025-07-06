@@ -10,11 +10,6 @@ import { Progress } from "@/components/ui/progress";
 import { useData, type ChatMessage } from "@/contexts/DataContext";
 import { showNotification } from "@/components/ui/notification-system";
 import {
-  generateContextualResponse,
-  getTimeOfDay,
-  type ConversationContext,
-} from "@/utils/conversationAI";
-import {
   analyzeEmotionalState,
   generateEmotionAwareResponse,
   getCopingStrategies,
@@ -279,29 +274,30 @@ export default function Chatbot() {
     setTimeout(
       () => {
         try {
-          // Build conversation context for enhanced AI
-          const context: ConversationContext = {
+          // Analyze emotional state from the user's message
+          const emotionalState = analyzeEmotionalState(
             userMessage,
-            recentMessages: sessionMessages.slice(-10), // Last 10 messages for context
-            recentMoods: Array.isArray(moodEntries)
-              ? moodEntries.slice(0, 5)
-              : [],
-            recentJournals: Array.isArray(journalEntries)
-              ? journalEntries.slice(0, 3)
-              : [],
-            timeOfDay: getTimeOfDay(),
-            conversationLength: sessionMessages.length,
-          };
+            Array.isArray(moodEntries) ? moodEntries.slice(0, 5) : [],
+            Array.isArray(journalEntries) ? journalEntries.slice(0, 3) : [],
+          );
 
-          // Generate contextual response with enhanced AI
-          const aiResponseContent = generateContextualResponse(context);
+          // Generate emotion-aware response
+          const aiResponseContent = generateEmotionAwareResponse(
+            userMessage,
+            emotionalState,
+            {
+              chats: Array.isArray(chatMessages) ? chatMessages : [],
+              journals: Array.isArray(journalEntries) ? journalEntries : [],
+              moods: Array.isArray(moodEntries) ? moodEntries : [],
+            },
+          );
 
           const aiMessage: ChatMessage = {
             id: Date.now().toString(),
             content: aiResponseContent,
             sender: "ai",
             timestamp: new Date(),
-            sentiment: "positive" as any, // Could be enhanced with sentiment analysis
+            sentiment: emotionalState.primary as any,
           };
 
           setSessionMessages((prev) => [...prev, aiMessage]);
