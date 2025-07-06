@@ -248,7 +248,7 @@ export default function Chatbot() {
 
   // Initialize with welcome message
   useEffect(() => {
-    if (sessionMessages.length === 0) {
+    if (currentMessages.length === 0) {
       const welcomeMessage: ChatMessage = {
         id: "welcome",
         content:
@@ -256,7 +256,12 @@ export default function Chatbot() {
         sender: "ai",
         timestamp: new Date(),
       };
-      setSessionMessages([welcomeMessage]);
+      // Add welcome message to database if no messages exist
+      addChatMessage({
+        content:
+          "Hello! I'm Buddy, your MindSync AI companion. I'm here to listen, support, and help you explore your thoughts and feelings. How are you doing today? 💚",
+        sender: "ai",
+      });
     }
   }, []);
 
