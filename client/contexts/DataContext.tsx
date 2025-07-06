@@ -656,7 +656,8 @@ export function DataProvider({ children }: DataProviderProps) {
       .single();
 
     if (error) {
-      console.error("Error adding chat message:", error);
+      console.error("Error adding chat message:", error.message || error);
+      showNotification("Failed to save chat message", "error");
       return;
     }
 
@@ -805,7 +806,8 @@ export function DataProvider({ children }: DataProviderProps) {
       .eq("user_id", user.id);
 
     if (error) {
-      console.error("Error updating streak:", error);
+      console.error("Error updating streak:", error.message || error);
+      showNotification("Failed to update streak", "error");
       return;
     }
 

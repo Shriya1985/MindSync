@@ -276,8 +276,8 @@ export default function Chatbot() {
         // Analyze emotional state from the user's message
         const emotionalState = analyzeEmotionalState(
           userMessage,
-          moodEntries.slice(0, 5),
-          journalEntries.slice(0, 3),
+          Array.isArray(moodEntries) ? moodEntries.slice(0, 5) : [],
+          Array.isArray(journalEntries) ? journalEntries.slice(0, 3) : [],
         );
 
         // Generate emotion-aware response
