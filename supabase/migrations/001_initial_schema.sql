@@ -218,16 +218,19 @@ CREATE OR REPLACE FUNCTION public.handle_new_user()
 RETURNS TRIGGER AS $$
 BEGIN
   INSERT INTO public.profiles (id, email, name)
-  VALUES (NEW.id, NEW.email, COALESCE(NEW.raw_user_meta_data->>'name', 'User'));
-  
+  VALUES (NEW.id, NEW.email, COALESCE(NEW.raw_user_meta_data->>'name', 'User'))
+  ON CONFLICT (id) DO NOTHING;
+
   INSERT INTO public.user_stats (user_id)
-  VALUES (NEW.id);
-  
+  VALUES (NEW.id)
+  ON CONFLICT (user_id) DO NOTHING;
+
   RETURN NEW;
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
--- Trigger to automatically create profile and stats for new users
+-- Drop existing trigger if it exists, then create new one
+DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users;
 CREATE TRIGGER on_auth_user_created
   AFTER INSERT ON auth.users
   FOR EACH ROW EXECUTE FUNCTION public.handle_new_user();
@@ -236,14 +239,14 @@ CREATE TRIGGER on_auth_user_created
 CREATE OR REPLACE FUNCTION update_user_stats_on_points()
 RETURNS TRIGGER AS $$
 BEGIN
-  UPDATE user_stats 
-  SET 
+  UPDATE user_stats
+  SET
     points = points + NEW.points,
     level = GREATEST(1, (points + NEW.points) / 100),
     last_activity = NOW(),
     updated_at = NOW()
   WHERE user_id = NEW.user_id;
-  
+
   RETURN NEW;
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
