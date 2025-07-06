@@ -281,7 +281,7 @@ export default function Chatbot() {
     setShowProgress(true);
 
     setTimeout(
-      () => {
+      async () => {
         // Analyze emotional state from the user's message (move outside try block)
         let emotionalState;
         try {
