@@ -10,6 +10,11 @@ import { Progress } from "@/components/ui/progress";
 import { useData, type ChatMessage } from "@/contexts/DataContext";
 import { showNotification } from "@/components/ui/notification-system";
 import {
+  generateContextualResponse,
+  getTimeOfDay,
+  type ConversationContext,
+} from "@/utils/conversationAI";
+import {
   analyzeEmotionalState,
   generateEmotionAwareResponse,
   getCopingStrategies,
@@ -273,34 +278,49 @@ export default function Chatbot() {
 
     setTimeout(
       () => {
-        // Analyze emotional state from the user's message
-        const emotionalState = analyzeEmotionalState(
-          userMessage,
-          Array.isArray(moodEntries) ? moodEntries.slice(0, 5) : [],
-          Array.isArray(journalEntries) ? journalEntries.slice(0, 3) : [],
-        );
+        try {
+          // Build conversation context for enhanced AI
+          const context: ConversationContext = {
+            userMessage,
+            recentMessages: sessionMessages.slice(-10), // Last 10 messages for context
+            recentMoods: Array.isArray(moodEntries)
+              ? moodEntries.slice(0, 5)
+              : [],
+            recentJournals: Array.isArray(journalEntries)
+              ? journalEntries.slice(0, 3)
+              : [],
+            timeOfDay: getTimeOfDay(),
+            conversationLength: sessionMessages.length,
+          };
 
-        // Generate emotion-aware response
-        const aiResponseContent = generateEmotionAwareResponse(
-          userMessage,
-          emotionalState,
-          {
-            chats: chatMessages,
-            journals: journalEntries,
-            moods: moodEntries,
-          },
-        );
+          // Generate contextual response with enhanced AI
+          const aiResponseContent = generateContextualResponse(context);
 
-        const aiMessage: ChatMessage = {
-          id: Date.now().toString(),
-          content: aiResponseContent,
-          sender: "ai",
-          timestamp: new Date(),
-          sentiment: emotionalState.primary as any,
-        };
+          const aiMessage: ChatMessage = {
+            id: Date.now().toString(),
+            content: aiResponseContent,
+            sender: "ai",
+            timestamp: new Date(),
+            sentiment: "positive" as any, // Could be enhanced with sentiment analysis
+          };
 
-        setSessionMessages((prev) => [...prev, aiMessage]);
-        addChatMessage(aiMessage);
+          setSessionMessages((prev) => [...prev, aiMessage]);
+          addChatMessage(aiMessage);
+        } catch (error) {
+          console.error("Error generating AI response:", error);
+          // Fallback response
+          const fallbackMessage: ChatMessage = {
+            id: Date.now().toString(),
+            content:
+              "I'm here to listen and support you. Sometimes I need a moment to process my thoughts. Could you tell me more about what's on your mind?",
+            sender: "ai",
+            timestamp: new Date(),
+            sentiment: "neutral" as any,
+          };
+          setSessionMessages((prev) => [...prev, fallbackMessage]);
+          addChatMessage(fallbackMessage);
+        }
+
         setIsTyping(false);
         setShowProgress(false);
 
