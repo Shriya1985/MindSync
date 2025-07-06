@@ -48,7 +48,7 @@ const App = () => (
                   path="/chatbot"
                   element={
                     <ProtectedRoute>
-                      <Chatbot />
+                      <EnhancedChatbot />
                     </ProtectedRoute>
                   }
                 />
