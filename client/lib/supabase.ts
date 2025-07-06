@@ -3,12 +3,13 @@ import { createClient } from "@supabase/supabase-js";
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
-// Debug environment variables
-console.log("Supabase URL:", supabaseUrl ? "✅ Found" : "❌ Missing");
-console.log("Supabase Key:", supabaseAnonKey ? "✅ Found" : "❌ Missing");
-
 // Check if Supabase is configured
-export const isSupabaseConfigured = !!(supabaseUrl && supabaseAnonKey);
+export const isSupabaseConfigured = !!(
+  supabaseUrl &&
+  supabaseAnonKey &&
+  supabaseUrl !== "https://your-project-id.supabase.co" &&
+  supabaseAnonKey !== "your-anon-key-here"
+);
 
 // Create a fallback client for development
 const createFallbackClient = () => {
