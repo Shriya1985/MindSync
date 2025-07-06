@@ -843,10 +843,12 @@ export function DataProvider({ children }: DataProviderProps) {
       .toISOString()
       .split("T")[0];
 
-    const todayEntries = moodEntries.filter((entry) => entry.date === today);
-    const yesterdayEntries = moodEntries.filter(
-      (entry) => entry.date === yesterday,
+    const todayEntries = (Array.isArray(moodEntries) ? moodEntries : []).filter(
+      (entry) => entry.date === today,
     );
+    const yesterdayEntries = (
+      Array.isArray(moodEntries) ? moodEntries : []
+    ).filter((entry) => entry.date === yesterday);
 
     const currentStreak =
       todayEntries.length > 0 ? userStats.currentStreak + 1 : 0;
