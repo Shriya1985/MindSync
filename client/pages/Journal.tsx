@@ -120,7 +120,9 @@ export default function Journal() {
     useData();
   const { currentTheme } = useMoodTheme();
 
-  const filteredEntries = journalEntries.filter((entry) => {
+  const filteredEntries = (
+    Array.isArray(journalEntries) ? journalEntries : []
+  ).filter((entry) => {
     const matchesSearch =
       entry.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
       entry.content.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -242,8 +244,10 @@ export default function Journal() {
     totalEntries: journalEntries.length,
     totalWords: journalEntries.reduce((sum, entry) => sum + entry.wordCount, 0),
     streakDays: 7,
-    positiveEntries: journalEntries.filter((e) => e.sentiment === "positive")
-      .length,
+    positiveEntries: (Array.isArray(journalEntries)
+      ? journalEntries
+      : []
+    ).filter((e) => e.sentiment === "positive").length,
   };
 
   return (
