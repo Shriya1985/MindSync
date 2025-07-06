@@ -21,11 +21,11 @@ export function JournalSummarizer() {
   const { journalEntries, moodEntries, chatMessages } = useData();
 
   useEffect(() => {
-    if (journalEntries.length === 0) return;
+    if (!Array.isArray(journalEntries) || journalEntries.length === 0) return;
 
     // Analyze recent journal entries for patterns
     const recentEntries = journalEntries.slice(0, 7); // Last 7 entries
-    const allTags = recentEntries.flatMap((entry) => entry.tags);
+    const allTags = recentEntries.flatMap((entry) => entry.tags || []);
     const tagFrequency = allTags.reduce(
       (acc, tag) => {
         acc[tag] = (acc[tag] || 0) + 1;
