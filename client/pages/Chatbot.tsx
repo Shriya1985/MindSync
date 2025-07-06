@@ -372,7 +372,7 @@ export default function Chatbot() {
     );
   };
 
-  const handleSendMessage = () => {
+  const handleSendMessage = async () => {
     if (!inputValue.trim()) return;
 
     const selectedMoodOption = selectedMood
