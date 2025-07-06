@@ -661,6 +661,7 @@ export function DataProvider({ children }: DataProviderProps) {
   // Chat message functions
   const addChatMessage = async (
     message: Omit<ChatMessage, "id" | "timestamp">,
+    sessionId?: string,
   ) => {
     if (!user) return;
 
@@ -670,6 +671,7 @@ export function DataProvider({ children }: DataProviderProps) {
         .from("chat_messages")
         .insert({
           user_id: user.id,
+          session_id: sessionId || currentSessionId,
           content: message.content,
           sender: message.sender,
           sentiment: message.sentiment,
@@ -701,7 +703,7 @@ export function DataProvider({ children }: DataProviderProps) {
       ]);
     } else {
       // localStorage mode
-      const newMessage: ChatMessage = {
+      const newMessage: ChatMessage & { sessionId?: string } = {
         id: `msg-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
         content: message.content,
         sender: message.sender,
@@ -709,6 +711,7 @@ export function DataProvider({ children }: DataProviderProps) {
         sentiment: message.sentiment,
         mood: message.mood,
         emotionalState: message.emotionalState,
+        sessionId: sessionId || currentSessionId || undefined,
       };
 
       const result = await localStorageService.addChatMessage(newMessage);
