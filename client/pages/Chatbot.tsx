@@ -226,7 +226,8 @@ export default function Chatbot() {
   const [inputValue, setInputValue] = useState("");
   const [selectedMood, setSelectedMood] = useState<string | null>(null);
   const [isTyping, setIsTyping] = useState(false);
-  const [sessionMessages, setSessionMessages] = useState<ChatMessage[]>([]);
+  // Remove local sessionMessages - use global chatMessages from DataContext
+  const currentMessages = getCurrentSessionMessages();
   const [showProgress, setShowProgress] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
@@ -262,10 +263,10 @@ export default function Chatbot() {
 
   useEffect(() => {
     // Only scroll when a new message is added or AI is typing
-    if (sessionMessages.length > 1 || isTyping) {
+    if (currentMessages.length > 0 || isTyping) {
       scrollToBottom();
     }
-  }, [sessionMessages.length, isTyping]);
+  }, [currentMessages.length, isTyping]);
 
   const simulateAIResponse = (userMessage: string, mood?: string) => {
     setIsTyping(true);
@@ -287,14 +288,19 @@ export default function Chatbot() {
         }
 
         try {
-          // Generate emotion-aware response
+          // Get recent chat context for better responses
+          const recentContext = getRecentChatContext();
+
+          // Generate emotion-aware response with enhanced context
           const aiResponseContent = generateEmotionAwareResponse(
             userMessage,
             emotionalState,
             {
-              chats: Array.isArray(chatMessages) ? chatMessages : [],
-              journals: Array.isArray(journalEntries) ? journalEntries : [],
-              moods: Array.isArray(moodEntries) ? moodEntries : [],
+              chats: recentContext, // Use recent context instead of all messages
+              journals: Array.isArray(journalEntries)
+                ? journalEntries.slice(0, 3)
+                : [],
+              moods: Array.isArray(moodEntries) ? moodEntries.slice(0, 5) : [],
             },
           );
 
@@ -306,21 +312,18 @@ export default function Chatbot() {
             sentiment: "positive" as any,
           };
 
-          setSessionMessages((prev) => [...prev, aiMessage]);
-          addChatMessage(aiMessage);
+          // Add AI response to database
+          await addChatMessage(aiMessage);
         } catch (error) {
           console.error("Error generating AI response:", error);
           // Fallback response
-          const fallbackMessage: ChatMessage = {
-            id: Date.now().toString(),
+          const fallbackMessage: Omit<ChatMessage, "id" | "timestamp"> = {
             content:
               "I'm here to listen and support you. Sometimes I need a moment to process my thoughts. Could you tell me more about what's on your mind?",
             sender: "ai",
-            timestamp: new Date(),
             sentiment: "neutral" as any,
           };
-          setSessionMessages((prev) => [...prev, fallbackMessage]);
-          addChatMessage(fallbackMessage);
+          await addChatMessage(fallbackMessage);
         }
 
         setIsTyping(false);
