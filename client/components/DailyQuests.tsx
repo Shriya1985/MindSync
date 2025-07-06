@@ -49,9 +49,9 @@ export function DailyQuests() {
     } else {
       // Generate new quests for today
       const userHistory = {
-        journals: journalEntries,
-        moods: moodEntries,
-        chats: chatMessages,
+        journals: Array.isArray(journalEntries) ? journalEntries : [],
+        moods: Array.isArray(moodEntries) ? moodEntries : [],
+        chats: Array.isArray(chatMessages) ? chatMessages : [],
       };
 
       const dailyQuests = generateDailyQuests(userHistory, completedToday);
