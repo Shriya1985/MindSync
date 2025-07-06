@@ -498,13 +498,19 @@ export function DataProvider({ children }: DataProviderProps) {
         notes: data.notes,
       };
 
-      setMoodEntries((prev) => [newEntry, ...prev]);
+      setMoodEntries((prev) => [
+        newEntry,
+        ...(Array.isArray(prev) ? prev : []),
+      ]);
       await updateStreak();
     } else {
       // Use localStorage fallback
       const result = await localStorageService.addMoodEntry(entry);
       if (result) {
-        setMoodEntries((prev) => [result, ...prev]);
+        setMoodEntries((prev) => [
+          result,
+          ...(Array.isArray(prev) ? prev : []),
+        ]);
         await updateStreak();
       }
     }
@@ -586,7 +592,10 @@ export function DataProvider({ children }: DataProviderProps) {
       tags: data.tags || [],
     };
 
-    setJournalEntries((prev) => [newEntry, ...prev]);
+    setJournalEntries((prev) => [
+      newEntry,
+      ...(Array.isArray(prev) ? prev : []),
+    ]);
     await updateStreak();
   };
 
@@ -671,7 +680,10 @@ export function DataProvider({ children }: DataProviderProps) {
       emotionalState: data.emotional_state,
     };
 
-    setChatMessages((prev) => [...prev, newMessage]);
+    setChatMessages((prev) => [
+      ...(Array.isArray(prev) ? prev : []),
+      newMessage,
+    ]);
   };
 
   const clearChatHistory = async () => {
@@ -728,7 +740,10 @@ export function DataProvider({ children }: DataProviderProps) {
       metadata: data.metadata,
     };
 
-    setAchievements((prev) => [newAchievement, ...prev]);
+    setAchievements((prev) => [
+      newAchievement,
+      ...(Array.isArray(prev) ? prev : []),
+    ]);
   };
 
   // Points and progress functions
@@ -774,7 +789,10 @@ export function DataProvider({ children }: DataProviderProps) {
         createdAt: new Date(),
       };
 
-      setPointActivities((prev) => [newActivity, ...prev]);
+      setPointActivities((prev) => [
+        newActivity,
+        ...(Array.isArray(prev) ? prev : []),
+      ]);
     }
   };
 
@@ -852,7 +870,7 @@ export function DataProvider({ children }: DataProviderProps) {
       date: data.date,
     };
 
-    setDailyQuests((prev) => [...prev, newQuest]);
+    setDailyQuests((prev) => [...(Array.isArray(prev) ? prev : []), newQuest]);
   };
 
   const completeDailyQuest = async (questId: string) => {
