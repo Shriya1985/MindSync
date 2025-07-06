@@ -651,39 +651,61 @@ export function DataProvider({ children }: DataProviderProps) {
   ) => {
     if (!user) return;
 
-    const { data, error } = await supabase
-      .from("chat_messages")
-      .insert({
-        user_id: user.id,
+    if (isSupabaseConfigured) {
+      // Database mode
+      const { data, error } = await supabase
+        .from("chat_messages")
+        .insert({
+          user_id: user.id,
+          content: message.content,
+          sender: message.sender,
+          sentiment: message.sentiment,
+          mood: message.mood,
+          emotional_state: message.emotionalState,
+        })
+        .select()
+        .single();
+
+      if (error) {
+        console.error("Error adding chat message:", error.message || error);
+        showNotification("Failed to save chat message", "error");
+        return;
+      }
+
+      const newMessage: ChatMessage = {
+        id: data.id,
+        content: data.content,
+        sender: data.sender as "user" | "ai",
+        timestamp: new Date(data.created_at),
+        sentiment: data.sentiment,
+        mood: data.mood,
+        emotionalState: data.emotional_state,
+      };
+
+      setChatMessages((prev) => [
+        ...(Array.isArray(prev) ? prev : []),
+        newMessage,
+      ]);
+    } else {
+      // localStorage mode
+      const newMessage: ChatMessage = {
+        id: `msg-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
         content: message.content,
         sender: message.sender,
+        timestamp: new Date(),
         sentiment: message.sentiment,
         mood: message.mood,
-        emotional_state: message.emotionalState,
-      })
-      .select()
-      .single();
+        emotionalState: message.emotionalState,
+      };
 
-    if (error) {
-      console.error("Error adding chat message:", error.message || error);
-      showNotification("Failed to save chat message", "error");
-      return;
+      const result = await localStorageService.addChatMessage(newMessage);
+      if (result) {
+        setChatMessages((prev) => [
+          ...(Array.isArray(prev) ? prev : []),
+          newMessage,
+        ]);
+      }
     }
-
-    const newMessage: ChatMessage = {
-      id: data.id,
-      content: data.content,
-      sender: data.sender as "user" | "ai",
-      timestamp: new Date(data.created_at),
-      sentiment: data.sentiment,
-      mood: data.mood,
-      emotionalState: data.emotional_state,
-    };
-
-    setChatMessages((prev) => [
-      ...(Array.isArray(prev) ? prev : []),
-      newMessage,
-    ]);
   };
 
   const clearChatHistory = async () => {
