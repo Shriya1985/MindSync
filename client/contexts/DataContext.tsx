@@ -851,22 +851,49 @@ export function DataProvider({ children }: DataProviderProps) {
     ).filter((entry) => entry.date === yesterday);
 
     const currentStreak =
-      todayEntries.length > 0 ? userStats.currentStreak + 1 : 0;
-    const longestStreak = Math.max(currentStreak, userStats.longestStreak);
+      todayEntries.length > 0 ? (userStats.currentStreak || 0) + 1 : 0;
+    const longestStreak = Math.max(currentStreak, userStats.longestStreak || 0);
 
-    const { error } = await supabase
-      .from("user_stats")
-      .update({
-        current_streak: currentStreak,
-        longest_streak: longestStreak,
-        last_activity: new Date().toISOString(),
-      })
-      .eq("user_id", user.id);
+    if (isSupabaseConfigured) {
+      // Database mode
+      const { error } = await supabase
+        .from("user_stats")
+        .update({
+          current_streak: currentStreak,
+          longest_streak: longestStreak,
+          last_activity: new Date().toISOString(),
+        })
+        .eq("user_id", user.id);
 
-    if (error) {
-      console.error("Error updating streak:", error.message || error);
-      showNotification("Failed to update streak", "error");
-      return;
+      if (error) {
+        console.error("Error updating streak:", error.message || error);
+        showNotification("Failed to update streak", "error");
+        return;
+      }
+    } else {
+      // localStorage mode
+      try {
+        const existingStats = localStorage.getItem("mindsync_user_stats");
+        const stats = existingStats
+          ? JSON.parse(existingStats)
+          : {
+              level: 1,
+              points: 0,
+              currentStreak: 0,
+              longestStreak: 0,
+              totalEntries: 0,
+              totalWords: 0,
+              lastActivity: new Date().toISOString(),
+            };
+
+        stats.currentStreak = currentStreak;
+        stats.longestStreak = longestStreak;
+        stats.lastActivity = new Date().toISOString();
+
+        localStorage.setItem("mindsync_user_stats", JSON.stringify(stats));
+      } catch (error) {
+        console.error("Error updating streak in localStorage:", error);
+      }
     }
 
     setUserStats((prev) => ({
