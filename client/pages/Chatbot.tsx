@@ -297,7 +297,7 @@ export default function Chatbot() {
             content: aiResponseContent,
             sender: "ai",
             timestamp: new Date(),
-            sentiment: emotionalState.primary as any,
+            sentiment: "positive" as any,
           };
 
           setSessionMessages((prev) => [...prev, aiMessage]);
