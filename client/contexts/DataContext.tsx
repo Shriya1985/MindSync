@@ -946,11 +946,14 @@ export function DataProvider({ children }: DataProviderProps) {
       isActive: true,
     };
 
+    console.log("Creating session:", sessionId);
     setChatSessions((prev) => [
       newSession,
       ...(Array.isArray(prev) ? prev : []),
     ]);
     setCurrentSessionId(sessionId);
+
+    // Ensure we have a session ID immediately
     return sessionId;
   };
 
@@ -982,7 +985,7 @@ export function DataProvider({ children }: DataProviderProps) {
   };
 
   const getCurrentSessionMessages = (): ChatMessage[] => {
-    if (!currentSessionId) return [];
+    // For now, return all messages since session filtering isn't fully implemented
     return Array.isArray(chatMessages) ? chatMessages : [];
   };
 
