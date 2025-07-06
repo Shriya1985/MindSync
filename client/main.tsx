@@ -15,7 +15,7 @@ import { NotificationSystem } from "@/components/ui/notification-system";
 import { ThemeStatus } from "@/components/ThemeStatus";
 import { DatabaseSetupNotice } from "@/components/DatabaseSetupNotice";
 import Index from "./pages/Index";
-import EnhancedChatbot from "./pages/EnhancedChatbot";
+import SimpleChatbot from "./pages/SimpleChatbot";
 import Dashboard from "./pages/Dashboard";
 import Journal from "./pages/Journal";
 import Resources from "./pages/Resources";
@@ -48,7 +48,7 @@ const App = () => (
                   path="/chatbot"
                   element={
                     <ProtectedRoute>
-                      <EnhancedChatbot />
+                      <SimpleChatbot />
                     </ProtectedRoute>
                   }
                 />
