@@ -237,9 +237,12 @@ export default function Chatbot() {
     addChatMessage,
     addMoodEntry,
     userStats,
+    addPoints,
     getStreakInfo,
     moodEntries,
     journalEntries,
+    getRecentChatContext,
+    getCurrentSessionMessages,
   } = useData();
   const { currentTheme } = useMoodTheme();
 
