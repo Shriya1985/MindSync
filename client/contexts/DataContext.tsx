@@ -3,6 +3,7 @@ import { supabase, isSupabaseConfigured } from "@/lib/supabase";
 import { localStorageService } from "@/lib/localStorage";
 import { useAuth } from "@/contexts/AuthContext";
 import { showNotification } from "@/components/ui/notification-system";
+import type { ChatSession } from "@/utils/chatSessions";
 
 // Types
 export type MoodEntry = {
@@ -91,11 +92,13 @@ type DataContextType = {
   moodEntries: MoodEntry[];
   journalEntries: JournalEntry[];
   chatMessages: ChatMessage[];
+  chatSessions: ChatSession[];
   achievements: Achievement[];
   userStats: UserStats;
   dailyQuests: DailyQuest[];
   copingSessions: CopingSession[];
   pointActivities: PointActivity[];
+  currentSessionId: string | null;
 
   // Loading states
   isLoading: boolean;
@@ -117,8 +120,16 @@ type DataContextType = {
   // Chat functions
   addChatMessage: (
     message: Omit<ChatMessage, "id" | "timestamp">,
+    sessionId?: string,
   ) => Promise<void>;
   clearChatHistory: () => Promise<void>;
+
+  // Session functions
+  createChatSession: (title?: string) => Promise<string>;
+  getChatSessions: () => ChatSession[];
+  loadChatSession: (sessionId: string) => Promise<void>;
+  deleteChatSession: (sessionId: string) => Promise<void>;
+  getCurrentSessionMessages: () => ChatMessage[];
 
   // Achievement functions
   addAchievement: (
