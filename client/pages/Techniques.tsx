@@ -61,8 +61,8 @@ export default function Techniques() {
   // Analyze current emotional state to recommend strategies
   const currentEmotionalState = analyzeEmotionalState(
     "Current state analysis",
-    moodEntries.slice(0, 5),
-    journalEntries.slice(0, 3),
+    Array.isArray(moodEntries) ? moodEntries.slice(0, 5) : [],
+    Array.isArray(journalEntries) ? journalEntries.slice(0, 3) : [],
   );
 
   const recommendedStrategies = getCopingStrategies(
