@@ -273,14 +273,20 @@ export default function Chatbot() {
 
     setTimeout(
       () => {
+        // Analyze emotional state from the user's message (move outside try block)
+        let emotionalState;
         try {
-          // Analyze emotional state from the user's message
-          const emotionalState = analyzeEmotionalState(
+          emotionalState = analyzeEmotionalState(
             userMessage,
             Array.isArray(moodEntries) ? moodEntries.slice(0, 5) : [],
             Array.isArray(journalEntries) ? journalEntries.slice(0, 3) : [],
           );
+        } catch (error) {
+          console.error("Error analyzing emotional state:", error);
+          emotionalState = { intensity: 3, primary: "neutral" }; // fallback
+        }
 
+        try {
           // Generate emotion-aware response
           const aiResponseContent = generateEmotionAwareResponse(
             userMessage,
@@ -333,6 +339,7 @@ export default function Chatbot() {
 
         // Show coping strategies if high intensity negative emotion
         if (
+          emotionalState &&
           emotionalState.intensity >= 6 &&
           ["anxiety", "depression", "anger"].includes(emotionalState.primary)
         ) {
