@@ -15,7 +15,7 @@ import { NotificationSystem } from "@/components/ui/notification-system";
 import { ThemeStatus } from "@/components/ThemeStatus";
 import { DatabaseSetupNotice } from "@/components/DatabaseSetupNotice";
 import Index from "./pages/Index";
-import Chatbot from "./pages/Chatbot";
+import EnhancedChatbot from "./pages/EnhancedChatbot";
 import Dashboard from "./pages/Dashboard";
 import Journal from "./pages/Journal";
 import Resources from "./pages/Resources";
