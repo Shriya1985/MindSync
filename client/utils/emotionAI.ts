@@ -579,12 +579,14 @@ export function generateDailyQuests(
   }
 
   // If user hasn't journaled recently, prioritize reflection
-  const hasRecentJournal = userHistory.journals.some((journal) => {
-    const journalDate = new Date(journal.date);
-    const yesterday = new Date();
-    yesterday.setDate(yesterday.getDate() - 1);
-    return journalDate >= yesterday;
-  });
+  const hasRecentJournal =
+    Array.isArray(userHistory.journals) &&
+    userHistory.journals.some((journal) => {
+      const journalDate = new Date(journal.date);
+      const yesterday = new Date();
+      yesterday.setDate(yesterday.getDate() - 1);
+      return journalDate >= yesterday;
+    });
 
   if (!hasRecentJournal) {
     recommendedQuests = recommendedQuests.sort((a, b) => {
