@@ -72,7 +72,7 @@ export function NotificationSystem() {
   return (
     <div className="fixed top-12 right-4 z-50 space-y-3 max-w-sm">
       {notifications.map((notification) => {
-        const IconComponent = notificationIcons[notification.type];
+        const IconComponent = notificationIcons[notification.type] || Gift;
         return (
           <Card
             key={notification.id}
