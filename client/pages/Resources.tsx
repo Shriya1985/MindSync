@@ -533,9 +533,11 @@ export default function Resources() {
 
   // Get mood-based resource suggestions
   const getMoodBasedSuggestions = () => {
-    if (moodEntries.length === 0) return [];
+    if (!Array.isArray(moodEntries) || moodEntries.length === 0) return [];
 
     const latestMood = moodEntries[moodEntries.length - 1];
+    if (!latestMood || !latestMood.mood) return [];
+
     const moodLower = latestMood.mood.toLowerCase();
 
     // Find categories that match current mood
@@ -604,7 +606,7 @@ export default function Resources() {
                   : ""
               }
             >
-              📚 Learning Resources
+              ��� Learning Resources
             </Button>
           </div>
         </div>
