@@ -78,7 +78,14 @@ export default function EnhancedChatbot() {
   // Create initial session if none exists
   useEffect(() => {
     if (!currentSessionId && viewMode === "chat") {
-      createChatSession();
+      console.log("Creating initial session...");
+      createChatSession()
+        .then((sessionId) => {
+          console.log("Created session:", sessionId);
+        })
+        .catch((err) => {
+          console.error("Failed to create session:", err);
+        });
     }
   }, [currentSessionId, viewMode, createChatSession]);
 
