@@ -277,76 +277,63 @@ export default function Chatbot() {
     }
   }, [currentMessages.length, isTyping]);
 
-  const simulateAIResponse = (userMessage: string, mood?: string) => {
+  const simulateAIResponse = async (userMessage: string, mood?: string) => {
     setIsTyping(true);
     setShowProgress(true);
 
-    setTimeout(
-      async () => {
-        // Analyze emotional state from the user's message (move outside try block)
-        let emotionalState;
-        try {
-          emotionalState = analyzeEmotionalState(
-            userMessage,
-            Array.isArray(moodEntries) ? moodEntries.slice(0, 5) : [],
-            Array.isArray(journalEntries) ? journalEntries.slice(0, 3) : [],
-          );
-        } catch (error) {
-          console.error("Error analyzing emotional state:", error);
-          emotionalState = { intensity: 3, primary: "neutral" }; // fallback
-        }
+    // Add realistic delay
+    await new Promise(resolve => setTimeout(resolve, 1500 + Math.random() * 1000));
 
-        try {
-          // Get recent chat context for better responses
-          const recentContext = getRecentChatContext();
+    try {
+      // Analyze emotional state from the user's message
+      let emotionalState;
+      try {
+        emotionalState = analyzeEmotionalState(
+          userMessage,
+          Array.isArray(moodEntries) ? moodEntries.slice(0, 5) : [],
+          Array.isArray(journalEntries) ? journalEntries.slice(0, 3) : [],
+        );
+      } catch (error) {
+        console.error("Error analyzing emotional state:", error);
+        emotionalState = { intensity: 3, primary: "neutral" }; // fallback
+      }
 
-          // Generate emotion-aware response with enhanced context
-          const aiResponseContent = generateEmotionAwareResponse(
-            userMessage,
-            emotionalState,
-            {
-              chats: recentContext, // Use recent context instead of all messages
-              journals: Array.isArray(journalEntries)
-                ? journalEntries.slice(0, 3)
-                : [],
-              moods: Array.isArray(moodEntries) ? moodEntries.slice(0, 5) : [],
-            },
-          );
+      // Get recent chat context for better responses
+      const recentContext = getRecentChatContext();
 
-          const aiMessage: ChatMessage = {
-            id: Date.now().toString(),
-            content: aiResponseContent,
-            sender: "ai",
-            timestamp: new Date(),
-            sentiment: "positive" as any,
-          };
+      // Generate emotion-aware response with enhanced context
+      const aiResponseContent = generateEmotionAwareResponse(
+        userMessage,
+        emotionalState,
+        {
+          chats: recentContext, // Use recent context instead of all messages
+          journals: Array.isArray(journalEntries)
+            ? journalEntries.slice(0, 3)
+            : [],
+          moods: Array.isArray(moodEntries) ? moodEntries.slice(0, 5) : [],
+        },
+      );
 
-          // Add AI response to database
-          await addChatMessage(aiMessage);
-        } catch (error) {
-          console.error("Error generating AI response:", error);
-          // Fallback response
-          const fallbackMessage: Omit<ChatMessage, "id" | "timestamp"> = {
-            content:
-              "I'm here to listen and support you. Sometimes I need a moment to process my thoughts. Could you tell me more about what's on your mind?",
-            sender: "ai",
-            sentiment: "neutral" as any,
-          };
-          await addChatMessage(fallbackMessage);
-        }
+      const aiMessage: ChatMessage = {
+        id: Date.now().toString(),
+        content: aiResponseContent,
+        sender: "ai",
+        timestamp: new Date(),
+        sentiment: "positive" as any,
+      };
 
-        setIsTyping(false);
-        setShowProgress(false);
+      // Add AI response to database
+      await addChatMessage(aiMessage);
 
-        // Check for streak achievement
-        const streakInfo = getStreakInfo();
-        if (streakInfo.current > 0 && streakInfo.current % 3 === 0) {
-          showNotification({
-            type: "streak",
-            title: "Chat Streak! 🔥",
-            message: `Amazing! You've had ${streakInfo.current} days of wellness check-ins. Keep up the great work!`,
-            duration: 6000,
-          });
+      // Check for streak achievement
+      const streakInfo = getStreakInfo();
+      if (streakInfo.current > 0 && streakInfo.current % 3 === 0) {
+        showNotification({
+          type: "streak",
+          title: "Chat Streak! 🔥",
+          message: `Amazing! You've had ${streakInfo.current} days of wellness check-ins. Keep up the great work!`,
+          duration: 6000,
+        });
         }
 
         // Show coping strategies if high intensity negative emotion
