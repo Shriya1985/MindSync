@@ -255,6 +255,21 @@ class LocalStorageService {
     return moodEntry;
   }
 
+  // Chat message specific methods for DataContext compatibility
+  async addChatMessage(message: any): Promise<any> {
+    const currentUser = this.getCurrentUser();
+    if (!currentUser) return null;
+
+    const chatMessage = {
+      id: this.generateId(),
+      timestamp: new Date(),
+      ...message,
+    };
+
+    this.addUserDataItem(currentUser.id, "CHAT_MESSAGES", chatMessage);
+    return chatMessage;
+  }
+
   // Points system for DataContext compatibility
   async addPoints(points: number, activity: string): Promise<void> {
     const currentUser = this.getCurrentUser();
