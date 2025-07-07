@@ -230,11 +230,13 @@ export default function Chatbot() {
   const [selectedMood, setSelectedMood] = useState<string | null>(null);
   const [isTyping, setIsTyping] = useState(false);
   const [showProgress, setShowProgress] = useState(false);
+  const [showHistory, setShowHistory] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
 
   const {
     chatMessages,
+    chatSessions,
     addChatMessage,
     addMoodEntry,
     userStats,
@@ -244,6 +246,10 @@ export default function Chatbot() {
     journalEntries,
     getRecentChatContext,
     getCurrentSessionMessages,
+    createChatSession,
+    loadChatSession,
+    deleteChatSession,
+    currentSessionId,
   } = useData();
 
   // Get current messages from DataContext (after useData hook)
