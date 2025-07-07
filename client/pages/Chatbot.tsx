@@ -27,6 +27,9 @@ import {
   RefreshCw,
   TrendingUp,
   Award,
+  History,
+  Clock,
+  Calendar,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -244,27 +247,26 @@ export default function Chatbot() {
   } = useData();
 
   // Get current messages from DataContext (after useData hook)
-  const currentMessages = getCurrentSessionMessages();
+  const currentMessages = chatMessages || [];
   const { currentTheme } = useMoodTheme();
+
+  // Debug logging
+  useEffect(() => {
+    console.log("Chatbot - Current messages:", currentMessages.length);
+    console.log("Chatbot - All chat messages:", chatMessages?.length || 0);
+  }, [currentMessages, chatMessages]);
 
   // Initialize with welcome message
   useEffect(() => {
-    if (currentMessages.length === 0) {
-      const welcomeMessage: ChatMessage = {
-        id: "welcome",
-        content:
-          "Hello! I'm Buddy, your MindSync AI companion. I'm here to listen, support, and help you explore your thoughts and feelings. How are you doing today? 💚",
-        sender: "ai",
-        timestamp: new Date(),
-      };
-      // Add welcome message to database if no messages exist
+    if (currentMessages.length === 0 && !isTyping) {
+      console.log("Adding welcome message...");
       addChatMessage({
         content:
           "Hello! I'm Buddy, your MindSync AI companion. I'm here to listen, support, and help you explore your thoughts and feelings. How are you doing today? 💚",
         sender: "ai",
       });
     }
-  }, []);
+  }, [currentMessages.length, addChatMessage, isTyping]);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
