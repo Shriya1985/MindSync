@@ -454,7 +454,7 @@ export default function Chatbot() {
     <div className={`min-h-screen ${currentTheme.background}`}>
       <Navigation />
 
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Header with Stats */}
         <div className="text-center mb-6">
           <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-mint-500 to-sky-500 rounded-2xl mb-4">
@@ -481,11 +481,88 @@ export default function Chatbot() {
                 {streakInfo.current} day streak
               </span>
             </div>
+            <div className="flex items-center space-x-1">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setShowHistory(!showHistory)}
+                className="flex items-center space-x-1"
+              >
+                <History className="w-4 h-4" />
+                <span>Chat History</span>
+              </Button>
+            </div>
           </div>
         </div>
 
-        {/* Chat Container */}
-        <Card className="shadow-xl border-0 bg-white/90 backdrop-blur-sm h-[600px] flex flex-col">
+        {/* Main Content Layout */}
+        <div className="flex gap-6">
+          {/* Chat History Sidebar */}
+          {showHistory && (
+            <Card className="w-80 shadow-lg border-0 bg-white/90 backdrop-blur-sm flex flex-col h-[600px]">
+              <div className="p-4 border-b border-gray-100">
+                <h3 className="font-semibold text-gray-900 flex items-center">
+                  <History className="w-5 h-5 mr-2 text-mint-500" />
+                  Previous Conversations
+                </h3>
+              </div>
+              <div className="flex-1 overflow-y-auto p-4">
+                {chatSessions && chatSessions.length > 0 ? (
+                  <div className="space-y-3">
+                    {chatSessions.map((session) => (
+                      <div
+                        key={session.id}
+                        className={cn(
+                          "p-3 rounded-lg border cursor-pointer transition-colors",
+                          currentSessionId === session.id
+                            ? "border-mint-200 bg-mint-50"
+                            : "border-gray-200 hover:border-mint-200 hover:bg-gray-50"
+                        )}
+                        onClick={() => loadChatSession(session.id)}
+                      >
+                        <div className="font-medium text-sm text-gray-900 mb-1 truncate">
+                          {session.title || "Untitled Chat"}
+                        </div>
+                        <div className="flex items-center text-xs text-gray-500 space-x-2">
+                          <Clock className="w-3 h-3" />
+                          <span>{new Date(session.createdAt).toLocaleDateString()}</span>
+                          <span>•</span>
+                          <span>{session.messageCount} messages</span>
+                        </div>
+                        {session.mood && (
+                          <div className="mt-1">
+                            <Badge variant="secondary" className="text-xs">
+                              {session.mood}
+                            </Badge>
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center text-gray-500 py-8">
+                    <MessageCircle className="w-8 h-8 mx-auto mb-2 opacity-30" />
+                    <p className="text-sm">No previous conversations yet</p>
+                  </div>
+                )}
+              </div>
+              <div className="p-4 border-t border-gray-100">
+                <Button
+                  onClick={() => createChatSession()}
+                  variant="outline"
+                  className="w-full text-mint-600 border-mint-200 hover:bg-mint-50"
+                >
+                  Start New Chat
+                </Button>
+              </div>
+            </Card>
+          )}
+
+          {/* Chat Container */}
+          <Card className={cn(
+            "shadow-xl border-0 bg-white/90 backdrop-blur-sm h-[600px] flex flex-col",
+            showHistory ? "flex-1" : "w-full max-w-4xl mx-auto"
+          )}>
           {/* Chat Header */}
           <div className="flex items-center justify-between p-4 border-b border-gray-100">
             <div className="flex items-center space-x-3">
