@@ -178,8 +178,12 @@ export function GamificationSystem() {
         icon: "💬",
         category: "achievement",
         rarity: "common",
-        unlocked: chatMessages.filter((m) => m.sender === "user").length >= 25,
-        progress: chatMessages.filter((m) => m.sender === "user").length,
+        unlocked: Array.isArray(chatMessages)
+          ? chatMessages.filter((m) => m.sender === "user").length >= 25
+          : false,
+        progress: Array.isArray(chatMessages)
+          ? chatMessages.filter((m) => m.sender === "user").length
+          : 0,
         requirement: 25,
       },
       {
@@ -189,8 +193,10 @@ export function GamificationSystem() {
         icon: "📖",
         category: "achievement",
         rarity: "common",
-        unlocked: journalEntries.length >= 10,
-        progress: journalEntries.length,
+        unlocked: Array.isArray(journalEntries)
+          ? journalEntries.length >= 10
+          : false,
+        progress: Array.isArray(journalEntries) ? journalEntries.length : 0,
         requirement: 10,
       },
       {
