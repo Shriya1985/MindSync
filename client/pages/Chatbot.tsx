@@ -380,12 +380,15 @@ export default function Chatbot() {
       ? moodOptions.find((m) => m.value === selectedMood)
       : undefined;
 
+    const messageText = inputValue;
+    const currentMood = selectedMood;
+
     const userMessage: ChatMessage = {
       id: Date.now().toString(),
-      content: inputValue,
+      content: messageText,
       sender: "user",
       timestamp: new Date(),
-      mood: selectedMood || undefined,
+      mood: currentMood || undefined,
       sentiment: selectedMoodOption?.rating
         ? selectedMoodOption.rating >= 7
           ? "positive"
@@ -396,14 +399,10 @@ export default function Chatbot() {
     };
 
     // Add to database
-    await addChatMessage({
-      content: messageText,
-      sender: "user",
-      mood: currentMood,
-    });
+    await addChatMessage(userMessage);
 
     // Also add mood entry if mood was selected
-    if (selectedMood && selectedMoodOption) {
+    if (currentMood && selectedMoodOption) {
       addMoodEntry({
         date: new Date().toISOString().split("T")[0],
         mood: selectedMoodOption.label,
@@ -423,7 +422,7 @@ export default function Chatbot() {
 
     setInputValue("");
     setSelectedMood(null);
-    simulateAIResponse(inputValue, selectedMood || undefined);
+    await simulateAIResponse(messageText, currentMood || undefined);
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
