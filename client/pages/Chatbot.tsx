@@ -282,7 +282,9 @@ export default function Chatbot() {
     setShowProgress(true);
 
     // Add realistic delay
-    await new Promise(resolve => setTimeout(resolve, 1500 + Math.random() * 1000));
+    await new Promise((resolve) =>
+      setTimeout(resolve, 1500 + Math.random() * 1000),
+    );
 
     try {
       // Analyze emotional state from the user's message
@@ -334,30 +336,43 @@ export default function Chatbot() {
           message: `Amazing! You've had ${streakInfo.current} days of wellness check-ins. Keep up the great work!`,
           duration: 6000,
         });
-        }
+      }
 
-        // Show coping strategies if high intensity negative emotion
-        if (
-          emotionalState &&
-          emotionalState.intensity >= 6 &&
-          ["anxiety", "depression", "anger"].includes(emotionalState.primary)
-        ) {
-          setTimeout(() => {
-            showNotification({
-              type: "encouragement",
-              title: "Coping Techniques Available 🌟",
-              message: `I've prepared some personalized techniques that might help you feel better. Would you like to practice them now?`,
-              duration: 8000,
-              action: {
-                label: "Practice Techniques",
-                onClick: () => navigate("/techniques"),
-              },
-            });
-          }, 2000);
-        }
-      },
-      1500 + Math.random() * 1000,
-    );
+      // Show coping strategies if high intensity negative emotion
+      if (
+        emotionalState &&
+        emotionalState.intensity >= 6 &&
+        ["anxiety", "depression", "anger"].includes(emotionalState.primary)
+      ) {
+        setTimeout(() => {
+          showNotification({
+            type: "encouragement",
+            title: "Coping Techniques Available 🌟",
+            message: `I've prepared some personalized techniques that might help you feel better. Would you like to practice them now?`,
+            duration: 8000,
+            action: {
+              label: "Practice Techniques",
+              onClick: () => navigate("/techniques"),
+            },
+          });
+        }, 2000);
+      }
+    } catch (error) {
+      console.error("Error generating AI response:", error);
+      // Fallback response
+      const fallbackMessage: ChatMessage = {
+        id: Date.now().toString(),
+        content:
+          "I'm here to listen and support you. Sometimes I need a moment to process my thoughts. Could you tell me more about what's on your mind?",
+        sender: "ai",
+        timestamp: new Date(),
+        sentiment: "neutral" as any,
+      };
+      await addChatMessage(fallbackMessage);
+    } finally {
+      setIsTyping(false);
+      setShowProgress(false);
+    }
   };
 
   const handleSendMessage = async () => {
