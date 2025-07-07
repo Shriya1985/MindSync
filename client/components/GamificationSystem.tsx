@@ -217,8 +217,8 @@ export function GamificationSystem() {
         icon: "🎭",
         category: "achievement",
         rarity: "rare",
-        unlocked: moodEntries.length >= 50,
-        progress: moodEntries.length,
+        unlocked: Array.isArray(moodEntries) ? moodEntries.length >= 50 : false,
+        progress: Array.isArray(moodEntries) ? moodEntries.length : 0,
         requirement: 50,
       },
 
