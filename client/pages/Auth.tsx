@@ -82,7 +82,8 @@ export default function Auth() {
       let result;
 
       if (mode === "login") {
-        result = await login(formData.email, formData.password);
+        const email = formData.email.trim().toLowerCase();
+        result = await login(email, formData.password);
       } else {
         // Validate form for registration
         const email = formData.email.trim().toLowerCase();
