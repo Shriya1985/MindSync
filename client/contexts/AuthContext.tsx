@@ -137,11 +137,23 @@ export function AuthProvider({ children }: AuthProviderProps) {
         });
 
         if (error) {
+          console.error("Supabase login error:", error);
+          let errorMessage = error.message;
+
+          // Provide more helpful error messages
+          if (error.message.includes("email not confirmed")) {
+            errorMessage =
+              "Please check your email and click the confirmation link, or contact support.";
+          } else if (error.message.includes("Invalid login credentials")) {
+            errorMessage =
+              "Invalid email or password. Please check your credentials.";
+          }
+
           showNotification({
             type: "encouragement",
             title: "Login Failed",
-            message: error.message,
-            duration: 3000,
+            message: errorMessage,
+            duration: 5000,
           });
           return false;
         }
