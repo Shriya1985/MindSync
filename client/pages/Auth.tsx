@@ -85,21 +85,48 @@ export default function Auth() {
         result = await login(formData.email, formData.password);
       } else {
         // Validate form for registration
+        const email = formData.email.trim().toLowerCase();
+        const name = formData.name.trim();
+
+        if (!name) {
+          setError("Please enter your name");
+          setIsLoading(false);
+          return;
+        }
+
+        if (!email) {
+          setError("Please enter your email");
+          setIsLoading(false);
+          return;
+        }
+
+        // Basic email validation
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(email)) {
+          setError("Please enter a valid email address");
+          setIsLoading(false);
+          return;
+        }
+
         if (formData.password !== formData.confirmPassword) {
           setError("Passwords do not match");
           setIsLoading(false);
           return;
         }
+
+        if (formData.password.length < 6) {
+          setError("Password must be at least 6 characters");
+          setIsLoading(false);
+          return;
+        }
+
         if (!formData.agreeToTerms) {
           setError("Please agree to the terms and conditions");
           setIsLoading(false);
           return;
         }
-        result = await register(
-          formData.name,
-          formData.email,
-          formData.password,
-        );
+
+        result = await register(name, email, formData.password);
       }
 
       if (result.success) {
