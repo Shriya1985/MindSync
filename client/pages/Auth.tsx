@@ -96,9 +96,9 @@ export default function Auth() {
           return;
         }
         result = await register(
+          formData.name,
           formData.email,
           formData.password,
-          formData.name,
         );
       }
 
