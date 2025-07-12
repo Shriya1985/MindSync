@@ -213,6 +213,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
             data: {
               name: name,
             },
+            emailRedirectTo: undefined, // Skip email confirmation for development
           },
         });
 
