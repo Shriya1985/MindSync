@@ -8,7 +8,7 @@ import { useData, type ChatMessage } from "@/contexts/DataContext";
 import { showNotification } from "@/components/ui/notification-system";
 import { MessageCircle, Send, Brain, User } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { sendGeminiMessage } from "@/utils/geminiChatAPI";
+import { generateGeminiResponse } from "@/utils/geminiChatAPI";
 
 export default function SimplifiedChatbot() {
   const [inputValue, setInputValue] = useState("");
