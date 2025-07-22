@@ -39,7 +39,8 @@ const App = () => (
       <Toaster />
       <Sonner />
       <AuthProvider>
-        <DataProvider>
+        <DataContextErrorBoundary>
+          <DataProvider>
           <ThemeProvider>
             <BrowserRouter>
               <NotificationSystem />
@@ -105,7 +106,8 @@ const App = () => (
               </Routes>
             </BrowserRouter>
           </ThemeProvider>
-        </DataProvider>
+          </DataProvider>
+        </DataContextErrorBoundary>
       </AuthProvider>
     </TooltipProvider>
     </QueryClientProvider>
