@@ -1,6 +1,7 @@
 import express from "express";
 import cors from "cors";
 import { handleDemo } from "./routes/demo";
+import { handleChatCompletion } from "./routes/chat";
 
 export function createServer() {
   const app = express();
@@ -16,6 +17,9 @@ export function createServer() {
   });
 
   app.get("/api/demo", handleDemo);
+
+  // Chat completion endpoint for GPT integration
+  app.post("/api/chat/completion", handleChatCompletion);
 
   return app;
 }
