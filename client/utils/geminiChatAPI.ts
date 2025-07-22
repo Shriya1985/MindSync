@@ -144,13 +144,12 @@ export async function generateGeminiResponse(
       body: JSON.stringify(requestData)
     });
 
-    if (!response.ok) {
-      const errorData = await response.json();
-      console.warn("⚠️ Gemini API error, using fallback:", errorData.error);
-      return errorData.response || generateLocalFallback(userMessage, context);
-    }
-
     const data: GeminiChatResponse = await response.json();
+
+    if (!response.ok) {
+      console.warn("⚠️ Gemini API error, using fallback:", data.error);
+      return data.response || generateLocalFallback(userMessage, context);
+    }
     
     if (data.error) {
       console.warn("⚠️ Gemini service error, using fallback:", data.error);
