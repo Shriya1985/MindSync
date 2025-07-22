@@ -38,15 +38,20 @@ export default function SimplifiedChatbot() {
     scrollToBottom();
   }, [localMessages, isTyping]);
 
-  const generateSimpleResponse = (userMessage: string): string => {
-    const responses = [
-      "Thank you for sharing that with me. How does that make you feel?",
-      "I hear you. That sounds important to you. Can you tell me more?",
-      "I appreciate you opening up about this. What's been on your mind?",
-      "That's really meaningful. How has this been affecting your day?",
-      "I'm here to listen. What would you like to explore about this?",
-    ];
-    return responses[Math.floor(Math.random() * responses.length)];
+  const generateAIResponse = async (userMessage: string): Promise<string> => {
+    try {
+      const response = await sendGeminiMessage(userMessage);
+      return response;
+    } catch (error) {
+      console.error("Error getting AI response:", error);
+      // Fallback to simple response if AI fails
+      const fallbackResponses = [
+        "Thank you for sharing that with me. How does that make you feel?",
+        "I hear you. That sounds important to you. Can you tell me more?",
+        "I appreciate you opening up about this. What's been on your mind?",
+      ];
+      return fallbackResponses[Math.floor(Math.random() * fallbackResponses.length)];
+    }
   };
 
   const handleSendMessage = async () => {
