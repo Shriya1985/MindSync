@@ -291,8 +291,8 @@ export default function Chatbot() {
     setShowProgress(true);
 
     try {
-      // Use GPT API for intelligent responses
-      const { generateGPTResponse, detectUserEmotion } = await import("@/utils/gptChatAPI");
+      // Use Gemini API for intelligent responses
+      const { generateGeminiResponse, detectUserEmotion } = await import("@/utils/geminiChatAPI");
 
       // Detect user emotion for better mood tracking
       const detectedEmotion = detectUserEmotion(userMessage);
@@ -306,8 +306,8 @@ export default function Chatbot() {
         currentMood: mood || detectedEmotion.emotion
       };
 
-      console.log("🤖 Generating GPT response with context...");
-      const aiResponseContent = await generateGPTResponse(userMessage, context);
+      console.log("🤖 Generating Gemini response with context...");
+      const aiResponseContent = await generateGeminiResponse(userMessage, context);
 
       const aiMessage: ChatMessage = {
         id: Date.now().toString(),
