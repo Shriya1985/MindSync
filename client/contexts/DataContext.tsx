@@ -194,8 +194,9 @@ export function DataProvider({ children }: DataProviderProps) {
   // Load all user data when authenticated
   useEffect(() => {
     if (isAuthenticated && user) {
-      // Always try to use Supabase first, fallback to localStorage only if needed
+      // Prioritize Supabase - only use localStorage if Supabase fails completely
       if (isSupabaseConfigured) {
+        console.log("🔧 Using Supabase database for data persistence");
         loadAllData();
       } else {
         console.warn(
