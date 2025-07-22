@@ -579,6 +579,14 @@ export default function Chatbot() {
                 <Button
                   variant="ghost"
                   size="sm"
+                  onClick={() => setShowHistory(true)}
+                  className="text-gray-500 hover:text-gray-700"
+                >
+                  <History className="w-4 h-4" />
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
                   onClick={clearChat}
                   className="text-gray-500 hover:text-gray-700"
                 >
