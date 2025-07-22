@@ -311,33 +311,88 @@ export function AuthProvider({ children }: AuthProviderProps) {
   };
 
   const updateProfile = async (data: Partial<User>): Promise<boolean> => {
-    try {
-      if (!user) return false;
+    if (!user) return false;
 
-      const updates = {
-        name: data.name,
-        bio: data.bio,
-        avatar_url: data.avatar,
-        preferences: data.preferences,
-        updated_at: new Date().toISOString(),
-      };
+    // Always try Supabase first if configured
+    if (isSupabaseConfigured) {
+      try {
+        const updates = {
+          name: data.name,
+          bio: data.bio,
+          avatar_url: data.avatar,
+          preferences: data.preferences,
+          updated_at: new Date().toISOString(),
+        };
 
-      const { error } = await supabase
-        .from("profiles")
-        .update(updates)
-        .eq("id", user.id);
+        const { error } = await supabase
+          .from("profiles")
+          .update(updates)
+          .eq("id", user.id);
 
-      if (error) {
-        console.error("Error updating profile:", error);
+        if (error) {
+          console.error("❌ Supabase error updating profile:", error.message || error);
+          // Fallback to localStorage
+          console.log("🔄 Falling back to localStorage for profile update...");
+          const result = localStorageService.updateUser(user.id, {
+            name: data.name || user.name,
+            email: user.email,
+            password: "", // Keep existing password
+            id: user.id,
+            createdAt: ""
+          });
+
+          if (result) {
+            setUser({ ...user, ...data });
+            console.log("✅ Profile updated in localStorage");
+            return true;
+          }
+          return false;
+        }
+
+        // Update local user state
+        setUser({ ...user, ...data });
+        console.log("✅ Profile updated in Supabase");
+        return true;
+      } catch (error) {
+        console.error("❌ Unexpected error with Supabase profile update:", error);
+        // Fallback to localStorage on any unexpected error
+        const result = localStorageService.updateUser(user.id, {
+          name: data.name || user.name,
+          email: user.email,
+          password: "", // Keep existing password
+          id: user.id,
+          createdAt: ""
+        });
+
+        if (result) {
+          setUser({ ...user, ...data });
+          console.log("✅ Profile updated in localStorage (fallback)");
+          return true;
+        }
         return false;
       }
+    } else {
+      // Use localStorage when Supabase is not configured
+      console.log("📱 Using localStorage for profile update (Supabase not configured)");
+      try {
+        const result = localStorageService.updateUser(user.id, {
+          name: data.name || user.name,
+          email: user.email,
+          password: "", // Keep existing password
+          id: user.id,
+          createdAt: ""
+        });
 
-      // Update local user state
-      setUser({ ...user, ...data });
-      return true;
-    } catch (error) {
-      console.error("Error in updateProfile:", error);
-      return false;
+        if (result) {
+          setUser({ ...user, ...data });
+          console.log("✅ Profile updated in localStorage");
+          return true;
+        }
+        return false;
+      } catch (error) {
+        console.error("❌ Error updating profile in localStorage:", error);
+        return false;
+      }
     }
   };
 
