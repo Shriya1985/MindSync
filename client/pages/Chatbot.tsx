@@ -295,6 +295,19 @@ export default function Chatbot() {
     );
 
     try {
+      // Use enhanced conversation AI with context
+      const { generateContextualResponse } = await import("@/utils/conversationAI");
+
+      const context = {
+        recentMessages: currentMessages.slice(-10), // Last 10 messages for context
+        recentMoods: moodEntries.slice(0, 5), // Recent mood entries
+        recentJournals: journalEntries.slice(0, 3), // Recent journal entries
+        userStats,
+        userName: userStats.currentStreak > 0 ? "friend" : undefined
+      };
+
+      const aiResponse = await generateContextualResponse(userMessage, context);
+
       // Analyze emotional state from the user's message
       let emotionalState;
       try {
