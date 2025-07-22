@@ -487,49 +487,63 @@ export function DataProvider({ children }: DataProviderProps) {
   const addMoodEntry = async (entry: Omit<MoodEntry, "id">) => {
     if (!user) return;
 
+    // Always try Supabase first if configured
     if (isSupabaseConfigured) {
-      const { data, error } = await supabase
-        .from("mood_entries")
-        .insert({
-          user_id: user.id,
-          mood: entry.mood,
-          rating: entry.rating,
-          emoji: entry.emoji,
-          source: entry.source,
-          notes: entry.notes,
-          date: entry.date,
-        })
-        .select()
-        .single();
+      try {
+        const { data, error } = await supabase
+          .from("mood_entries")
+          .insert({
+            user_id: user.id,
+            mood: entry.mood,
+            rating: entry.rating,
+            emoji: entry.emoji,
+            source: entry.source,
+            notes: entry.notes,
+            date: entry.date,
+          })
+          .select()
+          .single();
 
-      if (error) {
-        console.error("Error adding mood entry:", error);
-        return;
+        if (error) {
+          console.error("❌ Supabase error adding mood entry:", error);
+          // Fallback to localStorage only if Supabase fails
+          console.log("🔄 Falling back to localStorage...");
+          const result = await localStorageService.addMoodEntry(entry);
+          if (result) {
+            setMoodEntries((prev) => [result, ...(Array.isArray(prev) ? prev : [])]);
+            await updateStreak();
+          }
+          return;
+        }
+
+        const newEntry: MoodEntry = {
+          id: data.id,
+          date: data.date,
+          mood: data.mood,
+          rating: data.rating,
+          emoji: data.emoji,
+          source: data.source,
+          notes: data.notes,
+        };
+
+        setMoodEntries((prev) => [newEntry, ...(Array.isArray(prev) ? prev : [])]);
+        await updateStreak();
+        console.log("✅ Mood entry saved to Supabase");
+      } catch (error) {
+        console.error("❌ Unexpected error with Supabase:", error);
+        // Fallback to localStorage on any unexpected error
+        const result = await localStorageService.addMoodEntry(entry);
+        if (result) {
+          setMoodEntries((prev) => [result, ...(Array.isArray(prev) ? prev : [])]);
+          await updateStreak();
+        }
       }
-
-      const newEntry: MoodEntry = {
-        id: data.id,
-        date: data.date,
-        mood: data.mood,
-        rating: data.rating,
-        emoji: data.emoji,
-        source: data.source,
-        notes: data.notes,
-      };
-
-      setMoodEntries((prev) => [
-        newEntry,
-        ...(Array.isArray(prev) ? prev : []),
-      ]);
-      await updateStreak();
     } else {
-      // Use localStorage fallback
+      // Use localStorage when Supabase is not configured
+      console.log("📱 Using localStorage (Supabase not configured)");
       const result = await localStorageService.addMoodEntry(entry);
       if (result) {
-        setMoodEntries((prev) => [
-          result,
-          ...(Array.isArray(prev) ? prev : []),
-        ]);
+        setMoodEntries((prev) => [result, ...(Array.isArray(prev) ? prev : [])]);
         await updateStreak();
       }
     }
