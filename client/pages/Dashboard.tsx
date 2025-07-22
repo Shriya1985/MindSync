@@ -399,7 +399,7 @@ export default function Dashboard() {
         <SupabaseTestPanel />
 
         {/* Mood Insights from All Sources */}
-        <MoodInsights />
+        <MoodInsights key="mood-insights" />
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Left Column */}
