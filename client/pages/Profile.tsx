@@ -56,7 +56,7 @@ export default function Profile() {
   });
 
   const { user, updateProfile, logout } = useAuth();
-  const { userStats, moodEntries, journalEntries, achievements } = useData();
+  const { userStats, moodEntries, journalEntries, achievements, pointActivities } = useData();
 
   // Initialize form data with user info
   useEffect(() => {
