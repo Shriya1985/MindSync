@@ -596,6 +596,10 @@ export function DataProvider({ children }: DataProviderProps) {
   const addJournalEntry = async (entry: Omit<JournalEntry, "id">) => {
     if (!user) return;
 
+    // Auto-extract mood from journal content
+    const { extractMoodFromText } = await import("@/utils/emotionAI");
+    const extractedMood = extractMoodFromText(entry.content + " " + entry.title);
+
     const { data, error } = await supabase
       .from("journal_entries")
       .insert({
@@ -629,6 +633,20 @@ export function DataProvider({ children }: DataProviderProps) {
       newEntry,
       ...(Array.isArray(prev) ? prev : []),
     ]);
+
+    // Auto-create mood entry if confidence is high enough
+    if (extractedMood.confidence > 0.3) {
+      await addMoodEntry({
+        date: entry.date,
+        mood: extractedMood.mood,
+        rating: extractedMood.rating,
+        emoji: extractedMood.emoji,
+        source: "journal",
+        notes: `Auto-detected from journal: "${entry.title}"`
+      });
+      console.log(`✅ Auto-detected mood from journal: ${extractedMood.mood} (${extractedMood.confidence.toFixed(2)} confidence)`);
+    }
+
     await updateStreak();
   };
 
