@@ -81,33 +81,36 @@ export default function SimplifiedChatbot() {
     setInputValue("");
     setIsTyping(true);
 
-    // Simulate AI response delay
-    setTimeout(
-      async () => {
-        const aiResponse: ChatMessage = {
-          id: "ai-" + Date.now(),
-          content: generateSimpleResponse(messageText),
+    // Get AI response
+    try {
+      const aiResponseContent = await generateAIResponse(messageText);
+
+      const aiResponse: ChatMessage = {
+        id: "ai-" + Date.now(),
+        content: aiResponseContent,
+        sender: "ai",
+        timestamp: new Date(),
+      };
+
+      // Add AI response to local state
+      setLocalMessages((prev) => [...prev, aiResponse]);
+
+      // Save AI response to database
+      try {
+        await addChatMessage({
+          content: aiResponse.content,
           sender: "ai",
-          timestamp: new Date(),
-        };
+        });
+      } catch (error) {
+        console.error("Error saving AI message:", error);
+      }
 
-        // Add AI response to local state
-        setLocalMessages((prev) => [...prev, aiResponse]);
-
-        // Save AI response to database
-        try {
-          await addChatMessage({
-            content: aiResponse.content,
-            sender: "ai",
-          });
-        } catch (error) {
-          console.error("Error saving AI message:", error);
-        }
-
-        setIsTyping(false);
-      },
-      1000 + Math.random() * 2000,
-    );
+      setIsTyping(false);
+    } catch (error) {
+      console.error("Error generating AI response:", error);
+      setIsTyping(false);
+      showNotification("Sorry, I'm having trouble responding right now. Please try again.", "error");
+    }
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
