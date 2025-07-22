@@ -40,7 +40,14 @@ export default function SimplifiedChatbot() {
 
   const generateAIResponse = async (userMessage: string): Promise<string> => {
     try {
-      const response = await sendGeminiMessage(userMessage);
+      const response = await generateGeminiResponse(userMessage, {
+        recentMessages: localMessages,
+        recentMoods: [],
+        recentJournals: [],
+        userStats: userStats,
+        userName: "Friend",
+        currentMood: undefined
+      });
       return response;
     } catch (error) {
       console.error("Error getting AI response:", error);
