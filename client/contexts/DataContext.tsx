@@ -839,24 +839,35 @@ export function DataProvider({ children }: DataProviderProps) {
   ) => {
     if (!user) return;
 
+    // Always try Supabase first if configured
     if (isSupabaseConfigured) {
-      const { error } = await supabase.from("point_activities").insert({
-        user_id: user.id,
-        points,
-        activity,
-        source,
-      });
+      try {
+        const { error } = await supabase.from("point_activities").insert({
+          user_id: user.id,
+          points,
+          activity,
+          source,
+        });
 
-      if (error) {
-        console.error("Error adding points:", error);
-        return;
+        if (error) {
+          console.error("❌ Supabase error adding points:", error);
+          // Fallback to localStorage
+          await localStorageService.addPoints(points, activity);
+          return;
+        }
+
+        // Reload user stats to get updated points and level
+        await loadUserStats();
+        await loadPointActivities();
+        console.log("✅ Points saved to Supabase");
+      } catch (error) {
+        console.error("❌ Unexpected error with Supabase points:", error);
+        // Fallback to localStorage on any unexpected error
+        await localStorageService.addPoints(points, activity);
       }
-
-      // Reload user stats to get updated points and level
-      await loadUserStats();
-      await loadPointActivities();
     } else {
-      // Use localStorage fallback
+      // Use localStorage when Supabase is not configured
+      console.log("📱 Using localStorage for points (Supabase not configured)");
       await localStorageService.addPoints(points, activity);
 
       // Update local state
