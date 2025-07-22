@@ -16,17 +16,20 @@ export interface AIResponse {
 }
 
 // Generate contextual AI response using user data and conversation history
+// Note: This is now used as a backup system when GPT API is unavailable
 export async function generateContextualResponse(
   userMessage: string,
   context: ConversationContext
 ): Promise<AIResponse> {
-  
+
+  console.log("🔄 Using backup conversation AI (GPT unavailable)");
+
   // Analyze user's current emotional state
   const currentMood = analyzeCurrentMood(context.recentMoods, context.recentMessages);
-  
+
   // Get conversation pattern
   const conversationPattern = analyzeConversationPattern(context.recentMessages);
-  
+
   // Generate personalized response
   const response = await generatePersonalizedResponse(
     userMessage,
@@ -34,7 +37,7 @@ export async function generateContextualResponse(
     conversationPattern,
     context
   );
-  
+
   return response;
 }
 
