@@ -290,32 +290,32 @@ export default function Chatbot() {
     setIsTyping(true);
     setShowProgress(true);
 
-    // Add realistic delay
-    await new Promise((resolve) =>
-      setTimeout(resolve, 1500 + Math.random() * 1000),
-    );
-
     try {
-      // Use enhanced conversation AI with context
-      const { generateContextualResponse } = await import("@/utils/conversationAI");
+      // Use GPT API for intelligent responses
+      const { generateGPTResponse, detectUserEmotion } = await import("@/utils/gptChatAPI");
+
+      // Detect user emotion for better mood tracking
+      const detectedEmotion = detectUserEmotion(userMessage);
 
       const context = {
         recentMessages: currentMessages.slice(-10), // Last 10 messages for context
-        recentMoods: moodEntries.slice(0, 5), // Recent mood entries
-        recentJournals: journalEntries.slice(0, 3), // Recent journal entries
+        recentMoods: Array.isArray(moodEntries) ? moodEntries.slice(0, 5) : [], // Recent mood entries
+        recentJournals: Array.isArray(journalEntries) ? journalEntries.slice(0, 3) : [], // Recent journal entries
         userStats,
-        userName: userStats.currentStreak > 0 ? "friend" : undefined
+        userName: userStats.currentStreak > 0 ? "friend" : undefined,
+        currentMood: mood || detectedEmotion.emotion
       };
 
-      const aiResponse = await generateContextualResponse(userMessage, context);
+      console.log("🤖 Generating GPT response with context...");
+      const aiResponseContent = await generateGPTResponse(userMessage, context);
 
       const aiMessage: ChatMessage = {
         id: Date.now().toString(),
-        content: aiResponse.content,
+        content: aiResponseContent,
         sender: "ai",
         timestamp: new Date(),
-        sentiment: aiResponse.sentiment || "positive",
-        mood: aiResponse.mood,
+        sentiment: detectedEmotion.needsSupport ? "supportive" : "positive",
+        mood: detectedEmotion.emotion,
       };
 
       // Add AI response to database
