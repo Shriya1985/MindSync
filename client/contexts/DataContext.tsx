@@ -685,52 +685,76 @@ export function DataProvider({ children }: DataProviderProps) {
   ) => {
     if (!user) return;
 
+    // Always try Supabase first if configured
     if (isSupabaseConfigured) {
-      // Database mode - Always use this for chat
-      const { data, error } = await supabase
-        .from("chat_messages")
-        .insert({
-          user_id: user.id,
-          session_id: sessionId || currentSessionId,
+      try {
+        const { data, error } = await supabase
+          .from("chat_messages")
+          .insert({
+            user_id: user.id,
+            session_id: sessionId || currentSessionId,
+            content: message.content,
+            sender: message.sender,
+            sentiment: message.sentiment,
+            mood: message.mood,
+            emotional_state: message.emotionalState,
+          })
+          .select()
+          .single();
+
+        if (error) {
+          console.error("❌ Supabase error adding chat message:", error);
+          showNotification("Failed to save to database, using local backup", "warning");
+          // Fallback to localStorage
+          const newMessage: ChatMessage = {
+            id: `msg-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+            content: message.content,
+            sender: message.sender,
+            timestamp: new Date(),
+            sentiment: message.sentiment,
+            mood: message.mood,
+            emotionalState: message.emotionalState,
+          };
+          const result = await localStorageService.addChatMessage(newMessage);
+          if (result) {
+            setChatMessages((prev) => [...(Array.isArray(prev) ? prev : []), newMessage]);
+          }
+          return;
+        }
+
+        const newMessage: ChatMessage = {
+          id: data.id,
+          content: data.content,
+          sender: data.sender as "user" | "ai",
+          timestamp: new Date(data.created_at),
+          sentiment: data.sentiment,
+          mood: data.mood,
+          emotionalState: data.emotional_state,
+        };
+
+        setChatMessages((prev) => [...(Array.isArray(prev) ? prev : []), newMessage]);
+        await loadChatMessages(); // Reload to ensure consistency
+        console.log("✅ Chat message saved to Supabase");
+      } catch (error) {
+        console.error("❌ Unexpected error with Supabase chat:", error);
+        // Fallback to localStorage on any unexpected error
+        const newMessage: ChatMessage = {
+          id: `msg-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
           content: message.content,
           sender: message.sender,
+          timestamp: new Date(),
           sentiment: message.sentiment,
           mood: message.mood,
-          emotional_state: message.emotionalState,
-        })
-        .select()
-        .single();
-
-      if (error) {
-        console.error("Error adding chat message:", error.message || error);
-        showNotification("Failed to save chat message", "error");
-        return;
+          emotionalState: message.emotionalState,
+        };
+        const result = await localStorageService.addChatMessage(newMessage);
+        if (result) {
+          setChatMessages((prev) => [...(Array.isArray(prev) ? prev : []), newMessage]);
+        }
       }
-
-      const newMessage: ChatMessage = {
-        id: data.id,
-        content: data.content,
-        sender: data.sender as "user" | "ai",
-        timestamp: new Date(data.created_at),
-        sentiment: data.sentiment,
-        mood: data.mood,
-        emotionalState: data.emotional_state,
-      };
-
-      // Update local state with new message
-      setChatMessages((prev) => [
-        ...(Array.isArray(prev) ? prev : []),
-        newMessage,
-      ]);
-
-      // After adding a message, reload chat history to ensure context
-      await loadChatMessages();
     } else {
-      // localStorage fallback - but warn user to use Supabase
-      console.warn(
-        "💬 Chat messages should use Supabase for proper context and history. Please configure Supabase.",
-      );
-
+      // Use localStorage when Supabase is not configured
+      console.log("📱 Using localStorage for chat (Supabase not configured)");
       const newMessage: ChatMessage = {
         id: `msg-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
         content: message.content,
@@ -740,13 +764,9 @@ export function DataProvider({ children }: DataProviderProps) {
         mood: message.mood,
         emotionalState: message.emotionalState,
       };
-
       const result = await localStorageService.addChatMessage(newMessage);
       if (result) {
-        setChatMessages((prev) => [
-          ...(Array.isArray(prev) ? prev : []),
-          newMessage,
-        ]);
+        setChatMessages((prev) => [...(Array.isArray(prev) ? prev : []), newMessage]);
       }
     }
   };
