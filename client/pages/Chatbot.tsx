@@ -308,41 +308,13 @@ export default function Chatbot() {
 
       const aiResponse = await generateContextualResponse(userMessage, context);
 
-      // Analyze emotional state from the user's message
-      let emotionalState;
-      try {
-        emotionalState = analyzeEmotionalState(
-          userMessage,
-          Array.isArray(moodEntries) ? moodEntries.slice(0, 5) : [],
-          Array.isArray(journalEntries) ? journalEntries.slice(0, 3) : [],
-        );
-      } catch (error) {
-        console.error("Error analyzing emotional state:", error);
-        emotionalState = { intensity: 3, primary: "neutral" }; // fallback
-      }
-
-      // Get recent chat context for better responses
-      const recentContext = getRecentChatContext();
-
-      // Generate emotion-aware response with enhanced context
-      const aiResponseContent = generateEmotionAwareResponse(
-        userMessage,
-        emotionalState,
-        {
-          chats: recentContext, // Use recent context instead of all messages
-          journals: Array.isArray(journalEntries)
-            ? journalEntries.slice(0, 3)
-            : [],
-          moods: Array.isArray(moodEntries) ? moodEntries.slice(0, 5) : [],
-        },
-      );
-
       const aiMessage: ChatMessage = {
         id: Date.now().toString(),
-        content: aiResponseContent,
+        content: aiResponse.content,
         sender: "ai",
         timestamp: new Date(),
-        sentiment: "positive" as any,
+        sentiment: aiResponse.sentiment || "positive",
+        mood: aiResponse.mood,
       };
 
       // Add AI response to database
