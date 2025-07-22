@@ -22,5 +22,8 @@ export function createServer() {
   // Chat completion endpoint for GPT integration
   app.post("/api/chat/completion", handleChatCompletion);
 
+  // Test GPT connection endpoint
+  app.get("/api/test-gpt", testGPTConnection);
+
   return app;
 }
