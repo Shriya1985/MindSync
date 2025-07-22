@@ -775,6 +775,17 @@ export default function Chatbot() {
       </div>
 
       <Footer />
+
+      {/* Chat History Modal */}
+      {showHistory && (
+        <ChatHistory
+          onClose={() => setShowHistory(false)}
+          onSelectSession={(sessionId) => {
+            // Session will be loaded automatically
+            console.log("Selected session:", sessionId);
+          }}
+        />
+      )}
     </div>
   );
 }
