@@ -62,7 +62,7 @@ export default function SimplifiedChatbot() {
   };
 
   const handleSendMessage = async () => {
-    if (!inputValue.trim()) return;
+    if (!inputValue.trim() || isTyping) return; // Prevent multiple calls
 
     const userMessage: ChatMessage = {
       id: "user-" + Date.now(),
