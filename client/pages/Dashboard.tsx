@@ -10,6 +10,7 @@ import { showNotification } from "@/components/ui/notification-system";
 import { EncouragingInsights } from "@/components/EncouragingInsights";
 import { DailyQuests } from "@/components/DailyQuests";
 import { GamificationSystem } from "@/components/GamificationSystem";
+import { SupabaseTestPanel } from "@/components/SupabaseTestPanel";
 import { useMoodTheme } from "@/hooks/useMoodTheme";
 import { predictMood } from "@/utils/emotionAI";
 import {
