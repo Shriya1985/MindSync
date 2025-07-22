@@ -40,7 +40,7 @@ const App = () => (
       <Sonner />
       <AuthProvider>
         <DataContextErrorBoundary>
-          <DataProvider>
+          <DataProvider key="data-provider">
           <ThemeProvider>
             <BrowserRouter>
               <NotificationSystem />
