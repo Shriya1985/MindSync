@@ -600,39 +600,83 @@ export function DataProvider({ children }: DataProviderProps) {
     const { extractMoodFromText } = await import("@/utils/emotionAI");
     const extractedMood = extractMoodFromText(entry.content + " " + entry.title);
 
-    const { data, error } = await supabase
-      .from("journal_entries")
-      .insert({
-        user_id: user.id,
+    // Always try Supabase first if configured
+    if (isSupabaseConfigured) {
+      try {
+        const { data, error } = await supabase
+          .from("journal_entries")
+          .insert({
+            user_id: user.id,
+            title: entry.title,
+            content: entry.content,
+            sentiment: entry.sentiment,
+            word_count: entry.wordCount,
+            tags: entry.tags,
+            date: entry.date,
+          })
+          .select()
+          .single();
+
+        if (error) {
+          console.error("❌ Supabase error adding journal entry:", error.message || error);
+          // Fallback to localStorage
+          console.log("🔄 Falling back to localStorage...");
+          const fallbackEntry: JournalEntry = {
+            id: Date.now().toString(),
+            date: entry.date,
+            title: entry.title,
+            content: entry.content,
+            sentiment: entry.sentiment,
+            wordCount: entry.wordCount,
+            tags: entry.tags || [],
+          };
+          setJournalEntries((prev) => [fallbackEntry, ...(Array.isArray(prev) ? prev : [])]);
+          await updateStreak();
+          return;
+        }
+
+        const newEntry: JournalEntry = {
+          id: data.id,
+          date: data.date,
+          title: data.title,
+          content: data.content,
+          sentiment: data.sentiment,
+          wordCount: data.word_count,
+          tags: data.tags || [],
+        };
+
+        setJournalEntries((prev) => [newEntry, ...(Array.isArray(prev) ? prev : [])]);
+        console.log("✅ Journal entry saved to Supabase");
+      } catch (error) {
+        console.error("❌ Unexpected error with Supabase journal:", error);
+        // Fallback to localStorage on any unexpected error
+        const fallbackEntry: JournalEntry = {
+          id: Date.now().toString(),
+          date: entry.date,
+          title: entry.title,
+          content: entry.content,
+          sentiment: entry.sentiment,
+          wordCount: entry.wordCount,
+          tags: entry.tags || [],
+        };
+        setJournalEntries((prev) => [fallbackEntry, ...(Array.isArray(prev) ? prev : [])]);
+        await updateStreak();
+        return;
+      }
+    } else {
+      // Use localStorage when Supabase is not configured
+      console.log("📱 Using localStorage for journal (Supabase not configured)");
+      const fallbackEntry: JournalEntry = {
+        id: Date.now().toString(),
+        date: entry.date,
         title: entry.title,
         content: entry.content,
         sentiment: entry.sentiment,
-        word_count: entry.wordCount,
-        tags: entry.tags,
-        date: entry.date,
-      })
-      .select()
-      .single();
-
-    if (error) {
-      console.error("Error adding journal entry:", error);
-      return;
+        wordCount: entry.wordCount,
+        tags: entry.tags || [],
+      };
+      setJournalEntries((prev) => [fallbackEntry, ...(Array.isArray(prev) ? prev : [])]);
     }
-
-    const newEntry: JournalEntry = {
-      id: data.id,
-      date: data.date,
-      title: data.title,
-      content: data.content,
-      sentiment: data.sentiment,
-      wordCount: data.word_count,
-      tags: data.tags || [],
-    };
-
-    setJournalEntries((prev) => [
-      newEntry,
-      ...(Array.isArray(prev) ? prev : []),
-    ]);
 
     // Auto-create mood entry if confidence is high enough
     if (extractedMood.confidence > 0.3) {
