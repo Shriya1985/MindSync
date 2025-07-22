@@ -23,8 +23,13 @@ export function MoodInsights() {
     const last7Days = new Date();
     last7Days.setDate(last7Days.getDate() - 7);
 
+    // Ensure we have arrays to work with
+    const safeMoodEntries = Array.isArray(moodEntries) ? moodEntries : [];
+    const safeJournalEntries = Array.isArray(journalEntries) ? journalEntries : [];
+    const safeChatMessages = Array.isArray(chatMessages) ? chatMessages : [];
+
     // Get mood data from different sources
-    const explicitMoods = moodEntries
+    const explicitMoods = safeMoodEntries
       .filter(entry => new Date(entry.date) >= last7Days)
       .map(entry => ({
         source: "explicit",
@@ -35,7 +40,7 @@ export function MoodInsights() {
       }));
 
     // Extract mood from journal entries
-    const journalMoods = journalEntries
+    const journalMoods = safeJournalEntries
       .filter(entry => new Date(entry.date) >= last7Days)
       .map(entry => {
         const extracted = extractMoodFromText(entry.content + " " + entry.title);
@@ -52,9 +57,9 @@ export function MoodInsights() {
       .filter(entry => entry.confidence > 0.3); // Only high-confidence extractions
 
     // Extract mood from chat messages (user messages only)
-    const chatMoods = chatMessages
-      .filter(msg => 
-        msg.sender === "user" && 
+    const chatMoods = safeChatMessages
+      .filter(msg =>
+        msg.sender === "user" &&
         new Date(msg.timestamp) >= last7Days &&
         msg.content.length > 20 // Meaningful messages only
       )
