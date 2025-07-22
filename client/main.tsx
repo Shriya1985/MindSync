@@ -14,6 +14,7 @@ import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { NotificationSystem } from "@/components/ui/notification-system";
 import { ThemeStatus } from "@/components/ThemeStatus";
 import { DatabaseSetupNotice } from "@/components/DatabaseSetupNotice";
+import { ErrorBoundary } from "@/components/ErrorBoundary";
 import Index from "./pages/Index";
 import SimplifiedChatbot from "./pages/SimplifiedChatbot";
 import Dashboard from "./pages/Dashboard";
