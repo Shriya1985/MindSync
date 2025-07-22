@@ -3,6 +3,7 @@ import cors from "cors";
 import { handleDemo } from "./routes/demo";
 import { handleChatCompletion } from "./routes/chat";
 import { testGPTConnection } from "./routes/test-gpt";
+import { handleGeminiChat, testGeminiConnection } from "./routes/gemini-chat";
 
 export function createServer() {
   const app = express();
