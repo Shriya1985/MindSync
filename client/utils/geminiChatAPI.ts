@@ -102,7 +102,7 @@ export async function generateGeminiResponse(
 ): Promise<string> {
   try {
     const sessionId = sessionManager.getCurrentSessionId();
-    
+
     // Prepare conversation history for API
     const conversationHistory = context.recentMessages.map(msg => ({
       role: msg.sender === 'user' ? 'user' as const : 'assistant' as const,
@@ -144,17 +144,17 @@ export async function generateGeminiResponse(
       body: JSON.stringify(requestData)
     });
 
-    // Only read the response body once
-    let data: GeminiChatResponse;
-    try {
-      data = await response.json();
-    } catch (parseError) {
-      console.error("⚠️ Failed to parse response:", parseError);
+    // Check response status first
+    if (!response.ok) {
+      console.warn(`⚠️ HTTP error ${response.status}: ${response.statusText}`);
       return generateLocalFallback(userMessage, context);
     }
 
-    if (!response.ok || data.error) {
-      console.warn("⚠️ Gemini API error, using fallback:", data.error);
+    // Then safely read the response body
+    const data: GeminiChatResponse = await response.json();
+
+    if (data.error) {
+      console.warn("⚠️ Gemini service error, using fallback:", data.error);
       return data.response || generateLocalFallback(userMessage, context);
     }
 
