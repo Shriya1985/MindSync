@@ -16,6 +16,7 @@ import {
 } from "@/utils/emotionAI";
 import { useMoodTheme } from "@/hooks/useMoodTheme";
 import { CopingStrategies } from "@/components/CopingStrategies";
+import { ChatHistory } from "@/components/ChatHistory";
 import {
   MessageCircle,
   Send,
@@ -50,7 +51,7 @@ const moodOptions: MoodOption[] = [
     rating: 8,
   },
   {
-    emoji: "😔",
+    emoji: "��",
     label: "Sad",
     value: "sad",
     color: "bg-blue-100 text-blue-700",
