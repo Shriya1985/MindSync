@@ -2,6 +2,7 @@ import express from "express";
 import cors from "cors";
 import { handleDemo } from "./routes/demo";
 import { handleChatCompletion } from "./routes/chat";
+import { testGPTConnection } from "./routes/test-gpt";
 
 export function createServer() {
   const app = express();
