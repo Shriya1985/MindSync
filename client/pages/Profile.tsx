@@ -498,13 +498,13 @@ export default function Profile() {
                           </div>
                           <div className="text-center">
                             <div className="w-16 h-16 bg-gradient-to-r from-blue-400 to-cyan-400 rounded-full flex items-center justify-center mx-auto mb-3">
-                              <Heart className="w-8 h-8 text-white" />
+                              <Brain className="w-8 h-8 text-white" />
                             </div>
                             <p className="text-3xl font-bold text-blue-600">
-                              {achievements?.length || 0}
+                              {userStats.totalWords || journalEntries.reduce((total, entry) => total + (entry.wordCount || 0), 0)}
                             </p>
                             <p className="text-sm text-gray-600">
-                              Achievements
+                              Total Words
                             </p>
                           </div>
                         </div>
