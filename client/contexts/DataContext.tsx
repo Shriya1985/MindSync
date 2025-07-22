@@ -200,7 +200,7 @@ export function DataProvider({ children }: DataProviderProps) {
         loadAllData();
       } else {
         console.warn(
-          "⚠️ Supabase not configured. Using localStorage fallback. Please configure Supabase for full functionality.",
+          "��️ Supabase not configured. Using localStorage fallback. Please configure Supabase for full functionality.",
         );
         loadLocalStorageData();
       }
@@ -703,6 +703,40 @@ export function DataProvider({ children }: DataProviderProps) {
   ) => {
     if (!user) return;
 
+    // Auto-detect mood from user messages
+    let detectedMood = message.mood;
+    let detectedSentiment = message.sentiment;
+
+    if (message.sender === "user") {
+      const { extractMoodFromText } = await import("@/utils/emotionAI");
+      const extractedMood = extractMoodFromText(message.content);
+
+      if (extractedMood.confidence > 0.4) {
+        detectedMood = extractedMood.mood;
+
+        // Auto-create mood entry for significant emotional expressions
+        if (extractedMood.confidence > 0.6) {
+          const today = new Date().toISOString().split('T')[0];
+          await addMoodEntry({
+            date: today,
+            mood: extractedMood.mood,
+            rating: extractedMood.rating,
+            emoji: extractedMood.emoji,
+            source: "chat",
+            notes: `Auto-detected from chat conversation`
+          });
+          console.log(`✅ Auto-detected mood from chat: ${extractedMood.mood} (${extractedMood.confidence.toFixed(2)} confidence)`);
+        }
+      }
+
+      // Simple sentiment analysis
+      if (!detectedSentiment) {
+        if (extractedMood.rating >= 7) detectedSentiment = "positive";
+        else if (extractedMood.rating <= 4) detectedSentiment = "negative";
+        else detectedSentiment = "neutral";
+      }
+    }
+
     // Always try Supabase first if configured
     if (isSupabaseConfigured) {
       try {
@@ -713,8 +747,8 @@ export function DataProvider({ children }: DataProviderProps) {
             session_id: sessionId || currentSessionId,
             content: message.content,
             sender: message.sender,
-            sentiment: message.sentiment,
-            mood: message.mood,
+            sentiment: detectedSentiment,
+            mood: detectedMood,
             emotional_state: message.emotionalState,
           })
           .select()
