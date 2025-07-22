@@ -464,7 +464,7 @@ export default function Profile() {
                         </CardTitle>
                       </CardHeader>
                       <CardContent>
-                        <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+                        <div className="grid grid-cols-2 md:grid-cols-5 gap-6">
                           <div className="text-center">
                             <div className="w-16 h-16 bg-gradient-to-r from-yellow-400 to-orange-400 rounded-full flex items-center justify-center mx-auto mb-3">
                               <Trophy className="w-8 h-8 text-white" />
