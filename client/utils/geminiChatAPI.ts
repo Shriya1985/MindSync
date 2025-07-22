@@ -135,7 +135,7 @@ export async function generateGeminiResponse(
     };
 
     console.log("🤖 Calling Gemini API with context...");
-    
+
     const response = await fetch('/api/chat/gemini', {
       method: 'POST',
       headers: {
@@ -144,15 +144,17 @@ export async function generateGeminiResponse(
       body: JSON.stringify(requestData)
     });
 
-    const data: GeminiChatResponse = await response.json();
-
-    if (!response.ok) {
-      console.warn("⚠️ Gemini API error, using fallback:", data.error);
-      return data.response || generateLocalFallback(userMessage, context);
+    // Only read the response body once
+    let data: GeminiChatResponse;
+    try {
+      data = await response.json();
+    } catch (parseError) {
+      console.error("⚠️ Failed to parse response:", parseError);
+      return generateLocalFallback(userMessage, context);
     }
-    
-    if (data.error) {
-      console.warn("⚠️ Gemini service error, using fallback:", data.error);
+
+    if (!response.ok || data.error) {
+      console.warn("⚠️ Gemini API error, using fallback:", data.error);
       return data.response || generateLocalFallback(userMessage, context);
     }
 
