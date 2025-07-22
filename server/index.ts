@@ -20,11 +20,15 @@ export function createServer() {
 
   app.get("/api/demo", handleDemo);
 
-  // Chat completion endpoint for GPT integration
+  // Chat completion endpoint for GPT integration (legacy)
   app.post("/api/chat/completion", handleChatCompletion);
 
-  // Test GPT connection endpoint
+  // Gemini chat endpoint (primary)
+  app.post("/api/chat/gemini", handleGeminiChat);
+
+  // Test endpoints
   app.get("/api/test-gpt", testGPTConnection);
+  app.get("/api/test-gemini", testGeminiConnection);
 
   return app;
 }
