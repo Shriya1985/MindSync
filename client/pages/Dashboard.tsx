@@ -302,6 +302,38 @@ export default function Dashboard() {
           </div>
         </div>
 
+        {/* Data Migration Panel (Temporary) */}
+        <Card className="mb-6 border-orange-200 bg-orange-50">
+          <CardHeader>
+            <CardTitle className="text-orange-800 flex items-center">
+              <Zap className="w-5 h-5 mr-2" />
+              Data Migration Available
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-orange-700 mb-4">
+              We detected you may have previous entries stored locally.
+              Click below to sync them to your cloud database.
+            </p>
+            <div className="flex space-x-3">
+              <Button
+                onClick={handleCheckDataSources}
+                variant="outline"
+                className="border-orange-300 text-orange-700 hover:bg-orange-100"
+              >
+                Check Data Sources
+              </Button>
+              <Button
+                onClick={handleDataMigration}
+                className="bg-orange-600 hover:bg-orange-700 text-white"
+              >
+                <Zap className="w-4 h-4 mr-2" />
+                Migrate Data to Cloud
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+
         {/* Encouraging Insights */}
         <EncouragingInsights />
 
