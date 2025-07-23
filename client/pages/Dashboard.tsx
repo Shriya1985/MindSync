@@ -120,7 +120,7 @@ const weeklyMoodChart = [
   { day: "Thu", rating: 4, emoji: "😰" },
   { day: "Fri", rating: 9, emoji: "✨" },
   { day: "Sat", rating: 7, emoji: "😌" },
-  { day: "Sun", rating: 8, emoji: "😊" },
+  { day: "Sun", rating: 8, emoji: "���" },
 ];
 
 const achievements = [
@@ -176,7 +176,37 @@ export default function Dashboard() {
     addMoodEntry,
     getStreakInfo,
   } = useData();
+  const { user } = useAuth();
   const { currentTheme } = useMoodTheme();
+
+  // Migration functions
+  const handleDataMigration = async () => {
+    if (!user) {
+      showNotification({
+        type: "encouragement",
+        title: "Not Logged In",
+        message: "Please log in to migrate your data.",
+        duration: 3000,
+      });
+      return;
+    }
+
+    console.log("🔄 Starting data migration...");
+    const success = await migrateLocalStorageToSupabase(user.id);
+
+    if (success) {
+      // Reload the page to refresh data
+      window.location.reload();
+    }
+  };
+
+  const handleCheckDataSources = async () => {
+    if (!user) {
+      console.log("❌ No user logged in");
+      return;
+    }
+    await checkDataSources(user.id);
+  };
 
   const averageMood = userStats.averageMood || 0;
   const moodTrend = averageMood >= 6 ? "+12%" : "-8%";
