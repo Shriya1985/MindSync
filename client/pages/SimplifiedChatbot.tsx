@@ -8,6 +8,7 @@ import { useData, type ChatMessage } from "@/contexts/DataContext";
 import { showNotification } from "@/components/ui/notification-system";
 import { MessageCircle, Send, Brain, User } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { generateGeminiResponse } from "@/utils/geminiChatAPI";
 
 export default function SimplifiedChatbot() {
   const [inputValue, setInputValue] = useState("");
@@ -37,19 +38,31 @@ export default function SimplifiedChatbot() {
     scrollToBottom();
   }, [localMessages, isTyping]);
 
-  const generateSimpleResponse = (userMessage: string): string => {
-    const responses = [
-      "Thank you for sharing that with me. How does that make you feel?",
-      "I hear you. That sounds important to you. Can you tell me more?",
-      "I appreciate you opening up about this. What's been on your mind?",
-      "That's really meaningful. How has this been affecting your day?",
-      "I'm here to listen. What would you like to explore about this?",
-    ];
-    return responses[Math.floor(Math.random() * responses.length)];
+  const generateAIResponse = async (userMessage: string): Promise<string> => {
+    try {
+      const response = await generateGeminiResponse(userMessage, {
+        recentMessages: localMessages,
+        recentMoods: [],
+        recentJournals: [],
+        userStats: userStats,
+        userName: "Friend",
+        currentMood: undefined
+      });
+      return response;
+    } catch (error) {
+      console.error("Error getting AI response:", error);
+      // Fallback to simple response if AI fails
+      const fallbackResponses = [
+        "Thank you for sharing that with me. How does that make you feel?",
+        "I hear you. That sounds important to you. Can you tell me more?",
+        "I appreciate you opening up about this. What's been on your mind?",
+      ];
+      return fallbackResponses[Math.floor(Math.random() * fallbackResponses.length)];
+    }
   };
 
   const handleSendMessage = async () => {
-    if (!inputValue.trim()) return;
+    if (!inputValue.trim() || isTyping) return; // Prevent multiple calls
 
     const userMessage: ChatMessage = {
       id: "user-" + Date.now(),
@@ -75,33 +88,36 @@ export default function SimplifiedChatbot() {
     setInputValue("");
     setIsTyping(true);
 
-    // Simulate AI response delay
-    setTimeout(
-      async () => {
-        const aiResponse: ChatMessage = {
-          id: "ai-" + Date.now(),
-          content: generateSimpleResponse(messageText),
+    // Get AI response
+    try {
+      const aiResponseContent = await generateAIResponse(messageText);
+
+      const aiResponse: ChatMessage = {
+        id: "ai-" + Date.now(),
+        content: aiResponseContent,
+        sender: "ai",
+        timestamp: new Date(),
+      };
+
+      // Add AI response to local state
+      setLocalMessages((prev) => [...prev, aiResponse]);
+
+      // Save AI response to database
+      try {
+        await addChatMessage({
+          content: aiResponse.content,
           sender: "ai",
-          timestamp: new Date(),
-        };
+        });
+      } catch (error) {
+        console.error("Error saving AI message:", error);
+      }
 
-        // Add AI response to local state
-        setLocalMessages((prev) => [...prev, aiResponse]);
-
-        // Save AI response to database
-        try {
-          await addChatMessage({
-            content: aiResponse.content,
-            sender: "ai",
-          });
-        } catch (error) {
-          console.error("Error saving AI message:", error);
-        }
-
-        setIsTyping(false);
-      },
-      1000 + Math.random() * 2000,
-    );
+      setIsTyping(false);
+    } catch (error) {
+      console.error("Error generating AI response:", error);
+      setIsTyping(false);
+      showNotification("Sorry, I'm having trouble responding right now. Please try again.", "error");
+    }
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {

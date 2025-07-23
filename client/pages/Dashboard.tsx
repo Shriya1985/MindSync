@@ -10,6 +10,8 @@ import { showNotification } from "@/components/ui/notification-system";
 import { EncouragingInsights } from "@/components/EncouragingInsights";
 import { DailyQuests } from "@/components/DailyQuests";
 import { GamificationSystem } from "@/components/GamificationSystem";
+import { SupabaseTestPanel } from "@/components/SupabaseTestPanel";
+import { MoodInsights } from "@/components/MoodInsights";
 import { useMoodTheme } from "@/hooks/useMoodTheme";
 import { predictMood } from "@/utils/emotionAI";
 import {
@@ -392,6 +394,12 @@ export default function Dashboard() {
 
         {/* Gamification System */}
         <GamificationSystem />
+
+        {/* Supabase Integration Status */}
+        <SupabaseTestPanel />
+
+        {/* Mood Insights from All Sources */}
+        <MoodInsights key="mood-insights" />
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Left Column */}

@@ -39,6 +39,71 @@ export type DailyQuest = {
   difficulty: "easy" | "medium" | "hard";
 };
 
+// Extract mood from text content
+export function extractMoodFromText(text: string): { mood: string; rating: number; emoji: string; confidence: number } {
+  const moodPatterns = {
+    happy: {
+      keywords: ["happy", "joy", "excited", "wonderful", "amazing", "great", "fantastic", "love", "awesome", "brilliant", "cheerful", "delighted"],
+      rating: 8,
+      emoji: "😊"
+    },
+    sad: {
+      keywords: ["sad", "down", "depressed", "miserable", "awful", "terrible", "hurt", "pain", "crying", "tears", "grief", "sorrow"],
+      rating: 3,
+      emoji: "😢"
+    },
+    anxious: {
+      keywords: ["anxious", "worried", "nervous", "stress", "panic", "overwhelmed", "scared", "afraid", "tense", "restless"],
+      rating: 4,
+      emoji: "😰"
+    },
+    angry: {
+      keywords: ["angry", "mad", "furious", "irritated", "annoyed", "frustrated", "rage", "hate", "pissed", "livid"],
+      rating: 4,
+      emoji: "😠"
+    },
+    calm: {
+      keywords: ["calm", "peaceful", "relaxed", "serene", "tranquil", "balanced", "centered", "content", "mindful"],
+      rating: 7,
+      emoji: "😌"
+    },
+    excited: {
+      keywords: ["excited", "thrilled", "energetic", "pumped", "enthusiastic", "motivated", "inspired", "eager"],
+      rating: 8,
+      emoji: "🤩"
+    },
+    neutral: {
+      keywords: ["okay", "fine", "normal", "average", "regular", "ordinary", "usual"],
+      rating: 5,
+      emoji: "😐"
+    }
+  };
+
+  const textLower = text.toLowerCase();
+  let bestMatch = { mood: "neutral", rating: 5, emoji: "😐", confidence: 0 };
+
+  for (const [mood, pattern] of Object.entries(moodPatterns)) {
+    let matchCount = 0;
+    for (const keyword of pattern.keywords) {
+      if (textLower.includes(keyword)) {
+        matchCount++;
+      }
+    }
+
+    const confidence = matchCount / pattern.keywords.length;
+    if (confidence > bestMatch.confidence) {
+      bestMatch = {
+        mood,
+        rating: pattern.rating,
+        emoji: pattern.emoji,
+        confidence
+      };
+    }
+  }
+
+  return bestMatch;
+}
+
 // Advanced emotion detection from text
 export function analyzeEmotionalState(
   text: string,

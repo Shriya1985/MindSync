@@ -56,7 +56,7 @@ export default function Profile() {
   });
 
   const { user, updateProfile, logout } = useAuth();
-  const { userStats, moodEntries, journalEntries, achievements } = useData();
+  const { userStats, moodEntries, journalEntries, achievements, pointActivities } = useData();
 
   // Initialize form data with user info
   useEffect(() => {
@@ -464,7 +464,7 @@ export default function Profile() {
                         </CardTitle>
                       </CardHeader>
                       <CardContent>
-                        <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+                        <div className="grid grid-cols-2 md:grid-cols-5 gap-6">
                           <div className="text-center">
                             <div className="w-16 h-16 bg-gradient-to-r from-yellow-400 to-orange-400 rounded-full flex items-center justify-center mx-auto mb-3">
                               <Trophy className="w-8 h-8 text-white" />
@@ -498,9 +498,20 @@ export default function Profile() {
                           </div>
                           <div className="text-center">
                             <div className="w-16 h-16 bg-gradient-to-r from-blue-400 to-cyan-400 rounded-full flex items-center justify-center mx-auto mb-3">
-                              <Heart className="w-8 h-8 text-white" />
+                              <Brain className="w-8 h-8 text-white" />
                             </div>
                             <p className="text-3xl font-bold text-blue-600">
+                              {userStats.totalWords || journalEntries.reduce((total, entry) => total + (entry.wordCount || 0), 0)}
+                            </p>
+                            <p className="text-sm text-gray-600">
+                              Total Words
+                            </p>
+                          </div>
+                          <div className="text-center">
+                            <div className="w-16 h-16 bg-gradient-to-r from-pink-400 to-rose-400 rounded-full flex items-center justify-center mx-auto mb-3">
+                              <Award className="w-8 h-8 text-white" />
+                            </div>
+                            <p className="text-3xl font-bold text-pink-600">
                               {achievements?.length || 0}
                             </p>
                             <p className="text-sm text-gray-600">
@@ -518,82 +529,66 @@ export default function Profile() {
                       </CardHeader>
                       <CardContent>
                         <div className="space-y-4">
-                          {/* Mock recent activities - in real app would come from data */}
-                          <div className="flex items-center justify-between p-3 bg-green-50 rounded-lg border border-green-200">
-                            <div className="flex items-center space-x-3">
-                              <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
-                                <Edit3 className="w-4 h-4 text-green-600" />
-                              </div>
-                              <div>
-                                <p className="font-medium text-gray-900">
-                                  Journal Entry Completed
-                                </p>
-                                <p className="text-sm text-gray-600">
-                                  2 hours ago
-                                </p>
-                              </div>
-                            </div>
-                            <Badge className="bg-green-100 text-green-700">
-                              +20 XP
-                            </Badge>
-                          </div>
+                          {pointActivities && pointActivities.length > 0 ? (
+                            pointActivities.slice(0, 5).map((activity) => {
+                              const getActivityIcon = (source: string) => {
+                                switch (source) {
+                                  case "journal": return <Edit3 className="w-4 h-4 text-green-600" />;
+                                  case "mood": return <Heart className="w-4 h-4 text-blue-600" />;
+                                  case "chat": return <Brain className="w-4 h-4 text-purple-600" />;
+                                  case "quest": return <Trophy className="w-4 h-4 text-yellow-600" />;
+                                  default: return <Calendar className="w-4 h-4 text-gray-600" />;
+                                }
+                              };
 
-                          <div className="flex items-center justify-between p-3 bg-blue-50 rounded-lg border border-blue-200">
-                            <div className="flex items-center space-x-3">
-                              <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
-                                <Heart className="w-4 h-4 text-blue-600" />
-                              </div>
-                              <div>
-                                <p className="font-medium text-gray-900">
-                                  Mood Logged
-                                </p>
-                                <p className="text-sm text-gray-600">
-                                  5 hours ago
-                                </p>
-                              </div>
-                            </div>
-                            <Badge className="bg-blue-100 text-blue-700">
-                              +10 XP
-                            </Badge>
-                          </div>
+                              const getActivityColor = (source: string) => {
+                                switch (source) {
+                                  case "journal": return "bg-green-50 border-green-200";
+                                  case "mood": return "bg-blue-50 border-blue-200";
+                                  case "chat": return "bg-purple-50 border-purple-200";
+                                  case "quest": return "bg-yellow-50 border-yellow-200";
+                                  default: return "bg-gray-50 border-gray-200";
+                                }
+                              };
 
-                          <div className="flex items-center justify-between p-3 bg-purple-50 rounded-lg border border-purple-200">
-                            <div className="flex items-center space-x-3">
-                              <div className="w-8 h-8 bg-purple-100 rounded-full flex items-center justify-center">
-                                <Brain className="w-4 h-4 text-purple-600" />
-                              </div>
-                              <div>
-                                <p className="font-medium text-gray-900">
-                                  Self-Care Task Completed
-                                </p>
-                                <p className="text-sm text-gray-600">
-                                  1 day ago
-                                </p>
-                              </div>
-                            </div>
-                            <Badge className="bg-purple-100 text-purple-700">
-                              +15 XP
-                            </Badge>
-                          </div>
+                              const getBadgeColor = (source: string) => {
+                                switch (source) {
+                                  case "journal": return "bg-green-100 text-green-700";
+                                  case "mood": return "bg-blue-100 text-blue-700";
+                                  case "chat": return "bg-purple-100 text-purple-700";
+                                  case "quest": return "bg-yellow-100 text-yellow-700";
+                                  default: return "bg-gray-100 text-gray-700";
+                                }
+                              };
 
-                          <div className="flex items-center justify-between p-3 bg-yellow-50 rounded-lg border border-yellow-200">
-                            <div className="flex items-center space-x-3">
-                              <div className="w-8 h-8 bg-yellow-100 rounded-full flex items-center justify-center">
-                                <Trophy className="w-4 h-4 text-yellow-600" />
-                              </div>
-                              <div>
-                                <p className="font-medium text-gray-900">
-                                  Daily Quest Completed
-                                </p>
-                                <p className="text-sm text-gray-600">
-                                  1 day ago
-                                </p>
-                              </div>
+                              return (
+                                <div key={activity.id} className={`flex items-center justify-between p-3 rounded-lg border ${getActivityColor(activity.source)}`}>
+                                  <div className="flex items-center space-x-3">
+                                    <div className={`w-8 h-8 ${activity.source === "journal" ? "bg-green-100" : activity.source === "mood" ? "bg-blue-100" : activity.source === "chat" ? "bg-purple-100" : "bg-yellow-100"} rounded-full flex items-center justify-center`}>
+                                      {getActivityIcon(activity.source)}
+                                    </div>
+                                    <div>
+                                      <p className="font-medium text-gray-900">
+                                        {activity.activity}
+                                      </p>
+                                      <p className="text-sm text-gray-600">
+                                        {new Date(activity.createdAt).toLocaleDateString()}
+                                      </p>
+                                    </div>
+                                  </div>
+                                  <Badge className={getBadgeColor(activity.source)}>
+                                    {activity.points > 0 ? `+${activity.points}` : activity.points} XP
+                                  </Badge>
+                                </div>
+                              );
+                            })
+                          ) : (
+                            <div className="text-center py-8 text-gray-500">
+                              <Trophy className="w-12 h-12 mx-auto mb-4 opacity-50" />
+                              <p>No recent activities</p>
+                              <p className="text-sm">Start using MindSync to earn points!</p>
                             </div>
-                            <Badge className="bg-yellow-100 text-yellow-700">
-                              +25 XP
-                            </Badge>
-                          </div>
+                          )}
                         </div>
                       </CardContent>
                     </Card>

@@ -16,6 +16,7 @@ import {
 } from "@/utils/emotionAI";
 import { useMoodTheme } from "@/hooks/useMoodTheme";
 import { CopingStrategies } from "@/components/CopingStrategies";
+import { ChatHistory } from "@/components/ChatHistory";
 import {
   MessageCircle,
   Send,
@@ -50,7 +51,7 @@ const moodOptions: MoodOption[] = [
     rating: 8,
   },
   {
-    emoji: "😔",
+    emoji: "��",
     label: "Sad",
     value: "sad",
     color: "bg-blue-100 text-blue-700",
@@ -289,47 +290,32 @@ export default function Chatbot() {
     setIsTyping(true);
     setShowProgress(true);
 
-    // Add realistic delay
-    await new Promise((resolve) =>
-      setTimeout(resolve, 1500 + Math.random() * 1000),
-    );
-
     try {
-      // Analyze emotional state from the user's message
-      let emotionalState;
-      try {
-        emotionalState = analyzeEmotionalState(
-          userMessage,
-          Array.isArray(moodEntries) ? moodEntries.slice(0, 5) : [],
-          Array.isArray(journalEntries) ? journalEntries.slice(0, 3) : [],
-        );
-      } catch (error) {
-        console.error("Error analyzing emotional state:", error);
-        emotionalState = { intensity: 3, primary: "neutral" }; // fallback
-      }
+      // Use Gemini API for intelligent responses
+      const { generateGeminiResponse, detectUserEmotion } = await import("@/utils/geminiChatAPI");
 
-      // Get recent chat context for better responses
-      const recentContext = getRecentChatContext();
+      // Detect user emotion for better mood tracking
+      const detectedEmotion = detectUserEmotion(userMessage);
 
-      // Generate emotion-aware response with enhanced context
-      const aiResponseContent = generateEmotionAwareResponse(
-        userMessage,
-        emotionalState,
-        {
-          chats: recentContext, // Use recent context instead of all messages
-          journals: Array.isArray(journalEntries)
-            ? journalEntries.slice(0, 3)
-            : [],
-          moods: Array.isArray(moodEntries) ? moodEntries.slice(0, 5) : [],
-        },
-      );
+      const context = {
+        recentMessages: currentMessages.slice(-10), // Last 10 messages for context
+        recentMoods: Array.isArray(moodEntries) ? moodEntries.slice(0, 5) : [], // Recent mood entries
+        recentJournals: Array.isArray(journalEntries) ? journalEntries.slice(0, 3) : [], // Recent journal entries
+        userStats,
+        userName: userStats.currentStreak > 0 ? "friend" : undefined,
+        currentMood: mood || detectedEmotion.emotion
+      };
+
+      console.log("🤖 Generating Gemini response with context...");
+      const aiResponseContent = await generateGeminiResponse(userMessage, context);
 
       const aiMessage: ChatMessage = {
         id: Date.now().toString(),
         content: aiResponseContent,
         sender: "ai",
         timestamp: new Date(),
-        sentiment: "positive" as any,
+        sentiment: detectedEmotion.needsSupport ? "supportive" : "positive",
+        mood: detectedEmotion.emotion,
       };
 
       // Add AI response to database
@@ -593,6 +579,14 @@ export default function Chatbot() {
                 <Button
                   variant="ghost"
                   size="sm"
+                  onClick={() => setShowHistory(true)}
+                  className="text-gray-500 hover:text-gray-700"
+                >
+                  <History className="w-4 h-4" />
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
                   onClick={clearChat}
                   className="text-gray-500 hover:text-gray-700"
                 >
@@ -781,6 +775,17 @@ export default function Chatbot() {
       </div>
 
       <Footer />
+
+      {/* Chat History Modal */}
+      {showHistory && (
+        <ChatHistory
+          onClose={() => setShowHistory(false)}
+          onSelectSession={(sessionId) => {
+            // Session will be loaded automatically
+            console.log("Selected session:", sessionId);
+          }}
+        />
+      )}
     </div>
   );
 }

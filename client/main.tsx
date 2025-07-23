@@ -14,6 +14,8 @@ import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { NotificationSystem } from "@/components/ui/notification-system";
 import { ThemeStatus } from "@/components/ThemeStatus";
 import { DatabaseSetupNotice } from "@/components/DatabaseSetupNotice";
+import { ErrorBoundary } from "@/components/ErrorBoundary";
+import { DataContextErrorBoundary } from "@/components/DataContextErrorBoundary";
 import Index from "./pages/Index";
 import SimplifiedChatbot from "./pages/SimplifiedChatbot";
 import Dashboard from "./pages/Dashboard";
@@ -31,12 +33,14 @@ import NotFound from "./pages/NotFound";
 const queryClient = new QueryClient();
 
 const App = () => (
-  <QueryClientProvider client={queryClient}>
+  <ErrorBoundary>
+    <QueryClientProvider client={queryClient}>
     <TooltipProvider>
       <Toaster />
       <Sonner />
       <AuthProvider>
-        <DataProvider>
+        <DataContextErrorBoundary>
+          <DataProvider key="data-provider">
           <ThemeProvider>
             <BrowserRouter>
               <NotificationSystem />
@@ -102,10 +106,12 @@ const App = () => (
               </Routes>
             </BrowserRouter>
           </ThemeProvider>
-        </DataProvider>
+          </DataProvider>
+        </DataContextErrorBoundary>
       </AuthProvider>
     </TooltipProvider>
-  </QueryClientProvider>
+    </QueryClientProvider>
+  </ErrorBoundary>
 );
 
 createRoot(document.getElementById("root")!).render(<App />);

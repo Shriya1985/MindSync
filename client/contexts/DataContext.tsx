@@ -194,12 +194,13 @@ export function DataProvider({ children }: DataProviderProps) {
   // Load all user data when authenticated
   useEffect(() => {
     if (isAuthenticated && user) {
-      // Always try to use Supabase first, fallback to localStorage only if needed
+      // Prioritize Supabase - only use localStorage if Supabase fails completely
       if (isSupabaseConfigured) {
+        console.log("🔧 Using Supabase database for data persistence");
         loadAllData();
       } else {
         console.warn(
-          "⚠️ Supabase not configured. Using localStorage fallback. Please configure Supabase for full functionality.",
+          "��️ Supabase not configured. Using localStorage fallback. Please configure Supabase for full functionality.",
         );
         loadLocalStorageData();
       }
@@ -486,49 +487,63 @@ export function DataProvider({ children }: DataProviderProps) {
   const addMoodEntry = async (entry: Omit<MoodEntry, "id">) => {
     if (!user) return;
 
+    // Always try Supabase first if configured
     if (isSupabaseConfigured) {
-      const { data, error } = await supabase
-        .from("mood_entries")
-        .insert({
-          user_id: user.id,
-          mood: entry.mood,
-          rating: entry.rating,
-          emoji: entry.emoji,
-          source: entry.source,
-          notes: entry.notes,
-          date: entry.date,
-        })
-        .select()
-        .single();
+      try {
+        const { data, error } = await supabase
+          .from("mood_entries")
+          .insert({
+            user_id: user.id,
+            mood: entry.mood,
+            rating: entry.rating,
+            emoji: entry.emoji,
+            source: entry.source,
+            notes: entry.notes,
+            date: entry.date,
+          })
+          .select()
+          .single();
 
-      if (error) {
-        console.error("Error adding mood entry:", error);
-        return;
+        if (error) {
+          console.error("❌ Supabase error adding mood entry:", error);
+          // Fallback to localStorage only if Supabase fails
+          console.log("🔄 Falling back to localStorage...");
+          const result = await localStorageService.addMoodEntry(entry);
+          if (result) {
+            setMoodEntries((prev) => [result, ...(Array.isArray(prev) ? prev : [])]);
+            await updateStreak();
+          }
+          return;
+        }
+
+        const newEntry: MoodEntry = {
+          id: data.id,
+          date: data.date,
+          mood: data.mood,
+          rating: data.rating,
+          emoji: data.emoji,
+          source: data.source,
+          notes: data.notes,
+        };
+
+        setMoodEntries((prev) => [newEntry, ...(Array.isArray(prev) ? prev : [])]);
+        await updateStreak();
+        console.log("✅ Mood entry saved to Supabase");
+      } catch (error) {
+        console.error("❌ Unexpected error with Supabase:", error);
+        // Fallback to localStorage on any unexpected error
+        const result = await localStorageService.addMoodEntry(entry);
+        if (result) {
+          setMoodEntries((prev) => [result, ...(Array.isArray(prev) ? prev : [])]);
+          await updateStreak();
+        }
       }
-
-      const newEntry: MoodEntry = {
-        id: data.id,
-        date: data.date,
-        mood: data.mood,
-        rating: data.rating,
-        emoji: data.emoji,
-        source: data.source,
-        notes: data.notes,
-      };
-
-      setMoodEntries((prev) => [
-        newEntry,
-        ...(Array.isArray(prev) ? prev : []),
-      ]);
-      await updateStreak();
     } else {
-      // Use localStorage fallback
+      // Use localStorage when Supabase is not configured
+      console.log("📱 Using localStorage (Supabase not configured)");
       const result = await localStorageService.addMoodEntry(entry);
       if (result) {
-        setMoodEntries((prev) => [
-          result,
-          ...(Array.isArray(prev) ? prev : []),
-        ]);
+        setMoodEntries((prev) => [result, ...(Array.isArray(prev) ? prev : [])]);
         await updateStreak();
       }
     }
@@ -581,39 +596,101 @@ export function DataProvider({ children }: DataProviderProps) {
   const addJournalEntry = async (entry: Omit<JournalEntry, "id">) => {
     if (!user) return;
 
-    const { data, error } = await supabase
-      .from("journal_entries")
-      .insert({
-        user_id: user.id,
+    // Auto-extract mood from journal content
+    const { extractMoodFromText } = await import("@/utils/emotionAI");
+    const extractedMood = extractMoodFromText(entry.content + " " + entry.title);
+
+    // Always try Supabase first if configured
+    if (isSupabaseConfigured) {
+      try {
+        const { data, error } = await supabase
+          .from("journal_entries")
+          .insert({
+            user_id: user.id,
+            title: entry.title,
+            content: entry.content,
+            sentiment: entry.sentiment,
+            word_count: entry.wordCount,
+            tags: entry.tags,
+            date: entry.date,
+          })
+          .select()
+          .single();
+
+        if (error) {
+          console.error("❌ Supabase error adding journal entry:", error.message || error);
+          // Fallback to localStorage
+          console.log("🔄 Falling back to localStorage...");
+          const fallbackEntry: JournalEntry = {
+            id: Date.now().toString(),
+            date: entry.date,
+            title: entry.title,
+            content: entry.content,
+            sentiment: entry.sentiment,
+            wordCount: entry.wordCount,
+            tags: entry.tags || [],
+          };
+          setJournalEntries((prev) => [fallbackEntry, ...(Array.isArray(prev) ? prev : [])]);
+          await updateStreak();
+          return;
+        }
+
+        const newEntry: JournalEntry = {
+          id: data.id,
+          date: data.date,
+          title: data.title,
+          content: data.content,
+          sentiment: data.sentiment,
+          wordCount: data.word_count,
+          tags: data.tags || [],
+        };
+
+        setJournalEntries((prev) => [newEntry, ...(Array.isArray(prev) ? prev : [])]);
+        console.log("✅ Journal entry saved to Supabase");
+      } catch (error) {
+        console.error("❌ Unexpected error with Supabase journal:", error);
+        // Fallback to localStorage on any unexpected error
+        const fallbackEntry: JournalEntry = {
+          id: Date.now().toString(),
+          date: entry.date,
+          title: entry.title,
+          content: entry.content,
+          sentiment: entry.sentiment,
+          wordCount: entry.wordCount,
+          tags: entry.tags || [],
+        };
+        setJournalEntries((prev) => [fallbackEntry, ...(Array.isArray(prev) ? prev : [])]);
+        await updateStreak();
+        return;
+      }
+    } else {
+      // Use localStorage when Supabase is not configured
+      console.log("📱 Using localStorage for journal (Supabase not configured)");
+      const fallbackEntry: JournalEntry = {
+        id: Date.now().toString(),
+        date: entry.date,
         title: entry.title,
         content: entry.content,
         sentiment: entry.sentiment,
-        word_count: entry.wordCount,
-        tags: entry.tags,
-        date: entry.date,
-      })
-      .select()
-      .single();
-
-    if (error) {
-      console.error("Error adding journal entry:", error);
-      return;
+        wordCount: entry.wordCount,
+        tags: entry.tags || [],
+      };
+      setJournalEntries((prev) => [fallbackEntry, ...(Array.isArray(prev) ? prev : [])]);
     }
 
-    const newEntry: JournalEntry = {
-      id: data.id,
-      date: data.date,
-      title: data.title,
-      content: data.content,
-      sentiment: data.sentiment,
-      wordCount: data.word_count,
-      tags: data.tags || [],
-    };
+    // Auto-create mood entry if confidence is high enough
+    if (extractedMood.confidence > 0.3) {
+      await addMoodEntry({
+        date: entry.date,
+        mood: extractedMood.mood,
+        rating: extractedMood.rating,
+        emoji: extractedMood.emoji,
+        source: "journal",
+        notes: `Auto-detected from journal: "${entry.title}"`
+      });
+      console.log(`✅ Auto-detected mood from journal: ${extractedMood.mood} (${extractedMood.confidence.toFixed(2)} confidence)`);
+    }
 
-    setJournalEntries((prev) => [
-      newEntry,
-      ...(Array.isArray(prev) ? prev : []),
-    ]);
     await updateStreak();
   };
 
@@ -670,52 +747,110 @@ export function DataProvider({ children }: DataProviderProps) {
   ) => {
     if (!user) return;
 
-    if (isSupabaseConfigured) {
-      // Database mode - Always use this for chat
-      const { data, error } = await supabase
-        .from("chat_messages")
-        .insert({
-          user_id: user.id,
-          session_id: sessionId || currentSessionId,
-          content: message.content,
-          sender: message.sender,
-          sentiment: message.sentiment,
-          mood: message.mood,
-          emotional_state: message.emotionalState,
-        })
-        .select()
-        .single();
+    // Auto-detect mood from user messages
+    let detectedMood = message.mood;
+    let detectedSentiment = message.sentiment;
 
-      if (error) {
-        console.error("Error adding chat message:", error.message || error);
-        showNotification("Failed to save chat message", "error");
-        return;
+    if (message.sender === "user") {
+      const { extractMoodFromText } = await import("@/utils/emotionAI");
+      const extractedMood = extractMoodFromText(message.content);
+
+      if (extractedMood.confidence > 0.4) {
+        detectedMood = extractedMood.mood;
+
+        // Auto-create mood entry for significant emotional expressions
+        if (extractedMood.confidence > 0.6) {
+          const today = new Date().toISOString().split('T')[0];
+          await addMoodEntry({
+            date: today,
+            mood: extractedMood.mood,
+            rating: extractedMood.rating,
+            emoji: extractedMood.emoji,
+            source: "chat",
+            notes: `Auto-detected from chat conversation`
+          });
+          console.log(`✅ Auto-detected mood from chat: ${extractedMood.mood} (${extractedMood.confidence.toFixed(2)} confidence)`);
+        }
       }
 
-      const newMessage: ChatMessage = {
-        id: data.id,
-        content: data.content,
-        sender: data.sender as "user" | "ai",
-        timestamp: new Date(data.created_at),
-        sentiment: data.sentiment,
-        mood: data.mood,
-        emotionalState: data.emotional_state,
-      };
+      // Simple sentiment analysis
+      if (!detectedSentiment) {
+        if (extractedMood.rating >= 7) detectedSentiment = "positive";
+        else if (extractedMood.rating <= 4) detectedSentiment = "negative";
+        else detectedSentiment = "neutral";
+      }
+    }
 
-      // Update local state with new message
-      setChatMessages((prev) => [
-        ...(Array.isArray(prev) ? prev : []),
-        newMessage,
-      ]);
+    // Always try Supabase first if configured
+    if (isSupabaseConfigured) {
+      try {
+        const { data, error } = await supabase
+          .from("chat_messages")
+          .insert({
+            user_id: user.id,
+            session_id: sessionId || currentSessionId,
+            content: message.content,
+            sender: message.sender,
+            sentiment: detectedSentiment,
+            mood: detectedMood,
+            emotional_state: message.emotionalState,
+          })
+          .select()
+          .single();
 
-      // After adding a message, reload chat history to ensure context
-      await loadChatMessages();
+        if (error) {
+          console.error("❌ Supabase error adding chat message:", error);
+          showNotification("Failed to save to database, using local backup", "warning");
+          // Fallback to localStorage
+          const newMessage: ChatMessage = {
+            id: `msg-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+            content: message.content,
+            sender: message.sender,
+            timestamp: new Date(),
+            sentiment: message.sentiment,
+            mood: message.mood,
+            emotionalState: message.emotionalState,
+          };
+          const result = await localStorageService.addChatMessage(newMessage);
+          if (result) {
+            setChatMessages((prev) => [...(Array.isArray(prev) ? prev : []), newMessage]);
+          }
+          return;
+        }
+
+        const newMessage: ChatMessage = {
+          id: data.id,
+          content: data.content,
+          sender: data.sender as "user" | "ai",
+          timestamp: new Date(data.created_at),
+          sentiment: data.sentiment,
+          mood: data.mood,
+          emotionalState: data.emotional_state,
+        };
+
+        setChatMessages((prev) => [...(Array.isArray(prev) ? prev : []), newMessage]);
+        await loadChatMessages(); // Reload to ensure consistency
+        console.log("✅ Chat message saved to Supabase");
+      } catch (error) {
+        console.error("❌ Unexpected error with Supabase chat:", error);
+        // Fallback to localStorage on any unexpected error
+        const newMessage: ChatMessage = {
+          id: `msg-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+          content: message.content,
+          sender: message.sender,
+          timestamp: new Date(),
+          sentiment: message.sentiment,
+          mood: message.mood,
+          emotionalState: message.emotionalState,
+        };
+        const result = await localStorageService.addChatMessage(newMessage);
+        if (result) {
+          setChatMessages((prev) => [...(Array.isArray(prev) ? prev : []), newMessage]);
+        }
+      }
     } else {
-      // localStorage fallback - but warn user to use Supabase
-      console.warn(
-        "💬 Chat messages should use Supabase for proper context and history. Please configure Supabase.",
-      );
-
+      // Use localStorage when Supabase is not configured
+      console.log("📱 Using localStorage for chat (Supabase not configured)");
       const newMessage: ChatMessage = {
         id: `msg-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
         content: message.content,
@@ -725,13 +860,9 @@ export function DataProvider({ children }: DataProviderProps) {
         mood: message.mood,
         emotionalState: message.emotionalState,
       };
-
       const result = await localStorageService.addChatMessage(newMessage);
       if (result) {
-        setChatMessages((prev) => [
-          ...(Array.isArray(prev) ? prev : []),
-          newMessage,
-        ]);
+        setChatMessages((prev) => [...(Array.isArray(prev) ? prev : []), newMessage]);
       }
     }
   };
@@ -804,24 +935,35 @@ export function DataProvider({ children }: DataProviderProps) {
   ) => {
     if (!user) return;
 
+    // Always try Supabase first if configured
     if (isSupabaseConfigured) {
-      const { error } = await supabase.from("point_activities").insert({
-        user_id: user.id,
-        points,
-        activity,
-        source,
-      });
+      try {
+        const { error } = await supabase.from("point_activities").insert({
+          user_id: user.id,
+          points,
+          activity,
+          source,
+        });
 
-      if (error) {
-        console.error("Error adding points:", error);
-        return;
+        if (error) {
+          console.error("❌ Supabase error adding points:", error);
+          // Fallback to localStorage
+          await localStorageService.addPoints(points, activity);
+          return;
+        }
+
+        // Reload user stats to get updated points and level
+        await loadUserStats();
+        await loadPointActivities();
+        console.log("✅ Points saved to Supabase");
+      } catch (error) {
+        console.error("❌ Unexpected error with Supabase points:", error);
+        // Fallback to localStorage on any unexpected error
+        await localStorageService.addPoints(points, activity);
       }
-
-      // Reload user stats to get updated points and level
-      await loadUserStats();
-      await loadPointActivities();
     } else {
-      // Use localStorage fallback
+      // Use localStorage when Supabase is not configured
+      console.log("📱 Using localStorage for points (Supabase not configured)");
       await localStorageService.addPoints(points, activity);
 
       // Update local state

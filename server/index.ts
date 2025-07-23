@@ -1,6 +1,9 @@
 import express from "express";
 import cors from "cors";
 import { handleDemo } from "./routes/demo";
+import { handleChatCompletion } from "./routes/chat";
+import { testGPTConnection } from "./routes/test-gpt";
+import { handleGeminiChat, testGeminiConnection } from "./routes/gemini-chat";
 
 export function createServer() {
   const app = express();
@@ -16,6 +19,16 @@ export function createServer() {
   });
 
   app.get("/api/demo", handleDemo);
+
+  // Chat completion endpoint for GPT integration (legacy)
+  app.post("/api/chat/completion", handleChatCompletion);
+
+  // Gemini chat endpoint (primary)
+  app.post("/api/chat/gemini", handleGeminiChat);
+
+  // Test endpoints
+  app.get("/api/test-gpt", testGPTConnection);
+  app.get("/api/test-gemini", testGeminiConnection);
 
   return app;
 }
