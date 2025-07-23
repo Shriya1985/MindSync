@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { useData } from "@/contexts/DataContext";
+import { useAuth } from "@/contexts/AuthContext";
 import { showNotification } from "@/components/ui/notification-system";
 import { EncouragingInsights } from "@/components/EncouragingInsights";
 import { DailyQuests } from "@/components/DailyQuests";
@@ -14,6 +15,7 @@ import { SupabaseTestPanel } from "@/components/SupabaseTestPanel";
 import { MoodInsights } from "@/components/MoodInsights";
 import { useMoodTheme } from "@/hooks/useMoodTheme";
 import { predictMood } from "@/utils/emotionAI";
+import { migrateLocalStorageToSupabase, checkDataSources } from "@/utils/dataMigration";
 import {
   BarChart3,
   TrendingUp,
