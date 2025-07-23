@@ -74,6 +74,46 @@ export default function Auth() {
     setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
+  // Auth reset functions
+  const handleAuthReset = () => {
+    clearAllAuthStates();
+    setError(null);
+    setFormData({
+      name: "",
+      email: "",
+      password: "",
+      confirmPassword: "",
+      agreeToTerms: false,
+      rememberMe: false,
+    });
+    showNotification("All authentication states cleared. Try registering again.", "info");
+  };
+
+  const handleForceRegistration = async () => {
+    if (!formData.name || !formData.email || !formData.password) {
+      setError("Please fill in all fields");
+      return;
+    }
+
+    setIsLoading(true);
+    const result = await forceCleanRegistration(
+      formData.name.trim(),
+      formData.email.trim().toLowerCase(),
+      formData.password
+    );
+
+    if (result.success) {
+      showNotification(result.message, "success");
+      // Redirect to dashboard
+      const from = location.state?.from?.pathname || "/dashboard";
+      navigate(from, { replace: true });
+    } else {
+      setError(result.error);
+    }
+
+    setIsLoading(false);
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
