@@ -501,6 +501,42 @@ export default function Auth() {
                     <span>Your privacy and security are our top priority</span>
                   </div>
                 </div>
+
+                {/* Debug Panel - Remove after fixing auth issues */}
+                <div className="border-t pt-4">
+                  <p className="text-xs text-gray-500 mb-3">Authentication Troubleshooting</p>
+                  <div className="flex flex-col space-y-2">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => checkAuthStates()}
+                      className="text-xs"
+                    >
+                      Check Auth States (Console)
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={handleAuthReset}
+                      className="text-xs border-red-200 text-red-600 hover:bg-red-50"
+                    >
+                      Clear All Auth Data
+                    </Button>
+                    {mode === "register" && (
+                      <Button
+                        type="button"
+                        size="sm"
+                        onClick={handleForceRegistration}
+                        disabled={isLoading}
+                        className="text-xs bg-green-600 hover:bg-green-700 text-white"
+                      >
+                        Force Clean Registration
+                      </Button>
+                    )}
+                  </div>
+                </div>
               </CardContent>
             </Card>
           </div>
