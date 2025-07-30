@@ -315,7 +315,7 @@ export default function Dashboard() {
             <p className="text-blue-700 mb-4">
               Use these tools to diagnose and fix data sync issues between localStorage and Supabase.
             </p>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+            <div className="grid grid-cols-2 md:grid-cols-5 gap-2">
               <Button
                 onClick={() => diagnoseDynamicDataSync()}
                 variant="outline"
@@ -331,6 +331,17 @@ export default function Dashboard() {
                 className="border-blue-300 text-blue-700 hover:bg-blue-100"
               >
                 Check Config
+              </Button>
+              <Button
+                onClick={() => {
+                  clearLocalStorageAndForceSupabase();
+                  setTimeout(() => window.location.reload(), 1000);
+                }}
+                variant="outline"
+                size="sm"
+                className="border-red-300 text-red-700 hover:bg-red-100"
+              >
+                Clear & Force DB
               </Button>
               <Button
                 onClick={() => forceSyncToSupabase()}
