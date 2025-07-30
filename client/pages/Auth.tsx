@@ -26,6 +26,7 @@ import {
 import { cn } from "@/lib/utils";
 import { clearAllAuthStates, forceCleanRegistration, checkAuthStates } from "@/utils/authReset";
 import { testSupabaseAuth, createTestUser, testLogin, resetAuthCompletely } from "@/utils/authTest";
+import { createUserAndProfile } from "@/utils/simpleAuth";
 
 type AuthMode = "login" | "register";
 
