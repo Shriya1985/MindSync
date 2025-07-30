@@ -41,6 +41,36 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
+  // Create user profile in Supabase
+  const createUserProfile = async (supabaseUser: SupabaseUser) => {
+    try {
+      const name = supabaseUser.user_metadata?.name || supabaseUser.email?.split('@')[0] || 'User';
+
+      const { data, error } = await supabase
+        .from("profiles")
+        .insert({
+          id: supabaseUser.id,
+          email: supabaseUser.email!,
+          name: name,
+          bio: '',
+          preferences: {}
+        })
+        .select()
+        .single();
+
+      if (error) {
+        console.error("Error creating profile:", error);
+        return null;
+      }
+
+      console.log("✅ Profile created successfully:", data);
+      return data;
+    } catch (error) {
+      console.error("Error in createUserProfile:", error);
+      return null;
+    }
+  };
+
   // Fetch user profile from Supabase
   const fetchUserProfile = async (supabaseUser: SupabaseUser) => {
     try {
