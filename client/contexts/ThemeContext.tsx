@@ -5,7 +5,6 @@ import {
   useState,
   ReactNode,
 } from "react";
-import { useData } from "@/contexts/DataContext";
 import { showNotification } from "@/components/ui/notification-system";
 
 export type GlobalTheme = {
