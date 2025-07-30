@@ -239,6 +239,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
           }
         }
       } else {
+        console.log("💾 Falling back to localStorage");
         // Fallback to localStorage
         const result = await localStorageService.login(email, password);
 
@@ -250,7 +251,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
             message: `Good to see you again, ${result.user.name}! (Using local storage)`,
             duration: 3000,
           });
-          return true;
+          return { success: true };
         } else {
           showNotification({
             type: "encouragement",
@@ -258,19 +259,20 @@ export function AuthProvider({ children }: AuthProviderProps) {
             message: result.error || "Invalid credentials",
             duration: 3000,
           });
-          return false;
+          return { success: false, error: result.error || "Invalid credentials" };
         }
       }
 
-      return false;
+      return { success: false, error: "Unknown error" };
     } catch (error) {
+      console.error("Login error:", error);
       showNotification({
         type: "encouragement",
         title: "Login Error",
         message: "Something went wrong. Please try again.",
         duration: 3000,
       });
-      return false;
+      return { success: false, error: "Something went wrong. Please try again." };
     } finally {
       setIsLoading(false);
     }
