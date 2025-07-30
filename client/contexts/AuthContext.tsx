@@ -314,13 +314,14 @@ export function AuthProvider({ children }: AuthProviderProps) {
         });
 
         if (error) {
+          console.error("❌ Supabase registration error:", error);
           showNotification({
             type: "encouragement",
             title: "Registration Failed",
             message: error.message,
             duration: 3000,
           });
-          return false;
+          return { success: false, error: error.message };
         }
 
         if (data.user) {
