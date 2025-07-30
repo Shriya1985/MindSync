@@ -104,12 +104,12 @@ const App = () => (
                 {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                 <Route path="*" element={<NotFound />} />
               </Routes>
-            </BrowserRouter>
-          </ThemeProvider>
-          </DataProvider>
-        </DataContextErrorBoundary>
-      </AuthProvider>
-    </TooltipProvider>
+                </BrowserRouter>
+              </ThemeProvider>
+            </DataProvider>
+          </DataContextErrorBoundary>
+        </AuthProvider>
+      </TooltipProvider>
     </QueryClientProvider>
   </ErrorBoundary>
 );
