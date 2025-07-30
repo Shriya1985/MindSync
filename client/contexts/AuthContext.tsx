@@ -175,11 +175,23 @@ export function AuthProvider({ children }: AuthProviderProps) {
     }
   }, []);
 
-  const login = async (email: string, password: string): Promise<boolean> => {
+  const login = async (email: string, password: string): Promise<{ success: boolean; error?: string }> => {
     try {
       setIsLoading(true);
 
-      if (isSupabaseConfigured) {
+      // Force check Supabase configuration
+      const envUrl = import.meta.env.VITE_SUPABASE_URL;
+      const envKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+      const actuallyConfigured = !!(envUrl && envKey && envUrl !== "https://your-project-id.supabase.co" && envKey !== "your-anon-key-here");
+
+      console.log("🔑 Login attempt - Supabase check:", {
+        isSupabaseConfigured,
+        actuallyConfigured,
+        envUrl: envUrl || "MISSING"
+      });
+
+      if (actuallyConfigured) {
+        console.log("🌐 Using Supabase for login");
         // Use Supabase authentication
         const { data, error } = await supabase.auth.signInWithPassword({
           email,
