@@ -527,19 +527,45 @@ export default function Auth() {
                       Complete Auth Reset
                     </Button>
                     {mode === "register" && (
-                      <Button
-                        type="button"
-                        size="sm"
-                        onClick={() => createTestUser(
-                          formData.email.trim().toLowerCase(),
-                          formData.password,
-                          formData.name.trim()
-                        )}
-                        disabled={isLoading || !formData.email || !formData.password || !formData.name}
-                        className="text-xs bg-green-600 hover:bg-green-700 text-white"
-                      >
-                        Test Registration
-                      </Button>
+                      <>
+                        <Button
+                          type="button"
+                          size="sm"
+                          onClick={async () => {
+                            const result = await createUserAndProfile(
+                              formData.name.trim(),
+                              formData.email.trim().toLowerCase(),
+                              formData.password
+                            );
+
+                            if (result.success) {
+                              showNotification(result.message, "success");
+                              // Navigate to dashboard
+                              const from = location.state?.from?.pathname || "/dashboard";
+                              navigate(from, { replace: true });
+                            } else {
+                              setError(result.error);
+                            }
+                          }}
+                          disabled={isLoading || !formData.email || !formData.password || !formData.name}
+                          className="text-xs bg-green-600 hover:bg-green-700 text-white"
+                        >
+                          ✨ Simple Registration
+                        </Button>
+                        <Button
+                          type="button"
+                          size="sm"
+                          onClick={() => createTestUser(
+                            formData.email.trim().toLowerCase(),
+                            formData.password,
+                            formData.name.trim()
+                          )}
+                          disabled={isLoading || !formData.email || !formData.password || !formData.name}
+                          className="text-xs bg-blue-600 hover:bg-blue-700 text-white"
+                        >
+                          🧪 Test Registration
+                        </Button>
+                      </>
                     )}
                     {mode === "login" && (
                       <Button
