@@ -156,28 +156,58 @@ export const forceSyncToSupabase = async () => {
 
 export const ensureSupabaseIsUsed = () => {
   console.log("🔧 Checking why localStorage is being used instead of Supabase...");
-  
+
   const envUrl = import.meta.env.VITE_SUPABASE_URL;
   const envKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
-  
+
   console.log("Environment variables:", {
     url: envUrl || "MISSING",
     key: envKey ? "PRESENT" : "MISSING"
   });
-  
+
   if (!envUrl || !envKey) {
     console.log("❌ Environment variables not loaded properly");
     console.log("💡 Try restarting the dev server");
     return false;
   }
-  
+
   if (envUrl === "https://your-project-id.supabase.co" || envKey === "your-anon-key-here") {
     console.log("❌ Environment variables contain placeholder values");
     return false;
   }
-  
+
   console.log("✅ Environment variables look correct");
   console.log("🔍 isSupabaseConfigured should be:", !!(envUrl && envKey && envUrl !== "https://your-project-id.supabase.co" && envKey !== "your-anon-key-here"));
-  
+
+  return true;
+};
+
+export const clearLocalStorageAndForceSupabase = () => {
+  console.log("🧹 Clearing localStorage and forcing Supabase usage...");
+
+  // Clear all localStorage data
+  const keysToRemove = [
+    "mindsync_current_user",
+    "mindsync_users",
+    "mindsync_user_stats",
+    "mindsync_mood_entries",
+    "mindsync_journal_entries",
+    "mindsync_chat_messages",
+    "mindsync_achievements",
+    "mindsync_daily_quests",
+    "mindsync_coping_sessions"
+  ];
+
+  keysToRemove.forEach(key => {
+    localStorage.removeItem(key);
+    console.log(`🗑️ Removed ${key}`);
+  });
+
+  // Clear session storage too
+  sessionStorage.clear();
+
+  console.log("✅ All local storage cleared");
+  console.log("🔄 Please refresh the page to force Supabase usage");
+
   return true;
 };
