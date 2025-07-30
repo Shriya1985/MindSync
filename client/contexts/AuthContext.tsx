@@ -282,11 +282,25 @@ export function AuthProvider({ children }: AuthProviderProps) {
     name: string,
     email: string,
     password: string,
-  ): Promise<boolean> => {
+  ): Promise<{ success: boolean; error?: string }> => {
     try {
       setIsLoading(true);
 
-      if (isSupabaseConfigured) {
+      // Force check Supabase configuration
+      const envUrl = import.meta.env.VITE_SUPABASE_URL;
+      const envKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+      const actuallyConfigured = !!(envUrl && envKey && envUrl !== "https://your-project-id.supabase.co" && envKey !== "your-anon-key-here");
+
+      console.log("📝 Registration attempt - Supabase check:", {
+        isSupabaseConfigured,
+        actuallyConfigured,
+        envUrl: envUrl || "MISSING",
+        name,
+        email
+      });
+
+      if (actuallyConfigured) {
+        console.log("🌐 Using Supabase for registration");
         // Use Supabase authentication
         const { data, error } = await supabase.auth.signUp({
           email,
