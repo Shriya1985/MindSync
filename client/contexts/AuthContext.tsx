@@ -217,7 +217,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
             message: errorMessage,
             duration: 5000,
           });
-          return false;
+          return { success: false, error: errorMessage };
         }
 
         if (data.user) {
