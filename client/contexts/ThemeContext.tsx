@@ -211,15 +211,9 @@ export function ThemeProvider({ children }: ThemeProviderProps) {
     null,
   );
 
-  // Safely get mood entries with error handling
-  let moodEntries: any[] = [];
-  try {
-    const dataContext = useData();
-    moodEntries = dataContext?.moodEntries || [];
-  } catch (error) {
-    console.warn("ThemeProvider: DataContext not available yet, using empty mood entries");
-    moodEntries = [];
-  }
+  // We'll use a different approach to get mood entries without requiring DataContext
+  // The ThemeProvider should be independent of DataContext to avoid circular dependencies
+  const [moodEntries] = useState<any[]>([]);
 
   // Map moods to themes
   const moodToThemeMap: Record<string, string> = {
