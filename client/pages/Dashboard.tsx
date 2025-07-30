@@ -303,35 +303,54 @@ export default function Dashboard() {
           </div>
         </div>
 
-        {/* Data Migration Panel (Temporary) */}
-        <Card className="mb-6 border-orange-200 bg-orange-50">
+        {/* Data Sync Diagnostic Panel (Temporary) */}
+        <Card className="mb-6 border-blue-200 bg-blue-50">
           <CardHeader>
-            <CardTitle className="text-orange-800 flex items-center">
-              <Zap className="w-5 h-5 mr-2" />
-              Data Migration Available
+            <CardTitle className="text-blue-800 flex items-center">
+              <BarChart3 className="w-5 h-5 mr-2" />
+              Data Sync Diagnostic & Migration
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-orange-700 mb-4">
-              We detected you may have previous entries stored locally.
-              Click below to sync them to your cloud database.
+            <p className="text-blue-700 mb-4">
+              Use these tools to diagnose and fix data sync issues between localStorage and Supabase.
             </p>
-            <div className="flex space-x-3">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
               <Button
-                onClick={handleCheckDataSources}
+                onClick={() => diagnoseDynamicDataSync()}
                 variant="outline"
-                className="border-orange-300 text-orange-700 hover:bg-orange-100"
+                size="sm"
+                className="border-blue-300 text-blue-700 hover:bg-blue-100"
               >
-                Check Data Sources
+                Full Diagnostic
+              </Button>
+              <Button
+                onClick={() => ensureSupabaseIsUsed()}
+                variant="outline"
+                size="sm"
+                className="border-blue-300 text-blue-700 hover:bg-blue-100"
+              >
+                Check Config
+              </Button>
+              <Button
+                onClick={() => forceSyncToSupabase()}
+                size="sm"
+                className="bg-blue-600 hover:bg-blue-700 text-white"
+              >
+                Force Sync
               </Button>
               <Button
                 onClick={handleDataMigration}
-                className="bg-orange-600 hover:bg-orange-700 text-white"
+                size="sm"
+                className="bg-green-600 hover:bg-green-700 text-white"
               >
                 <Zap className="w-4 h-4 mr-2" />
-                Migrate Data to Cloud
+                Migrate
               </Button>
             </div>
+            <p className="text-xs text-blue-600 mt-2">
+              Open browser console (F12) to see detailed diagnostic output
+            </p>
           </CardContent>
         </Card>
 
