@@ -25,6 +25,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { clearAllAuthStates, forceCleanRegistration, checkAuthStates } from "@/utils/authReset";
+import { testSupabaseAuth, createTestUser, testLogin, resetAuthCompletely } from "@/utils/authTest";
 
 type AuthMode = "login" | "register";
 
