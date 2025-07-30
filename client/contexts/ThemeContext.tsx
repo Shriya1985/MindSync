@@ -211,9 +211,34 @@ export function ThemeProvider({ children }: ThemeProviderProps) {
     null,
   );
 
-  // We'll use a different approach to get mood entries without requiring DataContext
-  // The ThemeProvider should be independent of DataContext to avoid circular dependencies
-  const [moodEntries] = useState<any[]>([]);
+  // Initialize mood entries as empty array, will be populated later if DataContext is available
+  const [moodEntries, setMoodEntries] = useState<any[]>([]);
+
+  // Try to access DataContext safely without throwing errors
+  useEffect(() => {
+    // Use a timeout to allow DataContext to initialize first
+    const timer = setTimeout(() => {
+      try {
+        // Dynamically import and use DataContext
+        import("@/contexts/DataContext").then(({ useData }) => {
+          try {
+            // This will only work if we're inside a DataProvider
+            const dataContext = useData();
+            if (dataContext?.moodEntries) {
+              setMoodEntries(dataContext.moodEntries);
+            }
+          } catch (contextError) {
+            // DataContext not available, continue with empty array
+            console.log("ThemeProvider: DataContext not available, mood-based theming disabled");
+          }
+        });
+      } catch (importError) {
+        console.log("ThemeProvider: Could not access DataContext");
+      }
+    }, 100);
+
+    return () => clearTimeout(timer);
+  }, []);
 
   // Map moods to themes
   const moodToThemeMap: Record<string, string> = {
