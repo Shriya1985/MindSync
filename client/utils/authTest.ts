@@ -49,16 +49,16 @@ export const testSupabaseAuth = async () => {
 
 export const createTestUser = async (email: string, password: string, name: string) => {
   console.log("👤 Creating test user...");
-  
+
   if (!isSupabaseConfigured) {
     console.log("❌ Cannot create user: Supabase not configured");
     return false;
   }
-  
+
   try {
     // First, sign out any existing session
     await supabase.auth.signOut();
-    
+
     // Create user
     const { data, error } = await supabase.auth.signUp({
       email,
@@ -77,10 +77,11 @@ export const createTestUser = async (email: string, password: string, name: stri
 
     if (data.user) {
       console.log("✅ User created:", data.user.id);
-      
-      // Check if profile was created by trigger
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      
+
+      // Wait for any triggers to complete
+      await new Promise(resolve => setTimeout(resolve, 3000));
+
+      // Now that we're authenticated, check if profile exists
       const { data: profile, error: profileError } = await supabase
         .from("profiles")
         .select("*")
@@ -88,10 +89,10 @@ export const createTestUser = async (email: string, password: string, name: stri
         .single();
 
       if (profileError) {
-        console.log("⚠️ Profile not found, creating manually...");
-        
-        // Create profile manually
-        const { error: insertError } = await supabase
+        console.log("⚠️ Profile not found by trigger, creating now...");
+
+        // Create profile while authenticated as the user
+        const { data: newProfile, error: insertError } = await supabase
           .from("profiles")
           .insert({
             id: data.user.id,
@@ -99,20 +100,58 @@ export const createTestUser = async (email: string, password: string, name: stri
             name: name,
             bio: '',
             preferences: {}
-          });
+          })
+          .select()
+          .single();
 
         if (insertError) {
           console.log("❌ Failed to create profile:", insertError.message);
+          console.log("ℹ️ This might be normal - the trigger should have created it");
         } else {
-          console.log("✅ Profile created manually");
+          console.log("✅ Profile created successfully:", newProfile.name);
+        }
+
+        // Also create user_stats
+        const { error: statsError } = await supabase
+          .from("user_stats")
+          .insert({
+            user_id: data.user.id,
+            level: 1,
+            points: 0,
+            current_streak: 0,
+            longest_streak: 0,
+            total_entries: 0,
+            total_words: 0
+          });
+
+        if (statsError) {
+          console.log("⚠️ Failed to create user stats:", statsError.message);
+        } else {
+          console.log("✅ User stats created");
         }
       } else {
-        console.log("✅ Profile created by trigger:", profile.name);
+        console.log("✅ Profile found from trigger:", profile.name);
       }
-      
+
+      // Final verification
+      const { data: finalProfile } = await supabase
+        .from("profiles")
+        .select("*")
+        .eq("id", data.user.id)
+        .single();
+
+      if (finalProfile) {
+        console.log("🎉 SUCCESS! User and profile are ready:");
+        console.log("  - User ID:", data.user.id);
+        console.log("  - Email:", finalProfile.email);
+        console.log("  - Name:", finalProfile.name);
+        console.log("💡 You can now use the normal 'Create Account' button or try logging in!");
+        return true;
+      }
+
       return true;
     }
-    
+
     return false;
   } catch (err) {
     console.log("❌ Error creating user:", err);
