@@ -221,16 +221,22 @@ export function AuthProvider({ children }: AuthProviderProps) {
         }
 
         if (data.user) {
+          console.log("✅ Supabase login successful:", data.user.email);
           const userProfile = await fetchUserProfile(data.user);
-          setUser(userProfile);
 
-          showNotification({
-            type: "encouragement",
-            title: "Welcome back! 🎉",
-            message: `Good to see you again, ${userProfile?.name || "there"}!`,
-            duration: 3000,
-          });
-          return true;
+          if (userProfile) {
+            setUser(userProfile);
+            showNotification({
+              type: "encouragement",
+              title: "Welcome back! 🎉",
+              message: `Good to see you again, ${userProfile.name}!`,
+              duration: 3000,
+            });
+            return { success: true };
+          } else {
+            console.log("⚠️ User authenticated but no profile found");
+            return { success: false, error: "Profile not found. Please contact support." };
+          }
         }
       } else {
         // Fallback to localStorage
