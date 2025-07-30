@@ -36,11 +36,12 @@ export const createUserAndProfile = async (name: string, email: string, password
     await new Promise(resolve => setTimeout(resolve, 3000));
     
     // Step 4: Verify profile was created
-    const { data: profile, error: profileError } = await supabase
+    const { data: profiles, error: profileError } = await supabase
       .from("profiles")
       .select("*")
-      .eq("id", data.user.id)
-      .single();
+      .eq("id", data.user.id);
+
+    const profile = profiles && profiles.length > 0 ? profiles[0] : null;
 
     if (profile) {
       console.log("✅ Profile found:", profile.name);
