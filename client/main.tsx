@@ -114,4 +114,7 @@ const App = () => (
   </ErrorBoundary>
 );
 
-createRoot(document.getElementById("root")!).render(<App />);
+// Ensure we only create root once
+const container = document.getElementById("root")!;
+const root = createRoot(container);
+root.render(<App />);
