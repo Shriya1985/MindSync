@@ -120,9 +120,9 @@ class LocalStorageService {
   }
 
   register(
+    name: string,
     email: string,
     password: string,
-    name: string,
   ): { success: boolean; user?: LocalUser; error?: string } {
     console.log("📝 Registering new user:", email);
 
