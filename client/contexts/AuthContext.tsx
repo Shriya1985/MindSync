@@ -72,7 +72,17 @@ export function AuthProvider({ children }: AuthProviderProps) {
   useEffect(() => {
     const initializeAuth = async () => {
       try {
+        // Force check environment variables
+        const envUrl = import.meta.env.VITE_SUPABASE_URL;
+        const envKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+        console.log("🔧 Auth initialization - Supabase check:", {
+          envUrl: envUrl || "MISSING",
+          envKey: envKey ? "PRESENT" : "MISSING",
+          isSupabaseConfigured
+        });
+
         if (isSupabaseConfigured) {
+          console.log("🌐 Using Supabase authentication");
           // Use Supabase authentication
           const {
             data: { session },
@@ -86,10 +96,20 @@ export function AuthProvider({ children }: AuthProviderProps) {
           }
 
           if (session?.user) {
+            console.log("👤 Found Supabase session for user:", session.user.id);
             const userProfile = await fetchUserProfile(session.user);
-            setUser(userProfile);
+            if (userProfile) {
+              setUser(userProfile);
+            } else {
+              // If profile doesn't exist, create it
+              console.log("🔄 Creating missing profile for user:", session.user.id);
+              await createUserProfile(session.user);
+              const newProfile = await fetchUserProfile(session.user);
+              setUser(newProfile);
+            }
           }
         } else {
+          console.log("💾 Using localStorage fallback");
           // Fallback to localStorage
           const currentUser = localStorageService.getCurrentUser();
           if (currentUser) {
