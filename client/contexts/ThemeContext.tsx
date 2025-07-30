@@ -211,7 +211,16 @@ export function ThemeProvider({ children }: ThemeProviderProps) {
   const [lastMoodProcessed, setLastMoodProcessed] = useState<string | null>(
     null,
   );
-  const { moodEntries } = useData();
+
+  // Safely get mood entries with error handling
+  let moodEntries: any[] = [];
+  try {
+    const dataContext = useData();
+    moodEntries = dataContext?.moodEntries || [];
+  } catch (error) {
+    console.warn("ThemeProvider: DataContext not available yet, using empty mood entries");
+    moodEntries = [];
+  }
 
   // Map moods to themes
   const moodToThemeMap: Record<string, string> = {
