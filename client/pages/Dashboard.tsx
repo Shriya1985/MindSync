@@ -15,8 +15,16 @@ import { SupabaseTestPanel } from "@/components/SupabaseTestPanel";
 import { MoodInsights } from "@/components/MoodInsights";
 import { useMoodTheme } from "@/hooks/useMoodTheme";
 import { predictMood } from "@/utils/emotionAI";
-import { migrateLocalStorageToSupabase, checkDataSources } from "@/utils/dataMigration";
-import { diagnoseDynamicDataSync, forceSyncToSupabase, ensureSupabaseIsUsed, clearLocalStorageAndForceSupabase } from "@/utils/dataSyncDiagnostic";
+import {
+  migrateLocalStorageToSupabase,
+  checkDataSources,
+} from "@/utils/dataMigration";
+import {
+  diagnoseDynamicDataSync,
+  forceSyncToSupabase,
+  ensureSupabaseIsUsed,
+  clearLocalStorageAndForceSupabase,
+} from "@/utils/dataSyncDiagnostic";
 import {
   BarChart3,
   TrendingUp,
@@ -313,7 +321,8 @@ export default function Dashboard() {
           </CardHeader>
           <CardContent>
             <p className="text-blue-700 mb-4">
-              Use these tools to diagnose and fix data sync issues between localStorage and Supabase.
+              Use these tools to diagnose and fix data sync issues between
+              localStorage and Supabase.
             </p>
             <div className="grid grid-cols-2 md:grid-cols-5 gap-2">
               <Button

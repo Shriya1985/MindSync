@@ -17,8 +17,15 @@ type AuthContextType = {
   user: User | null;
   isAuthenticated: boolean;
   isLoading: boolean;
-  login: (email: string, password: string) => Promise<{ success: boolean; error?: string }>;
-  register: (name: string, email: string, password: string) => Promise<{ success: boolean; error?: string }>;
+  login: (
+    email: string,
+    password: string,
+  ) => Promise<{ success: boolean; error?: string }>;
+  register: (
+    name: string,
+    email: string,
+    password: string,
+  ) => Promise<{ success: boolean; error?: string }>;
   logout: () => void;
   updateProfile: (data: Partial<User>) => Promise<boolean>;
 };
@@ -44,7 +51,10 @@ export function AuthProvider({ children }: AuthProviderProps) {
   // Create user profile in Supabase
   const createUserProfile = async (supabaseUser: SupabaseUser) => {
     try {
-      const name = supabaseUser.user_metadata?.name || supabaseUser.email?.split('@')[0] || 'User';
+      const name =
+        supabaseUser.user_metadata?.name ||
+        supabaseUser.email?.split("@")[0] ||
+        "User";
 
       const { data, error } = await supabase
         .from("profiles")
@@ -52,8 +62,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
           id: supabaseUser.id,
           email: supabaseUser.email!,
           name: name,
-          bio: '',
-          preferences: {}
+          bio: "",
+          preferences: {},
         })
         .select()
         .single();
@@ -84,10 +94,13 @@ export function AuthProvider({ children }: AuthProviderProps) {
         // Create a temporary profile from user metadata
         return {
           id: supabaseUser.id,
-          name: supabaseUser.user_metadata?.name || supabaseUser.email?.split('@')[0] || 'User',
+          name:
+            supabaseUser.user_metadata?.name ||
+            supabaseUser.email?.split("@")[0] ||
+            "User",
           email: supabaseUser.email!,
           avatar: undefined,
-          bio: '',
+          bio: "",
           preferences: {},
         };
       }
@@ -104,13 +117,18 @@ export function AuthProvider({ children }: AuthProviderProps) {
         };
       } else {
         // No profile found, create temporary one
-        console.log("No profile found, creating temporary profile from user data");
+        console.log(
+          "No profile found, creating temporary profile from user data",
+        );
         return {
           id: supabaseUser.id,
-          name: supabaseUser.user_metadata?.name || supabaseUser.email?.split('@')[0] || 'User',
+          name:
+            supabaseUser.user_metadata?.name ||
+            supabaseUser.email?.split("@")[0] ||
+            "User",
           email: supabaseUser.email!,
           avatar: undefined,
-          bio: '',
+          bio: "",
           preferences: {},
         };
       }
@@ -119,10 +137,13 @@ export function AuthProvider({ children }: AuthProviderProps) {
       // Create fallback profile
       return {
         id: supabaseUser.id,
-        name: supabaseUser.user_metadata?.name || supabaseUser.email?.split('@')[0] || 'User',
+        name:
+          supabaseUser.user_metadata?.name ||
+          supabaseUser.email?.split("@")[0] ||
+          "User",
         email: supabaseUser.email!,
         avatar: undefined,
-        bio: '',
+        bio: "",
         preferences: {},
       };
     }
@@ -137,7 +158,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
         console.log("🔧 Auth initialization - Supabase check:", {
           envUrl: envUrl || "MISSING",
           envKey: envKey ? "PRESENT" : "MISSING",
-          isSupabaseConfigured
+          isSupabaseConfigured,
         });
 
         if (isSupabaseConfigured) {
@@ -161,7 +182,10 @@ export function AuthProvider({ children }: AuthProviderProps) {
               setUser(userProfile);
             } else {
               // If profile doesn't exist, create it
-              console.log("🔄 Creating missing profile for user:", session.user.id);
+              console.log(
+                "🔄 Creating missing profile for user:",
+                session.user.id,
+              );
               await createUserProfile(session.user);
               const newProfile = await fetchUserProfile(session.user);
               setUser(newProfile);
@@ -204,19 +228,27 @@ export function AuthProvider({ children }: AuthProviderProps) {
     }
   }, []);
 
-  const login = async (email: string, password: string): Promise<{ success: boolean; error?: string }> => {
+  const login = async (
+    email: string,
+    password: string,
+  ): Promise<{ success: boolean; error?: string }> => {
     try {
       setIsLoading(true);
 
       // Force check Supabase configuration
       const envUrl = import.meta.env.VITE_SUPABASE_URL;
       const envKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
-      const actuallyConfigured = !!(envUrl && envKey && envUrl !== "https://your-project-id.supabase.co" && envKey !== "your-anon-key-here");
+      const actuallyConfigured = !!(
+        envUrl &&
+        envKey &&
+        envUrl !== "https://your-project-id.supabase.co" &&
+        envKey !== "your-anon-key-here"
+      );
 
       console.log("🔑 Login attempt - Supabase check:", {
         isSupabaseConfigured,
         actuallyConfigured,
-        envUrl: envUrl || "MISSING"
+        envUrl: envUrl || "MISSING",
       });
 
       if (actuallyConfigured) {
@@ -264,7 +296,10 @@ export function AuthProvider({ children }: AuthProviderProps) {
             return { success: true };
           } else {
             console.log("⚠️ User authenticated but no profile found");
-            return { success: false, error: "Profile not found. Please contact support." };
+            return {
+              success: false,
+              error: "Profile not found. Please contact support.",
+            };
           }
         }
       } else {
@@ -288,7 +323,10 @@ export function AuthProvider({ children }: AuthProviderProps) {
             message: result.error || "Invalid credentials",
             duration: 3000,
           });
-          return { success: false, error: result.error || "Invalid credentials" };
+          return {
+            success: false,
+            error: result.error || "Invalid credentials",
+          };
         }
       }
 
@@ -301,7 +339,10 @@ export function AuthProvider({ children }: AuthProviderProps) {
         message: "Something went wrong. Please try again.",
         duration: 3000,
       });
-      return { success: false, error: "Something went wrong. Please try again." };
+      return {
+        success: false,
+        error: "Something went wrong. Please try again.",
+      };
     } finally {
       setIsLoading(false);
     }
@@ -318,14 +359,19 @@ export function AuthProvider({ children }: AuthProviderProps) {
       // Force check Supabase configuration
       const envUrl = import.meta.env.VITE_SUPABASE_URL;
       const envKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
-      const actuallyConfigured = !!(envUrl && envKey && envUrl !== "https://your-project-id.supabase.co" && envKey !== "your-anon-key-here");
+      const actuallyConfigured = !!(
+        envUrl &&
+        envKey &&
+        envUrl !== "https://your-project-id.supabase.co" &&
+        envKey !== "your-anon-key-here"
+      );
 
       console.log("📝 Registration attempt - Supabase check:", {
         isSupabaseConfigured,
         actuallyConfigured,
         envUrl: envUrl || "MISSING",
         name,
-        email
+        email,
       });
 
       if (actuallyConfigured) {
@@ -357,7 +403,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
           console.log("✅ User created in Supabase:", data.user.id);
 
           // Wait a moment for the trigger to create the profile
-          await new Promise(resolve => setTimeout(resolve, 1000));
+          await new Promise((resolve) => setTimeout(resolve, 1000));
 
           // Fetch the created profile
           let userProfile = await fetchUserProfile(data.user);
@@ -407,7 +453,10 @@ export function AuthProvider({ children }: AuthProviderProps) {
             message: result.error || "Could not create account",
             duration: 3000,
           });
-          return { success: false, error: result.error || "Could not create account" };
+          return {
+            success: false,
+            error: result.error || "Could not create account",
+          };
         }
       }
 
@@ -420,7 +469,10 @@ export function AuthProvider({ children }: AuthProviderProps) {
         message: "Something went wrong. Please try again.",
         duration: 3000,
       });
-      return { success: false, error: "Something went wrong. Please try again." };
+      return {
+        success: false,
+        error: "Something went wrong. Please try again.",
+      };
     } finally {
       setIsLoading(false);
     }
@@ -465,7 +517,10 @@ export function AuthProvider({ children }: AuthProviderProps) {
           .eq("id", user.id);
 
         if (error) {
-          console.error("❌ Supabase error updating profile:", error.message || error);
+          console.error(
+            "❌ Supabase error updating profile:",
+            error.message || error,
+          );
           // Fallback to localStorage
           console.log("🔄 Falling back to localStorage for profile update...");
           const result = localStorageService.updateUser(user.id, {
@@ -473,7 +528,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
             email: user.email,
             password: "", // Keep existing password
             id: user.id,
-            createdAt: ""
+            createdAt: "",
           });
 
           if (result) {
@@ -489,14 +544,17 @@ export function AuthProvider({ children }: AuthProviderProps) {
         console.log("✅ Profile updated in Supabase");
         return true;
       } catch (error) {
-        console.error("❌ Unexpected error with Supabase profile update:", error);
+        console.error(
+          "❌ Unexpected error with Supabase profile update:",
+          error,
+        );
         // Fallback to localStorage on any unexpected error
         const result = localStorageService.updateUser(user.id, {
           name: data.name || user.name,
           email: user.email,
           password: "", // Keep existing password
           id: user.id,
-          createdAt: ""
+          createdAt: "",
         });
 
         if (result) {
@@ -508,14 +566,16 @@ export function AuthProvider({ children }: AuthProviderProps) {
       }
     } else {
       // Use localStorage when Supabase is not configured
-      console.log("📱 Using localStorage for profile update (Supabase not configured)");
+      console.log(
+        "📱 Using localStorage for profile update (Supabase not configured)",
+      );
       try {
         const result = localStorageService.updateUser(user.id, {
           name: data.name || user.name,
           email: user.email,
           password: "", // Keep existing password
           id: user.id,
-          createdAt: ""
+          createdAt: "",
         });
 
         if (result) {

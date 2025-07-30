@@ -2,22 +2,25 @@ import { supabase, isSupabaseConfigured } from "@/lib/supabase";
 
 export const testSupabaseAuth = async () => {
   console.log("🧪 === SUPABASE AUTHENTICATION TEST ===");
-  
+
   // Test 1: Configuration check
   console.log("1️⃣ Configuration Check:");
   console.log("  URL:", import.meta.env.VITE_SUPABASE_URL);
   console.log("  Key Present:", !!import.meta.env.VITE_SUPABASE_ANON_KEY);
   console.log("  isSupabaseConfigured:", isSupabaseConfigured);
-  
+
   if (!isSupabaseConfigured) {
     console.log("❌ Supabase not configured - this is the problem!");
     return false;
   }
-  
+
   // Test 2: Basic connection
   console.log("2️⃣ Connection Test:");
   try {
-    const { data, error } = await supabase.from("profiles").select("count").limit(1);
+    const { data, error } = await supabase
+      .from("profiles")
+      .select("count")
+      .limit(1);
     if (error) {
       console.log("❌ Connection failed:", error.message);
       return false;
@@ -27,11 +30,14 @@ export const testSupabaseAuth = async () => {
     console.log("❌ Connection error:", err);
     return false;
   }
-  
+
   // Test 3: Check current session
   console.log("3️⃣ Session Check:");
   try {
-    const { data: { session }, error } = await supabase.auth.getSession();
+    const {
+      data: { session },
+      error,
+    } = await supabase.auth.getSession();
     if (error) {
       console.log("❌ Session error:", error.message);
     } else if (session) {
@@ -42,12 +48,16 @@ export const testSupabaseAuth = async () => {
   } catch (err) {
     console.log("❌ Session check failed:", err);
   }
-  
+
   console.log("🧪 === TEST COMPLETE ===");
   return true;
 };
 
-export const createTestUser = async (email: string, password: string, name: string) => {
+export const createTestUser = async (
+  email: string,
+  password: string,
+  name: string,
+) => {
   console.log("👤 Creating test user...");
 
   if (!isSupabaseConfigured) {
@@ -79,7 +89,7 @@ export const createTestUser = async (email: string, password: string, name: stri
       console.log("✅ User created:", data.user.id);
 
       // Wait for any triggers to complete
-      await new Promise(resolve => setTimeout(resolve, 3000));
+      await new Promise((resolve) => setTimeout(resolve, 3000));
 
       // Now that we're authenticated, check if profile exists
       const { data: profile, error: profileError } = await supabase
@@ -98,31 +108,31 @@ export const createTestUser = async (email: string, password: string, name: stri
             id: data.user.id,
             email: email,
             name: name,
-            bio: '',
-            preferences: {}
+            bio: "",
+            preferences: {},
           })
           .select()
           .single();
 
         if (insertError) {
           console.log("❌ Failed to create profile:", insertError.message);
-          console.log("ℹ️ This might be normal - the trigger should have created it");
+          console.log(
+            "ℹ️ This might be normal - the trigger should have created it",
+          );
         } else {
           console.log("✅ Profile created successfully:", newProfile.name);
         }
 
         // Also create user_stats
-        const { error: statsError } = await supabase
-          .from("user_stats")
-          .insert({
-            user_id: data.user.id,
-            level: 1,
-            points: 0,
-            current_streak: 0,
-            longest_streak: 0,
-            total_entries: 0,
-            total_words: 0
-          });
+        const { error: statsError } = await supabase.from("user_stats").insert({
+          user_id: data.user.id,
+          level: 1,
+          points: 0,
+          current_streak: 0,
+          longest_streak: 0,
+          total_entries: 0,
+          total_words: 0,
+        });
 
         if (statsError) {
           console.log("⚠️ Failed to create user stats:", statsError.message);
@@ -145,7 +155,9 @@ export const createTestUser = async (email: string, password: string, name: stri
         console.log("  - User ID:", data.user.id);
         console.log("  - Email:", finalProfile.email);
         console.log("  - Name:", finalProfile.name);
-        console.log("💡 You can now use the normal 'Create Account' button or try logging in!");
+        console.log(
+          "💡 You can now use the normal 'Create Account' button or try logging in!",
+        );
         return true;
       }
 
@@ -161,12 +173,12 @@ export const createTestUser = async (email: string, password: string, name: stri
 
 export const testLogin = async (email: string, password: string) => {
   console.log("🔑 Testing login...");
-  
+
   if (!isSupabaseConfigured) {
     console.log("❌ Cannot test login: Supabase not configured");
     return false;
   }
-  
+
   try {
     const { data, error } = await supabase.auth.signInWithPassword({
       email,
@@ -180,7 +192,7 @@ export const testLogin = async (email: string, password: string) => {
 
     if (data.user) {
       console.log("✅ Login successful:", data.user.email);
-      
+
       // Check profile
       const { data: profile, error: profileError } = await supabase
         .from("profiles")
@@ -193,10 +205,10 @@ export const testLogin = async (email: string, password: string) => {
       } else {
         console.log("✅ Profile loaded:", profile.name);
       }
-      
+
       return true;
     }
-    
+
     return false;
   } catch (err) {
     console.log("❌ Login test failed:", err);
@@ -206,7 +218,7 @@ export const testLogin = async (email: string, password: string) => {
 
 export const resetAuthCompletely = async () => {
   console.log("🧹 === COMPLETE AUTH RESET ===");
-  
+
   // 1. Sign out from Supabase
   try {
     await supabase.auth.signOut();
@@ -214,27 +226,27 @@ export const resetAuthCompletely = async () => {
   } catch (err) {
     console.log("⚠️ Supabase signout error:", err);
   }
-  
+
   // 2. Clear all localStorage
   [
-    'mindsync_current_user',
-    'mindsync_users',
-    'mindsync_user_stats',
-    'mindsync_mood_entries',
-    'mindsync_journal_entries',
-    'mindsync_chat_messages',
-    'mindsync_achievements',
-    'mindsync_daily_quests',
-    'mindsync_coping_sessions'
-  ].forEach(key => {
+    "mindsync_current_user",
+    "mindsync_users",
+    "mindsync_user_stats",
+    "mindsync_mood_entries",
+    "mindsync_journal_entries",
+    "mindsync_chat_messages",
+    "mindsync_achievements",
+    "mindsync_daily_quests",
+    "mindsync_coping_sessions",
+  ].forEach((key) => {
     localStorage.removeItem(key);
   });
   console.log("✅ localStorage cleared");
-  
+
   // 3. Clear session storage
   sessionStorage.clear();
   console.log("✅ sessionStorage cleared");
-  
+
   console.log("🧹 === RESET COMPLETE ===");
   console.log("💡 Please refresh the page and try registering again");
 };

@@ -24,8 +24,17 @@ import {
   Loader2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { clearAllAuthStates, forceCleanRegistration, checkAuthStates } from "@/utils/authReset";
-import { testSupabaseAuth, createTestUser, testLogin, resetAuthCompletely } from "@/utils/authTest";
+import {
+  clearAllAuthStates,
+  forceCleanRegistration,
+  checkAuthStates,
+} from "@/utils/authReset";
+import {
+  testSupabaseAuth,
+  createTestUser,
+  testLogin,
+  resetAuthCompletely,
+} from "@/utils/authTest";
 import { createUserAndProfile } from "@/utils/simpleAuth";
 
 type AuthMode = "login" | "register";
@@ -88,7 +97,10 @@ export default function Auth() {
       agreeToTerms: false,
       rememberMe: false,
     });
-    showNotification("All authentication states cleared. Try registering again.", "info");
+    showNotification(
+      "All authentication states cleared. Try registering again.",
+      "info",
+    );
   };
 
   const handleForceRegistration = async () => {
@@ -101,7 +113,7 @@ export default function Auth() {
     const result = await forceCleanRegistration(
       formData.name.trim(),
       formData.email.trim().toLowerCase(),
-      formData.password
+      formData.password,
     );
 
     if (result.success) {
@@ -506,7 +518,9 @@ export default function Auth() {
 
                 {/* Debug Panel - Remove after fixing auth issues */}
                 <div className="border-t pt-4">
-                  <p className="text-xs text-gray-500 mb-3">Authentication Troubleshooting</p>
+                  <p className="text-xs text-gray-500 mb-3">
+                    Authentication Troubleshooting
+                  </p>
                   <div className="flex flex-col space-y-2">
                     <Button
                       type="button"
@@ -535,19 +549,25 @@ export default function Auth() {
                             const result = await createUserAndProfile(
                               formData.name.trim(),
                               formData.email.trim().toLowerCase(),
-                              formData.password
+                              formData.password,
                             );
 
                             if (result.success) {
                               showNotification(result.message, "success");
                               // Navigate to dashboard
-                              const from = location.state?.from?.pathname || "/dashboard";
+                              const from =
+                                location.state?.from?.pathname || "/dashboard";
                               navigate(from, { replace: true });
                             } else {
                               setError(result.error);
                             }
                           }}
-                          disabled={isLoading || !formData.email || !formData.password || !formData.name}
+                          disabled={
+                            isLoading ||
+                            !formData.email ||
+                            !formData.password ||
+                            !formData.name
+                          }
                           className="text-xs bg-green-600 hover:bg-green-700 text-white"
                         >
                           ✨ Simple Registration
@@ -555,12 +575,19 @@ export default function Auth() {
                         <Button
                           type="button"
                           size="sm"
-                          onClick={() => createTestUser(
-                            formData.email.trim().toLowerCase(),
-                            formData.password,
-                            formData.name.trim()
-                          )}
-                          disabled={isLoading || !formData.email || !formData.password || !formData.name}
+                          onClick={() =>
+                            createTestUser(
+                              formData.email.trim().toLowerCase(),
+                              formData.password,
+                              formData.name.trim(),
+                            )
+                          }
+                          disabled={
+                            isLoading ||
+                            !formData.email ||
+                            !formData.password ||
+                            !formData.name
+                          }
                           className="text-xs bg-blue-600 hover:bg-blue-700 text-white"
                         >
                           🧪 Test Registration
@@ -571,18 +598,24 @@ export default function Auth() {
                       <Button
                         type="button"
                         size="sm"
-                        onClick={() => testLogin(
-                          formData.email.trim().toLowerCase(),
-                          formData.password
-                        )}
-                        disabled={isLoading || !formData.email || !formData.password}
+                        onClick={() =>
+                          testLogin(
+                            formData.email.trim().toLowerCase(),
+                            formData.password,
+                          )
+                        }
+                        disabled={
+                          isLoading || !formData.email || !formData.password
+                        }
                         className="text-xs bg-blue-600 hover:bg-blue-700 text-white"
                       >
                         Test Login
                       </Button>
                     )}
                   </div>
-                  <p className="text-xs text-gray-400 mt-2">Check console (F12) for detailed output</p>
+                  <p className="text-xs text-gray-400 mt-2">
+                    Check console (F12) for detailed output
+                  </p>
                 </div>
               </CardContent>
             </Card>
