@@ -511,32 +511,51 @@ export default function Auth() {
                       type="button"
                       variant="outline"
                       size="sm"
-                      onClick={() => checkAuthStates()}
-                      className="text-xs"
+                      onClick={() => testSupabaseAuth()}
+                      className="text-xs border-blue-200 text-blue-600 hover:bg-blue-50"
                     >
-                      Check Auth States (Console)
+                      Test Supabase Setup
                     </Button>
                     <Button
                       type="button"
                       variant="outline"
                       size="sm"
-                      onClick={handleAuthReset}
+                      onClick={() => resetAuthCompletely()}
                       className="text-xs border-red-200 text-red-600 hover:bg-red-50"
                     >
-                      Clear All Auth Data
+                      Complete Auth Reset
                     </Button>
                     {mode === "register" && (
                       <Button
                         type="button"
                         size="sm"
-                        onClick={handleForceRegistration}
-                        disabled={isLoading}
+                        onClick={() => createTestUser(
+                          formData.email.trim().toLowerCase(),
+                          formData.password,
+                          formData.name.trim()
+                        )}
+                        disabled={isLoading || !formData.email || !formData.password || !formData.name}
                         className="text-xs bg-green-600 hover:bg-green-700 text-white"
                       >
-                        Force Clean Registration
+                        Test Registration
+                      </Button>
+                    )}
+                    {mode === "login" && (
+                      <Button
+                        type="button"
+                        size="sm"
+                        onClick={() => testLogin(
+                          formData.email.trim().toLowerCase(),
+                          formData.password
+                        )}
+                        disabled={isLoading || !formData.email || !formData.password}
+                        className="text-xs bg-blue-600 hover:bg-blue-700 text-white"
+                      >
+                        Test Login
                       </Button>
                     )}
                   </div>
+                  <p className="text-xs text-gray-400 mt-2">Check console (F12) for detailed output</p>
                 </div>
               </CardContent>
             </Card>
