@@ -290,7 +290,26 @@ export function AuthProvider({ children }: AuthProviderProps) {
         }
 
         if (data.user) {
-          // Profile will be created automatically by the database trigger
+          console.log("✅ User created in Supabase:", data.user.id);
+
+          // Wait a moment for the trigger to create the profile
+          await new Promise(resolve => setTimeout(resolve, 1000));
+
+          // Fetch the created profile
+          let userProfile = await fetchUserProfile(data.user);
+
+          // If profile doesn't exist, create it manually
+          if (!userProfile) {
+            console.log("🔄 Creating profile manually...");
+            await createUserProfile(data.user);
+            userProfile = await fetchUserProfile(data.user);
+          }
+
+          if (userProfile) {
+            setUser(userProfile);
+            console.log("👤 User profile set:", userProfile);
+          }
+
           showNotification({
             type: "encouragement",
             title: "Welcome to MindSync! 🌟",
