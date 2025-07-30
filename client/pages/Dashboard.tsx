@@ -16,6 +16,7 @@ import { MoodInsights } from "@/components/MoodInsights";
 import { useMoodTheme } from "@/hooks/useMoodTheme";
 import { predictMood } from "@/utils/emotionAI";
 import { migrateLocalStorageToSupabase, checkDataSources } from "@/utils/dataMigration";
+import { diagnoseDynamicDataSync, forceSyncToSupabase, ensureSupabaseIsUsed } from "@/utils/dataSyncDiagnostic";
 import {
   BarChart3,
   TrendingUp,
