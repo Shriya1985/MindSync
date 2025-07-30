@@ -35,14 +35,14 @@ const queryClient = new QueryClient();
 const App = () => (
   <ErrorBoundary>
     <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <Toaster />
-      <Sonner />
-      <AuthProvider>
-        <DataContextErrorBoundary>
-          <DataProvider key="data-provider">
-          <ThemeProvider>
-            <BrowserRouter>
+      <TooltipProvider>
+        <Toaster />
+        <Sonner />
+        <AuthProvider>
+          <DataContextErrorBoundary>
+            <DataProvider>
+              <ThemeProvider>
+                <BrowserRouter>
               <NotificationSystem />
               <DatabaseSetupNotice />
               <ThemeStatus />
