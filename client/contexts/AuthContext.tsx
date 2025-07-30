@@ -74,28 +74,57 @@ export function AuthProvider({ children }: AuthProviderProps) {
   // Fetch user profile from Supabase
   const fetchUserProfile = async (supabaseUser: SupabaseUser) => {
     try {
-      const { data: profile, error } = await supabase
+      const { data: profiles, error } = await supabase
         .from("profiles")
         .select("*")
-        .eq("id", supabaseUser.id)
-        .single();
+        .eq("id", supabaseUser.id);
 
       if (error) {
         console.error("Error fetching profile:", error);
-        return null;
+        // Create a temporary profile from user metadata
+        return {
+          id: supabaseUser.id,
+          name: supabaseUser.user_metadata?.name || supabaseUser.email?.split('@')[0] || 'User',
+          email: supabaseUser.email!,
+          avatar: undefined,
+          bio: '',
+          preferences: {},
+        };
       }
 
-      return {
-        id: profile.id,
-        name: profile.name,
-        email: profile.email,
-        avatar: profile.avatar_url,
-        bio: profile.bio,
-        preferences: profile.preferences,
-      };
+      if (profiles && profiles.length > 0) {
+        const profile = profiles[0];
+        return {
+          id: profile.id,
+          name: profile.name,
+          email: profile.email,
+          avatar: profile.avatar_url,
+          bio: profile.bio,
+          preferences: profile.preferences,
+        };
+      } else {
+        // No profile found, create temporary one
+        console.log("No profile found, creating temporary profile from user data");
+        return {
+          id: supabaseUser.id,
+          name: supabaseUser.user_metadata?.name || supabaseUser.email?.split('@')[0] || 'User',
+          email: supabaseUser.email!,
+          avatar: undefined,
+          bio: '',
+          preferences: {},
+        };
+      }
     } catch (error) {
       console.error("Error in fetchUserProfile:", error);
-      return null;
+      // Create fallback profile
+      return {
+        id: supabaseUser.id,
+        name: supabaseUser.user_metadata?.name || supabaseUser.email?.split('@')[0] || 'User',
+        email: supabaseUser.email!,
+        avatar: undefined,
+        bio: '',
+        preferences: {},
+      };
     }
   };
 
@@ -347,7 +376,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
           showNotification({
             type: "encouragement",
-            title: "Welcome to MindSync! 🌟",
+            title: "Welcome to MindSync! ���",
             message: `Account created successfully for ${name}!`,
             duration: 4000,
           });
@@ -366,7 +395,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
           setUser(result.user);
           showNotification({
             type: "encouragement",
-            title: "Welcome to MindSync! 🌟",
+            title: "Welcome to MindSync! ����",
             message: `Account created successfully for ${name}! (Using local storage)`,
             duration: 4000,
           });
