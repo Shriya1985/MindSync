@@ -351,9 +351,10 @@ export function AuthProvider({ children }: AuthProviderProps) {
             message: `Account created successfully for ${name}!`,
             duration: 4000,
           });
-          return true;
+          return { success: true };
         }
       } else {
+        console.log("💾 Falling back to localStorage for registration");
         // Fallback to localStorage
         const result = await localStorageService.register(
           name,
@@ -369,7 +370,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
             message: `Account created successfully for ${name}! (Using local storage)`,
             duration: 4000,
           });
-          return true;
+          return { success: true };
         } else {
           showNotification({
             type: "encouragement",
@@ -377,19 +378,20 @@ export function AuthProvider({ children }: AuthProviderProps) {
             message: result.error || "Could not create account",
             duration: 3000,
           });
-          return false;
+          return { success: false, error: result.error || "Could not create account" };
         }
       }
 
-      return false;
+      return { success: false, error: "Unknown error" };
     } catch (error) {
+      console.error("Registration error:", error);
       showNotification({
         type: "encouragement",
         title: "Registration Error",
         message: "Something went wrong. Please try again.",
         duration: 3000,
       });
-      return false;
+      return { success: false, error: "Something went wrong. Please try again." };
     } finally {
       setIsLoading(false);
     }
