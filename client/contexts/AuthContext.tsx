@@ -231,6 +231,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
           console.log("🔄 Token refreshed, restoring user profile");
           const userProfile = await fetchUserProfile(session.user);
           setUser(userProfile);
+        } else {
+          console.log("🔍 Other auth event:", event, "Session:", !!session?.user, "Current user:", !!user);
         }
         setIsLoading(false);
       });
