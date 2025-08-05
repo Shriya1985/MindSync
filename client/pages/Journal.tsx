@@ -191,11 +191,18 @@ export default function Journal() {
 
     addJournalEntry(newEntry);
 
+    // Award points for journaling
+    const basePoints = 10;
+    const bonusPoints = wordCount >= 300 ? 5 : 0; // Bonus for longer entries
+    const totalPoints = basePoints + bonusPoints;
+
+    await addPoints(totalPoints, `Journal Entry: ${currentEntry.title}`, "journaling");
+
     // Show success notification
     showNotification({
       type: "encouragement",
       title: "Journal Entry Saved! 📖",
-      message: `Great work! You wrote ${wordCount} words and earned 10 points. Keep reflecting!`,
+      message: `Great work! You wrote ${wordCount} words and earned ${totalPoints} points. Keep reflecting!`,
       duration: 5000,
     });
 
