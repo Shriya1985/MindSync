@@ -52,7 +52,30 @@ export default function Auth() {
     motivationalTexts[Math.floor(Math.random() * motivationalTexts.length)],
   );
 
-  const { login, register, isAuthenticated } = useAuth();
+  let authState;
+
+  try {
+    authState = useAuth();
+  } catch (error) {
+    console.error("Auth context error in Auth component:", error);
+    // Return a minimal auth component without auth functionality
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-mint-50 via-white to-sky-50 flex items-center justify-center">
+        <Card className="w-full max-w-md mx-4">
+          <CardContent className="p-6 text-center">
+            <div className="text-red-600 mb-4">
+              Authentication system temporarily unavailable
+            </div>
+            <Button onClick={() => window.location.reload()}>
+              Reload Page
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  const { login, register, isAuthenticated } = authState;
   const navigate = useNavigate();
   const location = useLocation();
 
