@@ -2,7 +2,7 @@ import { createContext, useContext, useEffect, useState } from "react";
 import { supabase, isSupabaseConfigured } from "@/lib/supabase";
 import { localStorageService } from "@/lib/localStorage";
 import { showNotification } from "@/components/ui/notification-system";
-import { dataProtection, runDataIntegrityCheck } from "@/utils/dataProtection";
+import { dataProtection } from "@/utils/dataProtection";
 import type { User as SupabaseUser } from "@supabase/supabase-js";
 
 type User = {
