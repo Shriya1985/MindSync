@@ -299,7 +299,14 @@ export function DataProvider({ children }: DataProviderProps) {
       .order("date", { ascending: false });
 
     if (error) {
-      console.error("Error loading mood entries:", error);
+      console.error("Error loading mood entries:", {
+        code: error.code,
+        message: error.message,
+        details: error.details,
+        hint: error.hint,
+      });
+      // Set empty array as fallback
+      setMoodEntries([]);
       return;
     }
 
@@ -326,7 +333,14 @@ export function DataProvider({ children }: DataProviderProps) {
       .order("date", { ascending: false });
 
     if (error) {
-      console.error("Error loading journal entries:", error);
+      console.error("Error loading journal entries:", {
+        code: error.code,
+        message: error.message,
+        details: error.details,
+        hint: error.hint,
+      });
+      // Set empty array as fallback
+      setJournalEntries([]);
       return;
     }
 
@@ -423,7 +437,22 @@ export function DataProvider({ children }: DataProviderProps) {
       .single();
 
     if (error) {
-      console.error("Error loading user stats:", error);
+      console.error("Error loading user stats:", {
+        code: error.code,
+        message: error.message,
+        details: error.details,
+        hint: error.hint,
+      });
+      // Use default stats as fallback
+      setUserStats({
+        level: 1,
+        points: 0,
+        currentStreak: 0,
+        longestStreak: 0,
+        totalEntries: 0,
+        totalWords: 0,
+        lastActivity: new Date().toISOString(),
+      });
       return;
     }
 
@@ -452,7 +481,14 @@ export function DataProvider({ children }: DataProviderProps) {
       .order("created_at", { ascending: true });
 
     if (error) {
-      console.error("Error loading daily quests:", error);
+      console.error("Error loading daily quests:", {
+        code: error.code,
+        message: error.message,
+        details: error.details,
+        hint: error.hint,
+      });
+      // Set empty array as fallback
+      setDailyQuests([]);
       return;
     }
 
