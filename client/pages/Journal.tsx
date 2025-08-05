@@ -116,7 +116,7 @@ export default function Journal() {
   const [showAnalysis, setShowAnalysis] = useState<string | null>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
-  const { journalEntries, addJournalEntry, userStats, getStreakInfo } =
+  const { journalEntries, addJournalEntry, userStats, getStreakInfo, addPoints } =
     useData();
   const { currentTheme } = useMoodTheme();
 
