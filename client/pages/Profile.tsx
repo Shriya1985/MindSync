@@ -56,7 +56,14 @@ export default function Profile() {
   });
 
   const { user, updateProfile, logout } = useAuth();
-  const { userStats, moodEntries, journalEntries, achievements, pointActivities, isLoading } = useData();
+  const {
+    userStats,
+    moodEntries,
+    journalEntries,
+    achievements,
+    pointActivities,
+    isLoading,
+  } = useData();
 
   // Initialize form data with user info
   useEffect(() => {
@@ -198,11 +205,9 @@ export default function Profile() {
                   <p className="text-sm text-gray-600">{user?.email}</p>
                   <div className="flex items-center justify-center mt-3">
                     <Badge className="bg-mint-100 text-mint-700">
-                      {isLoading ? (
-                        "Loading..."
-                      ) : (
-                        `Level ${userStats.level} • ${userStats.points} points`
-                      )}
+                      {isLoading
+                        ? "Loading..."
+                        : `Level ${userStats.level} • ${userStats.points} points`}
                     </Badge>
                   </div>
                 </div>
@@ -592,17 +597,22 @@ export default function Profile() {
                               // Format time ago
                               const timeAgo = (() => {
                                 const now = new Date();
-                                const activityTime = new Date(activity.createdAt);
-                                const diffMs = now.getTime() - activityTime.getTime();
-                                const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
+                                const activityTime = new Date(
+                                  activity.createdAt,
+                                );
+                                const diffMs =
+                                  now.getTime() - activityTime.getTime();
+                                const diffHours = Math.floor(
+                                  diffMs / (1000 * 60 * 60),
+                                );
                                 const diffDays = Math.floor(diffHours / 24);
 
                                 if (diffDays > 0) {
-                                  return `${diffDays} day${diffDays > 1 ? 's' : ''} ago`;
+                                  return `${diffDays} day${diffDays > 1 ? "s" : ""} ago`;
                                 } else if (diffHours > 0) {
-                                  return `${diffHours} hour${diffHours > 1 ? 's' : ''} ago`;
+                                  return `${diffHours} hour${diffHours > 1 ? "s" : ""} ago`;
                                 } else {
-                                  return 'Just now';
+                                  return "Just now";
                                 }
                               })();
 
@@ -612,8 +622,12 @@ export default function Profile() {
                                   className={`flex items-center justify-between p-3 ${style.bgColor} rounded-lg border ${style.borderColor}`}
                                 >
                                   <div className="flex items-center space-x-3">
-                                    <div className={`w-8 h-8 ${style.iconBg} rounded-full flex items-center justify-center`}>
-                                      <IconComponent className={`w-4 h-4 ${style.iconColor}`} />
+                                    <div
+                                      className={`w-8 h-8 ${style.iconBg} rounded-full flex items-center justify-center`}
+                                    >
+                                      <IconComponent
+                                        className={`w-4 h-4 ${style.iconColor}`}
+                                      />
                                     </div>
                                     <div>
                                       <p className="font-medium text-gray-900">
@@ -624,7 +638,9 @@ export default function Profile() {
                                       </p>
                                     </div>
                                   </div>
-                                  <Badge className={`${style.badgeBg} ${style.badgeColor}`}>
+                                  <Badge
+                                    className={`${style.badgeBg} ${style.badgeColor}`}
+                                  >
                                     +{activity.points} XP
                                   </Badge>
                                 </div>
@@ -634,7 +650,10 @@ export default function Profile() {
                             <div className="text-center py-8 text-gray-500">
                               <Trophy className="w-12 h-12 mx-auto mb-3 text-gray-300" />
                               <p>No recent activities yet.</p>
-                              <p className="text-sm">Start journaling or logging moods to earn points!</p>
+                              <p className="text-sm">
+                                Start journaling or logging moods to earn
+                                points!
+                              </p>
                             </div>
                           )}
                         </div>

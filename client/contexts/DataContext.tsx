@@ -936,21 +936,22 @@ export function DataProvider({ children }: DataProviderProps) {
           .toISOString()
           .split("T")[0];
 
-        const todayMoodEntries = (Array.isArray(moodEntries) ? moodEntries : []).filter(
-          (entry) => entry.date === today,
-        );
-        const todayJournalEntries = (Array.isArray(journalEntries) ? journalEntries : []).filter(
-          (entry) => entry.date === today,
-        );
+        const todayMoodEntries = (
+          Array.isArray(moodEntries) ? moodEntries : []
+        ).filter((entry) => entry.date === today);
+        const todayJournalEntries = (
+          Array.isArray(journalEntries) ? journalEntries : []
+        ).filter((entry) => entry.date === today);
         const todayTotal = todayMoodEntries.length + todayJournalEntries.length;
 
-        const yesterdayMoodEntries = (Array.isArray(moodEntries) ? moodEntries : []).filter(
-          (entry) => entry.date === yesterday,
-        );
-        const yesterdayJournalEntries = (Array.isArray(journalEntries) ? journalEntries : []).filter(
-          (entry) => entry.date === yesterday,
-        );
-        const yesterdayTotal = yesterdayMoodEntries.length + yesterdayJournalEntries.length;
+        const yesterdayMoodEntries = (
+          Array.isArray(moodEntries) ? moodEntries : []
+        ).filter((entry) => entry.date === yesterday);
+        const yesterdayJournalEntries = (
+          Array.isArray(journalEntries) ? journalEntries : []
+        ).filter((entry) => entry.date === yesterday);
+        const yesterdayTotal =
+          yesterdayMoodEntries.length + yesterdayJournalEntries.length;
 
         let currentStreak = userStats.currentStreak || 0;
 
@@ -960,7 +961,10 @@ export function DataProvider({ children }: DataProviderProps) {
           currentStreak = yesterdayTotal > 0 ? currentStreak + 1 : 1;
         }
 
-        const longestStreak = Math.max(currentStreak, userStats.longestStreak || 0);
+        const longestStreak = Math.max(
+          currentStreak,
+          userStats.longestStreak || 0,
+        );
 
         const existingStats = localStorage.getItem("mindsync_user_stats");
         const stats = existingStats
