@@ -132,7 +132,7 @@ export default function Journal() {
     return matchesSearch;
   });
 
-  const handleSaveEntry = () => {
+  const handleSaveEntry = async () => {
     if (!currentEntry.title.trim() || !currentEntry.content.trim()) return;
 
     // Calculate word count
