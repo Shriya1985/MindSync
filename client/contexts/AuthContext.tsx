@@ -125,16 +125,36 @@ export function AuthProvider({ children }: AuthProviderProps) {
                 console.log("✅ User profile loaded:", userProfile.email);
                 setUser(userProfile);
               } else {
-                console.log("⚠️ Profile fetch failed, using basic user data");
-                // Use basic user data from session if profile fetch fails
-                setUser({
+                console.log("⚠️ Profile fetch failed, creating fallback profile...");
+
+                // Try to create a basic profile in database
+                const fallbackUser = {
                   id: session.user.id,
                   name: session.user.user_metadata?.name || session.user.email?.split('@')[0] || "User",
                   email: session.user.email || "",
                   avatar: session.user.user_metadata?.avatar_url,
                   bio: undefined,
                   preferences: {},
-                });
+                };
+
+                // Attempt to create profile (non-blocking)
+                supabase
+                  .from("profiles")
+                  .insert({
+                    id: session.user.id,
+                    email: session.user.email,
+                    name: fallbackUser.name,
+                    avatar_url: fallbackUser.avatar,
+                  })
+                  .then(({ error }) => {
+                    if (error) {
+                      console.log("ℹ️ Profile creation skipped:", error.message);
+                    } else {
+                      console.log("✅ Profile created successfully");
+                    }
+                  });
+
+                setUser(fallbackUser);
               }
             } catch (error) {
               console.error("❌ Profile fetch error, using fallback:", error);
