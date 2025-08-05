@@ -60,6 +60,8 @@ export function ProtectedRoute({ children }: ProtectedRouteProps) {
 
   // Redirect to auth page if not authenticated, preserving the intended destination
   if (!isAuthenticated) {
+    console.log("🚫 ProtectedRoute: Redirecting to auth - isAuthenticated:", isAuthenticated, "isLoading:", isLoading, "path:", location.pathname);
+    console.trace("Redirect stack trace:");
     return <Navigate to="/auth" state={{ from: location }} replace />;
   }
 
