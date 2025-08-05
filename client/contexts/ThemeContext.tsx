@@ -5,7 +5,7 @@ import {
   useState,
   ReactNode,
 } from "react";
-import { useData } from "@/contexts/DataContext";
+// Removed useData import to avoid circular dependency
 import { showNotification } from "@/components/ui/notification-system";
 
 export type GlobalTheme = {
@@ -211,7 +211,9 @@ export function ThemeProvider({ children }: ThemeProviderProps) {
   const [lastMoodProcessed, setLastMoodProcessed] = useState<string | null>(
     null,
   );
-  const { moodEntries } = useData();
+  // Note: moodEntries access removed to avoid circular dependency
+  // Theme will use default theme for now
+  const moodEntries: any[] = [];
 
   // Map moods to themes
   const moodToThemeMap: Record<string, string> = {
