@@ -513,9 +513,11 @@ export default function Resources() {
     const matchesSearch =
       resource.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
       resource.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (resource.tags && Array.isArray(resource.tags) && resource.tags.some((tag) =>
-        tag.toLowerCase().includes(searchTerm.toLowerCase()),
-      ));
+      (resource.tags &&
+        Array.isArray(resource.tags) &&
+        resource.tags.some((tag) =>
+          tag.toLowerCase().includes(searchTerm.toLowerCase()),
+        ));
 
     const matchesCategory =
       selectedCategory === "all" || resource.category === selectedCategory;
@@ -541,10 +543,14 @@ export default function Resources() {
     const moodLower = latestMood.mood.toLowerCase();
 
     // Find categories that match current mood
-    const relevantCategories = categories.filter((cat) =>
-      cat.emotions && Array.isArray(cat.emotions) && cat.emotions.some(
-        (emotion) => moodLower.includes(emotion) || emotion.includes(moodLower),
-      ),
+    const relevantCategories = categories.filter(
+      (cat) =>
+        cat.emotions &&
+        Array.isArray(cat.emotions) &&
+        cat.emotions.some(
+          (emotion) =>
+            moodLower.includes(emotion) || emotion.includes(moodLower),
+        ),
     );
 
     if (relevantCategories.length === 0) return [];
@@ -657,7 +663,9 @@ export default function Resources() {
                   <p className="text-gray-600">
                     Based on your recent mood entry:{" "}
                     <span className="font-semibold text-pink-600">
-                      {moodEntries && moodEntries.length > 0 ? moodEntries[moodEntries.length - 1]?.mood : "No mood logged"}
+                      {moodEntries && moodEntries.length > 0
+                        ? moodEntries[moodEntries.length - 1]?.mood
+                        : "No mood logged"}
                     </span>
                   </p>
                 </CardHeader>
