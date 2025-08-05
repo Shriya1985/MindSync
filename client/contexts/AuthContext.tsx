@@ -44,12 +44,12 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Fetch user profile from Supabase with timeout
+  // Fetch user profile from Supabase with quick timeout and fallback
   const fetchUserProfile = async (supabaseUser: SupabaseUser) => {
     try {
-      console.log("🔍 Fetching profile for user:", supabaseUser.id);
+      console.log("🔍 Attempting quick profile fetch for user:", supabaseUser.id);
 
-      // Add timeout to profile fetch
+      // Reduce timeout to 2 seconds for faster fallback
       const profilePromise = supabase
         .from("profiles")
         .select("*")
@@ -57,7 +57,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
         .single();
 
       const timeoutPromise = new Promise((_, reject) =>
-        setTimeout(() => reject(new Error("Profile fetch timeout")), 5000)
+        setTimeout(() => reject(new Error("Profile fetch timeout")), 2000)
       );
 
       const { data: profile, error } = await Promise.race([
@@ -66,38 +66,24 @@ export function AuthProvider({ children }: AuthProviderProps) {
       ]) as any;
 
       if (error) {
-        console.error("❌ Error fetching profile:", error);
-        // Return basic user info if profile fetch fails
-        return {
-          id: supabaseUser.id,
-          name: supabaseUser.user_metadata?.name || "User",
-          email: supabaseUser.email || "",
-          avatar: undefined,
-          bio: undefined,
-          preferences: {},
-        };
+        console.log("⚠️ Profile fetch failed:", error.message);
+        // Return null to trigger fallback in calling code
+        return null;
       }
 
       console.log("✅ Profile fetched successfully");
       return {
         id: profile.id,
-        name: profile.name,
-        email: profile.email,
+        name: profile.name || supabaseUser.user_metadata?.name || "User",
+        email: profile.email || supabaseUser.email || "",
         avatar: profile.avatar_url,
         bio: profile.bio,
-        preferences: profile.preferences,
+        preferences: profile.preferences || {},
       };
     } catch (error) {
-      console.error("❌ Error in fetchUserProfile:", error);
-      // Return basic user info as fallback
-      return {
-        id: supabaseUser.id,
-        name: supabaseUser.user_metadata?.name || "User",
-        email: supabaseUser.email || "",
-        avatar: undefined,
-        bio: undefined,
-        preferences: {},
-      };
+      console.log("⚠️ Profile fetch exception:", error.message);
+      // Return null to trigger fallback
+      return null;
     }
   };
 
@@ -131,13 +117,36 @@ export function AuthProvider({ children }: AuthProviderProps) {
           console.log("📋 Session check complete:", !!session?.user);
 
           if (session?.user) {
-            console.log("👤 User found, fetching profile...");
-            const userProfile = await fetchUserProfile(session.user);
-            if (userProfile) {
-              console.log("✅ User profile loaded:", userProfile.email);
-              setUser(userProfile);
-            } else {
-              console.warn("⚠️ Failed to fetch user profile");
+            console.log("👤 User found, attempting to fetch profile...");
+
+            try {
+              const userProfile = await fetchUserProfile(session.user);
+              if (userProfile) {
+                console.log("✅ User profile loaded:", userProfile.email);
+                setUser(userProfile);
+              } else {
+                console.log("⚠️ Profile fetch failed, using basic user data");
+                // Use basic user data from session if profile fetch fails
+                setUser({
+                  id: session.user.id,
+                  name: session.user.user_metadata?.name || session.user.email?.split('@')[0] || "User",
+                  email: session.user.email || "",
+                  avatar: session.user.user_metadata?.avatar_url,
+                  bio: undefined,
+                  preferences: {},
+                });
+              }
+            } catch (error) {
+              console.error("❌ Profile fetch error, using fallback:", error);
+              // Always set user even if profile fetch completely fails
+              setUser({
+                id: session.user.id,
+                name: session.user.user_metadata?.name || session.user.email?.split('@')[0] || "User",
+                email: session.user.email || "",
+                avatar: session.user.user_metadata?.avatar_url,
+                bio: undefined,
+                preferences: {},
+              });
             }
           } else {
             console.log("ℹ️ No active session found");
