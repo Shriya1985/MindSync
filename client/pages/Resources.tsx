@@ -513,9 +513,9 @@ export default function Resources() {
     const matchesSearch =
       resource.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
       resource.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      resource.tags.some((tag) =>
+      (resource.tags && Array.isArray(resource.tags) && resource.tags.some((tag) =>
         tag.toLowerCase().includes(searchTerm.toLowerCase()),
-      );
+      ));
 
     const matchesCategory =
       selectedCategory === "all" || resource.category === selectedCategory;
