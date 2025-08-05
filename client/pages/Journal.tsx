@@ -116,8 +116,13 @@ export default function Journal() {
   const [showAnalysis, setShowAnalysis] = useState<string | null>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
-  const { journalEntries, addJournalEntry, userStats, getStreakInfo, addPoints } =
-    useData();
+  const {
+    journalEntries,
+    addJournalEntry,
+    userStats,
+    getStreakInfo,
+    addPoints,
+  } = useData();
   const { currentTheme } = useMoodTheme();
 
   const filteredEntries = (
@@ -196,7 +201,11 @@ export default function Journal() {
     const bonusPoints = wordCount >= 300 ? 5 : 0; // Bonus for longer entries
     const totalPoints = basePoints + bonusPoints;
 
-    await addPoints(totalPoints, `Journal Entry: ${currentEntry.title}`, "journaling");
+    await addPoints(
+      totalPoints,
+      `Journal Entry: ${currentEntry.title}`,
+      "journaling",
+    );
 
     // Show success notification
     showNotification({

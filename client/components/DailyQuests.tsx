@@ -21,8 +21,14 @@ import { cn } from "@/lib/utils";
 export function DailyQuests() {
   const [quests, setQuests] = useState<DailyQuest[]>([]);
   const [completedToday, setCompletedToday] = useState<string[]>([]);
-  const { journalEntries, moodEntries, chatMessages, userStats, addPoints, completeDailyQuest } =
-    useData();
+  const {
+    journalEntries,
+    moodEntries,
+    chatMessages,
+    userStats,
+    addPoints,
+    completeDailyQuest,
+  } = useData();
 
   // Load completed quests from localStorage
   useEffect(() => {

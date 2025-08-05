@@ -694,7 +694,11 @@ export default function Resources() {
                               size="sm"
                               onClick={async () => {
                                 window.open(resource.url, "_blank");
-                                await addPoints(5, `Explored Resource: ${resource.title}`, "resources");
+                                await addPoints(
+                                  5,
+                                  `Explored Resource: ${resource.title}`,
+                                  "resources",
+                                );
                               }}
                               className="bg-pink-500 hover:bg-pink-600 text-white text-xs px-3 py-1"
                             >
