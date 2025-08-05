@@ -2,6 +2,7 @@ import { createContext, useContext, useEffect, useState } from "react";
 import { supabase, isSupabaseConfigured } from "@/lib/supabase";
 import { localStorageService } from "@/lib/localStorage";
 import { showNotification } from "@/components/ui/notification-system";
+import { dataProtection, runDataIntegrityCheck } from "@/utils/dataProtection";
 import type { User as SupabaseUser } from "@supabase/supabase-js";
 
 type User = {
@@ -142,11 +143,9 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
           // Provide more helpful error messages
           if (error.message.includes("email not confirmed")) {
-            errorMessage =
-              "Please check your email and click the confirmation link, or contact support.";
+            errorMessage = "Please check your email and click the confirmation link, or contact support.";
           } else if (error.message.includes("Invalid login credentials")) {
-            errorMessage =
-              "Invalid email or password. Please check your credentials.";
+            errorMessage = "Invalid email or password. Please check your credentials.";
           }
 
           showNotification({
@@ -162,10 +161,27 @@ export function AuthProvider({ children }: AuthProviderProps) {
           const userProfile = await fetchUserProfile(data.user);
           setUser(userProfile);
 
+          // Initialize data protection for this user
+          dataProtection.setCurrentUser(data.user.id);
+          await dataProtection.ensureUserStats(data.user.id);
+
+          // Run critical data integrity checks
+          const checks = await dataProtection.performCriticalChecks(data.user.id);
+
+          if (!checks.rlsWorking) {
+            console.error("🚨 CRITICAL: Row Level Security not working!");
+            showNotification({
+              type: "encouragement",
+              title: "Security Warning",
+              message: "Data isolation issue detected. Please contact support.",
+              duration: 10000,
+            });
+          }
+
           showNotification({
             type: "encouragement",
             title: "Welcome back! 🎉",
-            message: `Good to see you again, ${userProfile?.name || "there"}!`,
+            message: `Good to see you again, ${userProfile?.name || "there"}! Your data is secure.`,
             duration: 3000,
           });
           return true;
@@ -240,11 +256,15 @@ export function AuthProvider({ children }: AuthProviderProps) {
         }
 
         if (data.user) {
+          // Initialize data protection for new user
+          dataProtection.setCurrentUser(data.user.id);
+          await dataProtection.ensureUserStats(data.user.id);
+
           // Profile will be created automatically by the database trigger
           showNotification({
             type: "encouragement",
             title: "Welcome to MindSync! 🌟",
-            message: `Account created successfully for ${name}!`,
+            message: `Account created successfully for ${name}! Your secure data space is ready.`,
             duration: 4000,
           });
           return true;
