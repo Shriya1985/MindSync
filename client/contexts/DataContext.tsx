@@ -863,6 +863,8 @@ export function DataProvider({ children }: DataProviderProps) {
   ) => {
     if (!user) return;
 
+    console.log(`🎯 Adding ${points} points for: ${activity} (${source})`);
+
     if (isSupabaseConfigured) {
       const { error } = await supabase.from("point_activities").insert({
         user_id: user.id,
@@ -872,13 +874,22 @@ export function DataProvider({ children }: DataProviderProps) {
       });
 
       if (error) {
-        console.error("Error adding points:", error);
+        console.error("❌ Error adding points:", {
+          code: error.code,
+          message: error.message,
+          details: error.details,
+        });
         return;
       }
 
-      // Reload user stats to get updated points and level
-      await loadUserStats();
-      await loadPointActivities();
+      console.log("✅ Points added successfully, reloading stats...");
+
+      // Wait a moment for trigger to execute, then reload
+      setTimeout(async () => {
+        await loadUserStats();
+        await loadPointActivities();
+        console.log("📊 Stats reloaded after points addition");
+      }, 500);
     } else {
       // Use localStorage fallback
       await localStorageService.addPoints(points, activity);
