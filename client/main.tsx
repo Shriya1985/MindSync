@@ -108,4 +108,15 @@ const App = () => (
   </QueryClientProvider>
 );
 
-createRoot(document.getElementById("root")!).render(<App />);
+// Safe root initialization to prevent double mounting in development
+const container = document.getElementById("root")!;
+
+// Check if root already exists (for hot module reloading)
+if (!container._reactRoot) {
+  const root = createRoot(container);
+  container._reactRoot = root;
+  root.render(<App />);
+} else {
+  // Use existing root for hot reloading
+  container._reactRoot.render(<App />);
+}
