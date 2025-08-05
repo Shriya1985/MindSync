@@ -507,7 +507,7 @@ export default function Resources() {
     [],
   );
   const { currentTheme } = useMoodTheme();
-  const { moodEntries } = useData();
+  const { moodEntries, addPoints } = useData();
 
   const filteredResources = resources.filter((resource) => {
     const matchesSearch =
@@ -692,9 +692,10 @@ export default function Resources() {
                             </Badge>
                             <Button
                               size="sm"
-                              onClick={() =>
-                                window.open(resource.url, "_blank")
-                              }
+                              onClick={async () => {
+                                window.open(resource.url, "_blank");
+                                await addPoints(5, `Explored Resource: ${resource.title}`, "resources");
+                              }}
                               className="bg-pink-500 hover:bg-pink-600 text-white text-xs px-3 py-1"
                             >
                               View
