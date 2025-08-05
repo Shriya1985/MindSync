@@ -9,7 +9,17 @@ type ProtectedRouteProps = {
 };
 
 export function ProtectedRoute({ children }: ProtectedRouteProps) {
-  const { isAuthenticated, isLoading } = useAuth();
+  let authState;
+
+  try {
+    authState = useAuth();
+  } catch (error) {
+    console.error("Auth context error in ProtectedRoute:", error);
+    // Fallback to redirect to auth page if context fails
+    return <Navigate to="/auth" replace />;
+  }
+
+  const { isAuthenticated, isLoading } = authState;
   const location = useLocation();
 
   // Emergency bypass for stuck loading after 15 seconds

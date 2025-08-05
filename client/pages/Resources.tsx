@@ -542,7 +542,7 @@ export default function Resources() {
 
     // Find categories that match current mood
     const relevantCategories = categories.filter((cat) =>
-      cat.emotions.some(
+      cat.emotions && Array.isArray(cat.emotions) && cat.emotions.some(
         (emotion) => moodLower.includes(emotion) || emotion.includes(moodLower),
       ),
     );
@@ -657,7 +657,7 @@ export default function Resources() {
                   <p className="text-gray-600">
                     Based on your recent mood entry:{" "}
                     <span className="font-semibold text-pink-600">
-                      {moodEntries[moodEntries.length - 1]?.mood}
+                      {moodEntries && moodEntries.length > 0 ? moodEntries[moodEntries.length - 1]?.mood : "No mood logged"}
                     </span>
                   </p>
                 </CardHeader>
