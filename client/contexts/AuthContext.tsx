@@ -318,12 +318,16 @@ export function AuthProvider({ children }: AuthProviderProps) {
       } else {
         localStorageService.logout();
       }
+
+      // Clear data protection
+      dataProtection.clearCurrentUser();
       setUser(null);
+
       showNotification({
         type: "encouragement",
-        title: "See you soon! 👋",
-        message: "You've been logged out successfully.",
-        duration: 2000,
+        title: "Logged out securely 🛡️",
+        message: "Your data is safe. See you next time!",
+        duration: 3000,
       });
     } catch (error) {
       console.error("Error during logout:", error);
