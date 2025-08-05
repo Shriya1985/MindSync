@@ -353,7 +353,14 @@ export function DataProvider({ children }: DataProviderProps) {
       .order("created_at", { ascending: true });
 
     if (error) {
-      console.error("Error loading chat messages:", error);
+      console.error("Error loading chat messages:", {
+        code: error.code,
+        message: error.message,
+        details: error.details,
+        hint: error.hint,
+      });
+      // Set empty array as fallback
+      setChatMessages([]);
       return;
     }
 
@@ -380,7 +387,14 @@ export function DataProvider({ children }: DataProviderProps) {
       .order("earned_at", { ascending: false });
 
     if (error) {
-      console.error("Error loading achievements:", error);
+      console.error("Error loading achievements:", {
+        code: error.code,
+        message: error.message,
+        details: error.details,
+        hint: error.hint,
+      });
+      // Set empty array as fallback
+      setAchievements([]);
       return;
     }
 
@@ -469,7 +483,14 @@ export function DataProvider({ children }: DataProviderProps) {
       .limit(50); // Load recent activities
 
     if (error) {
-      console.error("Error loading point activities:", error);
+      console.error("Error loading point activities:", {
+        code: error.code,
+        message: error.message,
+        details: error.details,
+        hint: error.hint,
+      });
+      // Set empty array as fallback
+      setPointActivities([]);
       return;
     }
 
