@@ -654,6 +654,15 @@ export default function Dashboard() {
             </Card>
           </div>
         </div>
+
+        {/* Data Verification Panel */}
+        <div className="mt-12">
+          <h2 className="text-2xl font-bold text-gray-900 mb-6 flex items-center">
+            <Brain className="w-6 h-6 mr-2 text-mint-500" />
+            Data Synchronization Monitor
+          </h2>
+          <DataVerificationPanel />
+        </div>
       </div>
 
       <Footer />
