@@ -217,11 +217,20 @@ export function AuthProvider({ children }: AuthProviderProps) {
       const {
         data: { subscription },
       } = supabase.auth.onAuthStateChange(async (event, session) => {
+        console.log("🔄 Auth state change:", event, !!session?.user);
+
+        // Only handle actual sign in/out events, not session refresh
         if (event === "SIGNED_IN" && session?.user) {
+          console.log("✅ User signed in, updating profile");
           const userProfile = await fetchUserProfile(session.user);
           setUser(userProfile);
         } else if (event === "SIGNED_OUT") {
+          console.log("👋 User signed out, clearing user state");
           setUser(null);
+        } else if (event === "TOKEN_REFRESHED" && session?.user && !user) {
+          console.log("🔄 Token refreshed, restoring user profile");
+          const userProfile = await fetchUserProfile(session.user);
+          setUser(userProfile);
         }
         setIsLoading(false);
       });

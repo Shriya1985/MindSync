@@ -56,7 +56,7 @@ export default function Profile() {
   });
 
   const { user, updateProfile, logout } = useAuth();
-  const { userStats, moodEntries, journalEntries, achievements } = useData();
+  const { userStats, moodEntries, journalEntries, achievements, isLoading } = useData();
 
   // Initialize form data with user info
   useEffect(() => {
@@ -198,7 +198,11 @@ export default function Profile() {
                   <p className="text-sm text-gray-600">{user?.email}</p>
                   <div className="flex items-center justify-center mt-3">
                     <Badge className="bg-mint-100 text-mint-700">
-                      Level {userStats.level} • {userStats.points} points
+                      {isLoading ? (
+                        "Loading..."
+                      ) : (
+                        `Level ${userStats.level} • ${userStats.points} points`
+                      )}
                     </Badge>
                   </div>
                 </div>
@@ -241,7 +245,7 @@ export default function Profile() {
                       <span className="text-sm text-gray-600">Entries</span>
                     </div>
                     <span className="font-semibold">
-                      {userStats.totalEntries}
+                      {isLoading ? "..." : userStats.totalEntries}
                     </span>
                   </div>
                   <div className="flex items-center justify-between">
@@ -250,7 +254,7 @@ export default function Profile() {
                       <span className="text-sm text-gray-600">Words</span>
                     </div>
                     <span className="font-semibold">
-                      {userStats.totalWords}
+                      {isLoading ? "..." : userStats.totalWords}
                     </span>
                   </div>
                   <div className="flex items-center justify-between">
@@ -259,7 +263,7 @@ export default function Profile() {
                       <span className="text-sm text-gray-600">Streak</span>
                     </div>
                     <span className="font-semibold">
-                      {userStats.currentStreak}
+                      {isLoading ? "..." : userStats.currentStreak} days
                     </span>
                   </div>
                   <div className="flex items-center justify-between">

@@ -919,42 +919,49 @@ export function DataProvider({ children }: DataProviderProps) {
   const updateStreak = async () => {
     if (!user) return;
 
-    // Calculate streak based on recent mood/journal entries
-    const today = new Date().toISOString().split("T")[0];
-    const yesterday = new Date(Date.now() - 86400000)
-      .toISOString()
-      .split("T")[0];
-
-    const todayEntries = (Array.isArray(moodEntries) ? moodEntries : []).filter(
-      (entry) => entry.date === today,
-    );
-    const yesterdayEntries = (
-      Array.isArray(moodEntries) ? moodEntries : []
-    ).filter((entry) => entry.date === yesterday);
-
-    const currentStreak =
-      todayEntries.length > 0 ? (userStats.currentStreak || 0) + 1 : 0;
-    const longestStreak = Math.max(currentStreak, userStats.longestStreak || 0);
+    console.log("🔥 Updating streak for user:", user.id);
 
     if (isSupabaseConfigured) {
-      // Database mode
-      const { error } = await supabase
-        .from("user_stats")
-        .update({
-          current_streak: currentStreak,
-          longest_streak: longestStreak,
-          last_activity: new Date().toISOString(),
-        })
-        .eq("user_id", user.id);
-
-      if (error) {
-        console.error("Error updating streak:", error.message || error);
-        showNotification("Failed to update streak", "error");
-        return;
-      }
+      // Streak calculation is now handled by database triggers
+      // Just reload the stats to get the updated values
+      console.log("📊 Reloading user stats after streak update");
+      setTimeout(async () => {
+        await loadUserStats();
+      }, 500);
     } else {
-      // localStorage mode
+      // localStorage mode - manual calculation
       try {
+        const today = new Date().toISOString().split("T")[0];
+        const yesterday = new Date(Date.now() - 86400000)
+          .toISOString()
+          .split("T")[0];
+
+        const todayMoodEntries = (Array.isArray(moodEntries) ? moodEntries : []).filter(
+          (entry) => entry.date === today,
+        );
+        const todayJournalEntries = (Array.isArray(journalEntries) ? journalEntries : []).filter(
+          (entry) => entry.date === today,
+        );
+        const todayTotal = todayMoodEntries.length + todayJournalEntries.length;
+
+        const yesterdayMoodEntries = (Array.isArray(moodEntries) ? moodEntries : []).filter(
+          (entry) => entry.date === yesterday,
+        );
+        const yesterdayJournalEntries = (Array.isArray(journalEntries) ? journalEntries : []).filter(
+          (entry) => entry.date === yesterday,
+        );
+        const yesterdayTotal = yesterdayMoodEntries.length + yesterdayJournalEntries.length;
+
+        let currentStreak = userStats.currentStreak || 0;
+
+        // If this is the first activity today
+        if (todayTotal === 1) {
+          // If had activity yesterday, continue streak, otherwise start new
+          currentStreak = yesterdayTotal > 0 ? currentStreak + 1 : 1;
+        }
+
+        const longestStreak = Math.max(currentStreak, userStats.longestStreak || 0);
+
         const existingStats = localStorage.getItem("mindsync_user_stats");
         const stats = existingStats
           ? JSON.parse(existingStats)
@@ -973,17 +980,19 @@ export function DataProvider({ children }: DataProviderProps) {
         stats.lastActivity = new Date().toISOString();
 
         localStorage.setItem("mindsync_user_stats", JSON.stringify(stats));
+
+        setUserStats((prev) => ({
+          ...prev,
+          currentStreak,
+          longestStreak,
+          lastActivity: new Date().toISOString(),
+        }));
+
+        console.log("✅ Streak updated in localStorage:", currentStreak);
       } catch (error) {
         console.error("Error updating streak in localStorage:", error);
       }
     }
-
-    setUserStats((prev) => ({
-      ...prev,
-      currentStreak,
-      longestStreak,
-      lastActivity: new Date().toISOString(),
-    }));
   };
 
   // Quest functions
