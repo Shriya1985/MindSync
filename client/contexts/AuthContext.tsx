@@ -24,7 +24,9 @@ type AuthContextType = {
   updateProfile: (data: Partial<User>) => Promise<boolean>;
 };
 
-export const AuthContext = createContext<AuthContextType | undefined>(undefined);
+export const AuthContext = createContext<AuthContextType | undefined>(
+  undefined,
+);
 
 export function useAuth() {
   const context = useContext(AuthContext);
