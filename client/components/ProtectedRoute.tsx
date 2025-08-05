@@ -18,7 +18,9 @@ export function ProtectedRoute({ children }: ProtectedRouteProps) {
   useEffect(() => {
     if (isLoading) {
       const timer = setTimeout(() => {
-        console.warn("🚨 Emergency bypass: Auth loading took too long, redirecting to auth page");
+        console.warn(
+          "🚨 Emergency bypass: Auth loading took too long, redirecting to auth page",
+        );
         setEmergencyBypass(true);
       }, 15000); // 15 second emergency bypass
 

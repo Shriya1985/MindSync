@@ -47,7 +47,10 @@ export function AuthProvider({ children }: AuthProviderProps) {
   // Fetch user profile from Supabase with quick timeout and fallback
   const fetchUserProfile = async (supabaseUser: SupabaseUser) => {
     try {
-      console.log("🔍 Attempting quick profile fetch for user:", supabaseUser.id);
+      console.log(
+        "🔍 Attempting quick profile fetch for user:",
+        supabaseUser.id,
+      );
 
       // Reduce timeout to 2 seconds for faster fallback
       const profilePromise = supabase
@@ -57,13 +60,13 @@ export function AuthProvider({ children }: AuthProviderProps) {
         .single();
 
       const timeoutPromise = new Promise((_, reject) =>
-        setTimeout(() => reject(new Error("Profile fetch timeout")), 2000)
+        setTimeout(() => reject(new Error("Profile fetch timeout")), 2000),
       );
 
-      const { data: profile, error } = await Promise.race([
+      const { data: profile, error } = (await Promise.race([
         profilePromise,
         timeoutPromise,
-      ]) as any;
+      ])) as any;
 
       if (error) {
         console.log("⚠️ Profile fetch failed:", error.message);
@@ -93,7 +96,9 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
       // Add timeout to prevent infinite loading
       const timeoutId = setTimeout(() => {
-        console.warn("⚠️ Auth initialization timeout, setting loading to false");
+        console.warn(
+          "⚠️ Auth initialization timeout, setting loading to false",
+        );
         setIsLoading(false);
       }, 10000); // 10 second timeout
 
@@ -125,12 +130,17 @@ export function AuthProvider({ children }: AuthProviderProps) {
                 console.log("✅ User profile loaded:", userProfile.email);
                 setUser(userProfile);
               } else {
-                console.log("⚠️ Profile fetch failed, creating fallback profile...");
+                console.log(
+                  "⚠️ Profile fetch failed, creating fallback profile...",
+                );
 
                 // Try to create a basic profile in database
                 const fallbackUser = {
                   id: session.user.id,
-                  name: session.user.user_metadata?.name || session.user.email?.split('@')[0] || "User",
+                  name:
+                    session.user.user_metadata?.name ||
+                    session.user.email?.split("@")[0] ||
+                    "User",
                   email: session.user.email || "",
                   avatar: session.user.user_metadata?.avatar_url,
                   bio: undefined,
@@ -148,7 +158,10 @@ export function AuthProvider({ children }: AuthProviderProps) {
                   })
                   .then(({ error }) => {
                     if (error) {
-                      console.log("ℹ️ Profile creation skipped:", error.message);
+                      console.log(
+                        "ℹ️ Profile creation skipped:",
+                        error.message,
+                      );
                     } else {
                       console.log("✅ Profile created successfully");
                     }
@@ -161,7 +174,10 @@ export function AuthProvider({ children }: AuthProviderProps) {
               // Always set user even if profile fetch completely fails
               setUser({
                 id: session.user.id,
-                name: session.user.user_metadata?.name || session.user.email?.split('@')[0] || "User",
+                name:
+                  session.user.user_metadata?.name ||
+                  session.user.email?.split("@")[0] ||
+                  "User",
                 email: session.user.email || "",
                 avatar: session.user.user_metadata?.avatar_url,
                 bio: undefined,
@@ -187,7 +203,9 @@ export function AuthProvider({ children }: AuthProviderProps) {
         console.error("❌ Error initializing auth:", error);
       } finally {
         clearTimeout(timeoutId);
-        console.log("🏁 Auth initialization complete, setting loading to false");
+        console.log(
+          "🏁 Auth initialization complete, setting loading to false",
+        );
         setIsLoading(false);
       }
     };

@@ -25,7 +25,7 @@ export class ErrorBoundary extends Component<Props, State> {
 
   public componentDidCatch(error: Error, errorInfo: ErrorInfo) {
     console.error("ErrorBoundary caught an error:", error, errorInfo);
-    
+
     this.setState({
       error,
       errorInfo,
@@ -57,10 +57,10 @@ export class ErrorBoundary extends Component<Props, State> {
             </CardHeader>
             <CardContent className="space-y-4">
               <p className="text-gray-600 text-center">
-                We encountered an unexpected error. Don't worry, your data is safe.
-                Please try refreshing the page or return to the homepage.
+                We encountered an unexpected error. Don't worry, your data is
+                safe. Please try refreshing the page or return to the homepage.
               </p>
-              
+
               {process.env.NODE_ENV === "development" && this.state.error && (
                 <details className="mt-4 p-3 bg-red-50 rounded-lg border border-red-200">
                   <summary className="cursor-pointer font-medium text-red-800 mb-2">
