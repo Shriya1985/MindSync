@@ -44,20 +44,41 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Fetch user profile from Supabase
+  // Fetch user profile from Supabase with timeout
   const fetchUserProfile = async (supabaseUser: SupabaseUser) => {
     try {
-      const { data: profile, error } = await supabase
+      console.log("🔍 Fetching profile for user:", supabaseUser.id);
+
+      // Add timeout to profile fetch
+      const profilePromise = supabase
         .from("profiles")
         .select("*")
         .eq("id", supabaseUser.id)
         .single();
 
+      const timeoutPromise = new Promise((_, reject) =>
+        setTimeout(() => reject(new Error("Profile fetch timeout")), 5000)
+      );
+
+      const { data: profile, error } = await Promise.race([
+        profilePromise,
+        timeoutPromise,
+      ]) as any;
+
       if (error) {
-        console.error("Error fetching profile:", error);
-        return null;
+        console.error("❌ Error fetching profile:", error);
+        // Return basic user info if profile fetch fails
+        return {
+          id: supabaseUser.id,
+          name: supabaseUser.user_metadata?.name || "User",
+          email: supabaseUser.email || "",
+          avatar: undefined,
+          bio: undefined,
+          preferences: {},
+        };
       }
 
+      console.log("✅ Profile fetched successfully");
       return {
         id: profile.id,
         name: profile.name,
@@ -67,15 +88,33 @@ export function AuthProvider({ children }: AuthProviderProps) {
         preferences: profile.preferences,
       };
     } catch (error) {
-      console.error("Error in fetchUserProfile:", error);
-      return null;
+      console.error("❌ Error in fetchUserProfile:", error);
+      // Return basic user info as fallback
+      return {
+        id: supabaseUser.id,
+        name: supabaseUser.user_metadata?.name || "User",
+        email: supabaseUser.email || "",
+        avatar: undefined,
+        bio: undefined,
+        preferences: {},
+      };
     }
   };
 
   useEffect(() => {
     const initializeAuth = async () => {
+      console.log("🔄 Initializing authentication...");
+
+      // Add timeout to prevent infinite loading
+      const timeoutId = setTimeout(() => {
+        console.warn("⚠️ Auth initialization timeout, setting loading to false");
+        setIsLoading(false);
+      }, 10000); // 10 second timeout
+
       try {
         if (isSupabaseConfigured) {
+          console.log("🔧 Using Supabase authentication");
+
           // Use Supabase authentication
           const {
             data: { session },
@@ -83,25 +122,43 @@ export function AuthProvider({ children }: AuthProviderProps) {
           } = await supabase.auth.getSession();
 
           if (error) {
-            console.error("Error getting session:", error);
+            console.error("❌ Error getting session:", error);
+            clearTimeout(timeoutId);
             setIsLoading(false);
             return;
           }
 
+          console.log("📋 Session check complete:", !!session?.user);
+
           if (session?.user) {
+            console.log("👤 User found, fetching profile...");
             const userProfile = await fetchUserProfile(session.user);
-            setUser(userProfile);
+            if (userProfile) {
+              console.log("✅ User profile loaded:", userProfile.email);
+              setUser(userProfile);
+            } else {
+              console.warn("⚠️ Failed to fetch user profile");
+            }
+          } else {
+            console.log("ℹ️ No active session found");
           }
         } else {
+          console.log("💾 Using localStorage fallback");
+
           // Fallback to localStorage
           const currentUser = localStorageService.getCurrentUser();
           if (currentUser) {
+            console.log("✅ LocalStorage user found:", currentUser.email);
             setUser(currentUser);
+          } else {
+            console.log("ℹ️ No localStorage user found");
           }
         }
       } catch (error) {
-        console.error("Error initializing auth:", error);
+        console.error("❌ Error initializing auth:", error);
       } finally {
+        clearTimeout(timeoutId);
+        console.log("🏁 Auth initialization complete, setting loading to false");
         setIsLoading(false);
       }
     };
