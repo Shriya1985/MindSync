@@ -56,7 +56,7 @@ export default function Profile() {
   });
 
   const { user, updateProfile, logout } = useAuth();
-  const { userStats, moodEntries, journalEntries, achievements, isLoading } = useData();
+  const { userStats, moodEntries, journalEntries, achievements, pointActivities, isLoading } = useData();
 
   // Initialize form data with user info
   useEffect(() => {
@@ -522,82 +522,121 @@ export default function Profile() {
                       </CardHeader>
                       <CardContent>
                         <div className="space-y-4">
-                          {/* Mock recent activities - in real app would come from data */}
-                          <div className="flex items-center justify-between p-3 bg-green-50 rounded-lg border border-green-200">
-                            <div className="flex items-center space-x-3">
-                              <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
-                                <Edit3 className="w-4 h-4 text-green-600" />
-                              </div>
-                              <div>
-                                <p className="font-medium text-gray-900">
-                                  Journal Entry Completed
-                                </p>
-                                <p className="text-sm text-gray-600">
-                                  2 hours ago
-                                </p>
-                              </div>
+                          {isLoading ? (
+                            <div className="text-center py-8 text-gray-500">
+                              Loading activities...
                             </div>
-                            <Badge className="bg-green-100 text-green-700">
-                              +20 XP
-                            </Badge>
-                          </div>
+                          ) : pointActivities && pointActivities.length > 0 ? (
+                            pointActivities.slice(0, 5).map((activity) => {
+                              // Determine icon and colors based on source
+                              const getActivityStyle = (source: string) => {
+                                switch (source) {
+                                  case "journaling":
+                                    return {
+                                      bgColor: "bg-green-50",
+                                      borderColor: "border-green-200",
+                                      iconBg: "bg-green-100",
+                                      iconColor: "text-green-600",
+                                      badgeBg: "bg-green-100",
+                                      badgeColor: "text-green-700",
+                                      icon: Edit3,
+                                    };
+                                  case "mood":
+                                    return {
+                                      bgColor: "bg-blue-50",
+                                      borderColor: "border-blue-200",
+                                      iconBg: "bg-blue-100",
+                                      iconColor: "text-blue-600",
+                                      badgeBg: "bg-blue-100",
+                                      badgeColor: "text-blue-700",
+                                      icon: Heart,
+                                    };
+                                  case "techniques":
+                                  case "coping":
+                                    return {
+                                      bgColor: "bg-purple-50",
+                                      borderColor: "border-purple-200",
+                                      iconBg: "bg-purple-100",
+                                      iconColor: "text-purple-600",
+                                      badgeBg: "bg-purple-100",
+                                      badgeColor: "text-purple-700",
+                                      icon: Brain,
+                                    };
+                                  case "quests":
+                                  case "achievements":
+                                    return {
+                                      bgColor: "bg-yellow-50",
+                                      borderColor: "border-yellow-200",
+                                      iconBg: "bg-yellow-100",
+                                      iconColor: "text-yellow-600",
+                                      badgeBg: "bg-yellow-100",
+                                      badgeColor: "text-yellow-700",
+                                      icon: Trophy,
+                                    };
+                                  default:
+                                    return {
+                                      bgColor: "bg-gray-50",
+                                      borderColor: "border-gray-200",
+                                      iconBg: "bg-gray-100",
+                                      iconColor: "text-gray-600",
+                                      badgeBg: "bg-gray-100",
+                                      badgeColor: "text-gray-700",
+                                      icon: Trophy,
+                                    };
+                                }
+                              };
 
-                          <div className="flex items-center justify-between p-3 bg-blue-50 rounded-lg border border-blue-200">
-                            <div className="flex items-center space-x-3">
-                              <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
-                                <Heart className="w-4 h-4 text-blue-600" />
-                              </div>
-                              <div>
-                                <p className="font-medium text-gray-900">
-                                  Mood Logged
-                                </p>
-                                <p className="text-sm text-gray-600">
-                                  5 hours ago
-                                </p>
-                              </div>
-                            </div>
-                            <Badge className="bg-blue-100 text-blue-700">
-                              +10 XP
-                            </Badge>
-                          </div>
+                              const style = getActivityStyle(activity.source);
+                              const IconComponent = style.icon;
 
-                          <div className="flex items-center justify-between p-3 bg-purple-50 rounded-lg border border-purple-200">
-                            <div className="flex items-center space-x-3">
-                              <div className="w-8 h-8 bg-purple-100 rounded-full flex items-center justify-center">
-                                <Brain className="w-4 h-4 text-purple-600" />
-                              </div>
-                              <div>
-                                <p className="font-medium text-gray-900">
-                                  Self-Care Task Completed
-                                </p>
-                                <p className="text-sm text-gray-600">
-                                  1 day ago
-                                </p>
-                              </div>
-                            </div>
-                            <Badge className="bg-purple-100 text-purple-700">
-                              +15 XP
-                            </Badge>
-                          </div>
+                              // Format time ago
+                              const timeAgo = (() => {
+                                const now = new Date();
+                                const activityTime = new Date(activity.createdAt);
+                                const diffMs = now.getTime() - activityTime.getTime();
+                                const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
+                                const diffDays = Math.floor(diffHours / 24);
 
-                          <div className="flex items-center justify-between p-3 bg-yellow-50 rounded-lg border border-yellow-200">
-                            <div className="flex items-center space-x-3">
-                              <div className="w-8 h-8 bg-yellow-100 rounded-full flex items-center justify-center">
-                                <Trophy className="w-4 h-4 text-yellow-600" />
-                              </div>
-                              <div>
-                                <p className="font-medium text-gray-900">
-                                  Daily Quest Completed
-                                </p>
-                                <p className="text-sm text-gray-600">
-                                  1 day ago
-                                </p>
-                              </div>
+                                if (diffDays > 0) {
+                                  return `${diffDays} day${diffDays > 1 ? 's' : ''} ago`;
+                                } else if (diffHours > 0) {
+                                  return `${diffHours} hour${diffHours > 1 ? 's' : ''} ago`;
+                                } else {
+                                  return 'Just now';
+                                }
+                              })();
+
+                              return (
+                                <div
+                                  key={activity.id}
+                                  className={`flex items-center justify-between p-3 ${style.bgColor} rounded-lg border ${style.borderColor}`}
+                                >
+                                  <div className="flex items-center space-x-3">
+                                    <div className={`w-8 h-8 ${style.iconBg} rounded-full flex items-center justify-center`}>
+                                      <IconComponent className={`w-4 h-4 ${style.iconColor}`} />
+                                    </div>
+                                    <div>
+                                      <p className="font-medium text-gray-900">
+                                        {activity.activity}
+                                      </p>
+                                      <p className="text-sm text-gray-600">
+                                        {timeAgo}
+                                      </p>
+                                    </div>
+                                  </div>
+                                  <Badge className={`${style.badgeBg} ${style.badgeColor}`}>
+                                    +{activity.points} XP
+                                  </Badge>
+                                </div>
+                              );
+                            })
+                          ) : (
+                            <div className="text-center py-8 text-gray-500">
+                              <Trophy className="w-12 h-12 mx-auto mb-3 text-gray-300" />
+                              <p>No recent activities yet.</p>
+                              <p className="text-sm">Start journaling or logging moods to earn points!</p>
                             </div>
-                            <Badge className="bg-yellow-100 text-yellow-700">
-                              +25 XP
-                            </Badge>
-                          </div>
+                          )}
                         </div>
                       </CardContent>
                     </Card>
