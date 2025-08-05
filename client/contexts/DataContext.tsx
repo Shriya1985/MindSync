@@ -169,18 +169,9 @@ type DataProviderProps = {
 };
 
 export function DataProvider({ children }: DataProviderProps) {
-  // Use try-catch to handle potential auth context unavailability during initial render
-  let user: any = null;
-  let isAuthenticated = false;
-
-  try {
-    const authContext = useAuth();
-    user = authContext.user;
-    isAuthenticated = authContext.isAuthenticated;
-  } catch (error) {
-    // Auth context not ready yet, use defaults
-    console.log("Auth context not ready, using defaults");
-  }
+  const authContext = useContext(AuthContext);
+  const user = authContext?.user || null;
+  const isAuthenticated = authContext?.isAuthenticated || false;
   const [moodEntries, setMoodEntries] = useState<MoodEntry[]>([]);
   const [journalEntries, setJournalEntries] = useState<JournalEntry[]>([]);
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
