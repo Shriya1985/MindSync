@@ -473,9 +473,14 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
   const logout = async () => {
     try {
+      console.log("🚪 Logout function called - Stack trace:");
+      console.trace();
+
       if (isSupabaseConfigured) {
+        console.log("🔧 Calling Supabase signOut");
         await supabase.auth.signOut();
       } else {
+        console.log("💾 Using localStorage logout");
         localStorageService.logout();
       }
 
