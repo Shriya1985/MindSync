@@ -1,4 +1,4 @@
-import { ReactNode } from "react";
+import { ReactNode, useState, useEffect } from "react";
 import { Navigate, useLocation } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { Card, CardContent } from "@/components/ui/card";
@@ -11,6 +11,25 @@ type ProtectedRouteProps = {
 export function ProtectedRoute({ children }: ProtectedRouteProps) {
   const { isAuthenticated, isLoading } = useAuth();
   const location = useLocation();
+
+  // Emergency bypass for stuck loading after 15 seconds
+  const [emergencyBypass, setEmergencyBypass] = useState(false);
+
+  useEffect(() => {
+    if (isLoading) {
+      const timer = setTimeout(() => {
+        console.warn("🚨 Emergency bypass: Auth loading took too long, redirecting to auth page");
+        setEmergencyBypass(true);
+      }, 15000); // 15 second emergency bypass
+
+      return () => clearTimeout(timer);
+    }
+  }, [isLoading]);
+
+  // Emergency redirect if stuck loading
+  if (emergencyBypass) {
+    return <Navigate to="/auth" state={{ from: location }} replace />;
+  }
 
   // Show loading spinner while checking authentication
   if (isLoading) {
