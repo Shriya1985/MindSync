@@ -121,7 +121,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
             if (!error || session) break;
 
             console.log(`🔄 Session retry ${attempt + 1}/3`);
-            await new Promise(resolve => setTimeout(resolve, 500));
+            await new Promise((resolve) => setTimeout(resolve, 500));
           }
 
           if (error && !session) {
@@ -229,7 +229,14 @@ export function AuthProvider({ children }: AuthProviderProps) {
       const {
         data: { subscription },
       } = supabase.auth.onAuthStateChange(async (event, session) => {
-        console.log("🔄 Auth state change:", event, "Session user:", !!session?.user, "Current user:", !!user);
+        console.log(
+          "🔄 Auth state change:",
+          event,
+          "Session user:",
+          !!session?.user,
+          "Current user:",
+          !!user,
+        );
 
         // CRITICAL: Only handle SIGNED_OUT events that are intentional
         // Ignore all other events that might cause false logouts
@@ -249,7 +256,9 @@ export function AuthProvider({ children }: AuthProviderProps) {
               console.log("👋 Confirmed sign out - clearing user state");
               setUser(null);
             } else {
-              console.log("⚠️ SIGNED_OUT event but session exists - ignoring to prevent false logout");
+              console.log(
+                "⚠️ SIGNED_OUT event but session exists - ignoring to prevent false logout",
+              );
             }
             setIsLoading(false);
             break;
@@ -270,7 +279,9 @@ export function AuthProvider({ children }: AuthProviderProps) {
             break;
 
           default:
-            console.log(`🔍 Ignoring auth event: ${event} - preventing false logout`);
+            console.log(
+              `🔍 Ignoring auth event: ${event} - preventing false logout`,
+            );
             // DO NOT change user state or loading state for unknown events
             break;
         }
