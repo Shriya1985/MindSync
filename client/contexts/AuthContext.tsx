@@ -108,14 +108,24 @@ export function AuthProvider({ children }: AuthProviderProps) {
         if (isSupabaseConfigured) {
           console.log("🔧 Using Supabase authentication");
 
-          // Use Supabase authentication
-          const {
-            data: { session },
-            error,
-          } = await supabase.auth.getSession();
+          // Use Supabase authentication with retry for tab changes
+          let session = null;
+          let error = null;
 
-          if (error) {
-            console.error("❌ Error getting session:", error);
+          // Try to get session with retry logic
+          for (let attempt = 0; attempt < 3; attempt++) {
+            const result = await supabase.auth.getSession();
+            session = result.data.session;
+            error = result.error;
+
+            if (!error || session) break;
+
+            console.log(`🔄 Session retry ${attempt + 1}/3`);
+            await new Promise(resolve => setTimeout(resolve, 500));
+          }
+
+          if (error && !session) {
+            console.error("❌ Error getting session after retries:", error);
             clearTimeout(timeoutId);
             setIsLoading(false);
             return;
