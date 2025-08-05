@@ -229,43 +229,50 @@ export function AuthProvider({ children }: AuthProviderProps) {
       const {
         data: { subscription },
       } = supabase.auth.onAuthStateChange(async (event, session) => {
-        console.log("🔄 Auth state change:", event, !!session?.user);
+        console.log("🔄 Auth state change:", event, "Session user:", !!session?.user, "Current user:", !!user);
 
-        // Only handle critical auth events, ignore others to prevent unwanted logouts
-        if (event === "SIGNED_IN" && session?.user) {
-          console.log("✅ User signed in, updating profile");
-          const userProfile = await fetchUserProfile(session.user);
-          setUser(userProfile);
-          setIsLoading(false);
-        } else if (event === "SIGNED_OUT" && !session?.user) {
-          console.log("👋 User signed out, clearing user state");
-          setUser(null);
-          setIsLoading(false);
-        } else if (event === "TOKEN_REFRESHED" && session?.user) {
-          console.log("🔄 Token refreshed, maintaining user session");
-          // Don't change user state on token refresh if we already have a user
-          if (!user) {
-            const userProfile = await fetchUserProfile(session.user);
-            setUser(userProfile);
-          }
-          setIsLoading(false);
-        } else if (event === "INITIAL_SESSION") {
-          console.log("🎯 Initial session check:", !!session?.user);
-          if (session?.user && !user) {
-            const userProfile = await fetchUserProfile(session.user);
-            setUser(userProfile);
-          }
-          setIsLoading(false);
-        } else {
-          console.log(
-            "🔍 Ignoring auth event:",
-            event,
-            "Session:",
-            !!session?.user,
-            "Current user:",
-            !!user,
-          );
-          // Don't change loading state for ignored events
+        // CRITICAL: Only handle SIGNED_OUT events that are intentional
+        // Ignore all other events that might cause false logouts
+        switch (event) {
+          case "SIGNED_IN":
+            console.log("✅ User signed in, updating profile");
+            if (session?.user) {
+              const userProfile = await fetchUserProfile(session.user);
+              setUser(userProfile);
+            }
+            setIsLoading(false);
+            break;
+
+          case "SIGNED_OUT":
+            // Only logout if there's truly no session AND no current user
+            if (!session?.user) {
+              console.log("👋 Confirmed sign out - clearing user state");
+              setUser(null);
+            } else {
+              console.log("⚠️ SIGNED_OUT event but session exists - ignoring to prevent false logout");
+            }
+            setIsLoading(false);
+            break;
+
+          case "TOKEN_REFRESHED":
+            console.log("🔄 Token refreshed - maintaining session");
+            // Never change user state on token refresh - just log it
+            setIsLoading(false);
+            break;
+
+          case "INITIAL_SESSION":
+            console.log("🎯 Initial session check:", !!session?.user);
+            if (session?.user && !user) {
+              const userProfile = await fetchUserProfile(session.user);
+              setUser(userProfile);
+            }
+            setIsLoading(false);
+            break;
+
+          default:
+            console.log(`🔍 Ignoring auth event: ${event} - preventing false logout`);
+            // DO NOT change user state or loading state for unknown events
+            break;
         }
       });
 
