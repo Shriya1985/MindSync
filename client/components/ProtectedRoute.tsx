@@ -12,7 +12,11 @@ export function ProtectedRoute({ children }: ProtectedRouteProps) {
   const { isAuthenticated, isLoading } = useAuth();
   const location = useLocation();
 
-  console.log("🛡️ ProtectedRoute check:", { isAuthenticated, isLoading, path: location.pathname });
+  console.log("🛡️ ProtectedRoute check:", {
+    isAuthenticated,
+    isLoading,
+    path: location.pathname,
+  });
 
   // Emergency bypass for stuck loading after 15 seconds
   const [emergencyBypass, setEmergencyBypass] = useState(false);
