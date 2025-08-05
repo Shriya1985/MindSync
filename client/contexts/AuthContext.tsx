@@ -143,9 +143,11 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
           // Provide more helpful error messages
           if (error.message.includes("email not confirmed")) {
-            errorMessage = "Please check your email and click the confirmation link, or contact support.";
+            errorMessage =
+              "Please check your email and click the confirmation link, or contact support.";
           } else if (error.message.includes("Invalid login credentials")) {
-            errorMessage = "Invalid email or password. Please check your credentials.";
+            errorMessage =
+              "Invalid email or password. Please check your credentials.";
           }
 
           showNotification({
@@ -166,7 +168,9 @@ export function AuthProvider({ children }: AuthProviderProps) {
           await dataProtection.ensureUserStats(data.user.id);
 
           // Run critical data integrity checks
-          const checks = await dataProtection.performCriticalChecks(data.user.id);
+          const checks = await dataProtection.performCriticalChecks(
+            data.user.id,
+          );
 
           if (!checks.rlsWorking) {
             console.error("🚨 CRITICAL: Row Level Security not working!");

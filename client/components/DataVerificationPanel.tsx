@@ -5,7 +5,10 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { useAuth } from "@/contexts/AuthContext";
 import { useData } from "@/contexts/DataContext";
-import { runDataIntegrityCheck, type DataTestResult } from "@/utils/dataIntegrityTest";
+import {
+  runDataIntegrityCheck,
+  type DataTestResult,
+} from "@/utils/dataIntegrityTest";
 import { dataProtection } from "@/utils/dataProtection";
 import {
   Shield,
@@ -25,14 +28,15 @@ import { cn } from "@/lib/utils";
 
 export function DataVerificationPanel() {
   const { user } = useAuth();
-  const { userStats, moodEntries, journalEntries, chatMessages, achievements } = useData();
+  const { userStats, moodEntries, journalEntries, chatMessages, achievements } =
+    useData();
   const [testResults, setTestResults] = useState<DataTestResult[]>([]);
   const [isRunning, setIsRunning] = useState(false);
   const [lastRun, setLastRun] = useState<Date | null>(null);
 
   const runVerification = async () => {
     if (!user) return;
-    
+
     setIsRunning(true);
     try {
       const results = await runDataIntegrityCheck(user.id);
@@ -47,10 +51,10 @@ export function DataVerificationPanel() {
 
   const runCriticalChecks = async () => {
     if (!user) return;
-    
+
     const checks = await dataProtection.performCriticalChecks(user.id);
     console.log("🔍 Critical Security Checks:", checks);
-    
+
     if (!checks.rlsWorking) {
       alert("🚨 CRITICAL: Security issue detected! Check console for details.");
     } else {
@@ -84,7 +88,7 @@ export function DataVerificationPanel() {
     }
   };
 
-  const passedTests = testResults.filter(r => r.status === "pass").length;
+  const passedTests = testResults.filter((r) => r.status === "pass").length;
   const totalTests = testResults.length;
   const successRate = totalTests > 0 ? (passedTests / totalTests) * 100 : 0;
 
@@ -93,7 +97,9 @@ export function DataVerificationPanel() {
       <Card className="shadow-lg border-0 bg-white/90 backdrop-blur-sm">
         <CardContent className="p-6 text-center">
           <Shield className="w-12 h-12 mx-auto mb-4 text-gray-400" />
-          <p className="text-gray-600">Please log in to verify data synchronization</p>
+          <p className="text-gray-600">
+            Please log in to verify data synchronization
+          </p>
         </CardContent>
       </Card>
     );
@@ -111,8 +117,8 @@ export function DataVerificationPanel() {
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="flex flex-wrap gap-2">
-            <Button 
-              onClick={runVerification} 
+            <Button
+              onClick={runVerification}
               disabled={isRunning}
               className="bg-mint-500 hover:bg-mint-600"
             >
@@ -123,9 +129,9 @@ export function DataVerificationPanel() {
               )}
               Run Data Verification
             </Button>
-            
-            <Button 
-              onClick={runCriticalChecks} 
+
+            <Button
+              onClick={runCriticalChecks}
               variant="outline"
               className="border-orange-200 text-orange-700 hover:bg-orange-50"
             >
@@ -144,7 +150,9 @@ export function DataVerificationPanel() {
             <div className="space-y-2">
               <div className="flex justify-between text-sm">
                 <span>Success Rate</span>
-                <span>{successRate.toFixed(0)}% ({passedTests}/{totalTests})</span>
+                <span>
+                  {successRate.toFixed(0)}% ({passedTests}/{totalTests})
+                </span>
               </div>
               <Progress value={successRate} className="h-2" />
             </div>
@@ -164,10 +172,14 @@ export function DataVerificationPanel() {
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             <div className="text-center p-3 bg-gradient-to-br from-mint-50 to-mint-100 rounded-lg">
               <TrendingUp className="w-6 h-6 mx-auto mb-2 text-mint-600" />
-              <div className="text-lg font-bold text-mint-800">Level {userStats.level}</div>
-              <div className="text-sm text-mint-600">{userStats.points} points</div>
+              <div className="text-lg font-bold text-mint-800">
+                Level {userStats.level}
+              </div>
+              <div className="text-sm text-mint-600">
+                {userStats.points} points
+              </div>
             </div>
-            
+
             <div className="text-center p-3 bg-gradient-to-br from-sky-50 to-sky-100 rounded-lg">
               <Heart className="w-6 h-6 mx-auto mb-2 text-sky-600" />
               <div className="text-lg font-bold text-sky-800">
@@ -175,7 +187,7 @@ export function DataVerificationPanel() {
               </div>
               <div className="text-sm text-sky-600">Mood Entries</div>
             </div>
-            
+
             <div className="text-center p-3 bg-gradient-to-br from-purple-50 to-purple-100 rounded-lg">
               <BookOpen className="w-6 h-6 mx-auto mb-2 text-purple-600" />
               <div className="text-lg font-bold text-purple-800">
@@ -183,7 +195,7 @@ export function DataVerificationPanel() {
               </div>
               <div className="text-sm text-purple-600">Journal Entries</div>
             </div>
-            
+
             <div className="text-center p-3 bg-gradient-to-br from-orange-50 to-orange-100 rounded-lg">
               <MessageCircle className="w-6 h-6 mx-auto mb-2 text-orange-600" />
               <div className="text-lg font-bold text-orange-800">
@@ -192,7 +204,7 @@ export function DataVerificationPanel() {
               <div className="text-sm text-orange-600">Chat Messages</div>
             </div>
           </div>
-          
+
           <div className="mt-4 p-3 bg-gradient-to-r from-mint-50 to-sky-50 rounded-lg border border-mint-200">
             <div className="flex items-center space-x-2 text-mint-700">
               <Award className="w-5 h-5" />
@@ -220,7 +232,7 @@ export function DataVerificationPanel() {
                   key={index}
                   className={cn(
                     "flex items-center justify-between p-3 rounded-lg border",
-                    getStatusColor(result.status)
+                    getStatusColor(result.status),
                   )}
                 >
                   <div className="flex items-center space-x-3">
@@ -259,7 +271,7 @@ export function DataVerificationPanel() {
                 {user.id.slice(0, 8)}...
               </code>
             </div>
-            
+
             <div className="flex justify-between items-center p-3 bg-blue-50 rounded-lg border border-blue-200">
               <div className="flex items-center space-x-2">
                 <Database className="w-5 h-5 text-blue-600" />
@@ -267,7 +279,7 @@ export function DataVerificationPanel() {
               </div>
               <Badge className="bg-blue-100 text-blue-800">Protected</Badge>
             </div>
-            
+
             <div className="flex justify-between items-center p-3 bg-purple-50 rounded-lg border border-purple-200">
               <div className="flex items-center space-x-2">
                 <CheckCircle className="w-5 h-5 text-purple-600" />

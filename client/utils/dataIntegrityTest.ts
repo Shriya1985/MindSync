@@ -21,9 +21,9 @@ export class DataIntegrityTester {
 
   async runAllTests(): Promise<DataTestResult[]> {
     this.results = [];
-    
+
     console.log("🧪 Starting Data Integrity Tests...");
-    
+
     await this.testUserIsolation();
     await this.testUserStats();
     await this.testMoodEntries();
@@ -33,7 +33,7 @@ export class DataIntegrityTester {
     await this.testPointsSystem();
     await this.testStreakCalculation();
     await this.testDataPersistence();
-    
+
     this.logResults();
     return this.results;
   }
@@ -47,16 +47,32 @@ export class DataIntegrityTester {
         .eq("user_id", this.userId);
 
       if (error) {
-        this.addResult("User Isolation", "fail", `Database error: ${error.message}`);
+        this.addResult(
+          "User Isolation",
+          "fail",
+          `Database error: ${error.message}`,
+        );
         return;
       }
 
       if (userStats.length === 1) {
-        this.addResult("User Isolation", "pass", "User has exactly one stats record");
+        this.addResult(
+          "User Isolation",
+          "pass",
+          "User has exactly one stats record",
+        );
       } else if (userStats.length === 0) {
-        this.addResult("User Isolation", "warning", "No user stats found - will be created");
+        this.addResult(
+          "User Isolation",
+          "warning",
+          "No user stats found - will be created",
+        );
       } else {
-        this.addResult("User Isolation", "fail", `Multiple stats records found: ${userStats.length}`);
+        this.addResult(
+          "User Isolation",
+          "fail",
+          `Multiple stats records found: ${userStats.length}`,
+        );
       }
     } catch (error) {
       this.addResult("User Isolation", "fail", `Test failed: ${error}`);
@@ -72,7 +88,11 @@ export class DataIntegrityTester {
         .single();
 
       if (error && error.code !== "PGRST116") {
-        this.addResult("User Stats", "fail", `Stats query failed: ${error.message}`);
+        this.addResult(
+          "User Stats",
+          "fail",
+          `Stats query failed: ${error.message}`,
+        );
         return;
       }
 
@@ -93,12 +113,20 @@ export class DataIntegrityTester {
           .single();
 
         if (createError) {
-          this.addResult("User Stats", "fail", `Failed to create stats: ${createError.message}`);
+          this.addResult(
+            "User Stats",
+            "fail",
+            `Failed to create stats: ${createError.message}`,
+          );
         } else {
           this.addResult("User Stats", "pass", "Created initial user stats");
         }
       } else {
-        this.addResult("User Stats", "pass", `Stats loaded: Level ${stats.level}, ${stats.points} points`);
+        this.addResult(
+          "User Stats",
+          "pass",
+          `Stats loaded: Level ${stats.level}, ${stats.points} points`,
+        );
       }
     } catch (error) {
       this.addResult("User Stats", "fail", `Stats test failed: ${error}`);
@@ -113,9 +141,17 @@ export class DataIntegrityTester {
         .eq("user_id", this.userId);
 
       if (error) {
-        this.addResult("Mood Entries", "fail", `Mood query failed: ${error.message}`);
+        this.addResult(
+          "Mood Entries",
+          "fail",
+          `Mood query failed: ${error.message}`,
+        );
       } else {
-        this.addResult("Mood Entries", "pass", `User has access to mood entries table`);
+        this.addResult(
+          "Mood Entries",
+          "pass",
+          `User has access to mood entries table`,
+        );
       }
     } catch (error) {
       this.addResult("Mood Entries", "fail", `Mood test failed: ${error}`);
@@ -130,12 +166,24 @@ export class DataIntegrityTester {
         .eq("user_id", this.userId);
 
       if (error) {
-        this.addResult("Journal Entries", "fail", `Journal query failed: ${error.message}`);
+        this.addResult(
+          "Journal Entries",
+          "fail",
+          `Journal query failed: ${error.message}`,
+        );
       } else {
-        this.addResult("Journal Entries", "pass", `User has access to journal entries table`);
+        this.addResult(
+          "Journal Entries",
+          "pass",
+          `User has access to journal entries table`,
+        );
       }
     } catch (error) {
-      this.addResult("Journal Entries", "fail", `Journal test failed: ${error}`);
+      this.addResult(
+        "Journal Entries",
+        "fail",
+        `Journal test failed: ${error}`,
+      );
     }
   }
 
@@ -147,9 +195,17 @@ export class DataIntegrityTester {
         .eq("user_id", this.userId);
 
       if (error) {
-        this.addResult("Chat Messages", "fail", `Chat query failed: ${error.message}`);
+        this.addResult(
+          "Chat Messages",
+          "fail",
+          `Chat query failed: ${error.message}`,
+        );
       } else {
-        this.addResult("Chat Messages", "pass", `User has access to chat messages table`);
+        this.addResult(
+          "Chat Messages",
+          "pass",
+          `User has access to chat messages table`,
+        );
       }
     } catch (error) {
       this.addResult("Chat Messages", "fail", `Chat test failed: ${error}`);
@@ -164,12 +220,24 @@ export class DataIntegrityTester {
         .eq("user_id", this.userId);
 
       if (error) {
-        this.addResult("Achievements", "fail", `Achievements query failed: ${error.message}`);
+        this.addResult(
+          "Achievements",
+          "fail",
+          `Achievements query failed: ${error.message}`,
+        );
       } else {
-        this.addResult("Achievements", "pass", `User has access to achievements table`);
+        this.addResult(
+          "Achievements",
+          "pass",
+          `User has access to achievements table`,
+        );
       }
     } catch (error) {
-      this.addResult("Achievements", "fail", `Achievements test failed: ${error}`);
+      this.addResult(
+        "Achievements",
+        "fail",
+        `Achievements test failed: ${error}`,
+      );
     }
   }
 
@@ -186,7 +254,11 @@ export class DataIntegrityTester {
         });
 
       if (pointsError) {
-        this.addResult("Points System", "fail", `Points insertion failed: ${pointsError.message}`);
+        this.addResult(
+          "Points System",
+          "fail",
+          `Points insertion failed: ${pointsError.message}`,
+        );
       } else {
         // Check if stats were updated
         const { data: updatedStats, error: statsError } = await supabase
@@ -196,9 +268,17 @@ export class DataIntegrityTester {
           .single();
 
         if (statsError) {
-          this.addResult("Points System", "warning", "Points added but stats check failed");
+          this.addResult(
+            "Points System",
+            "warning",
+            "Points added but stats check failed",
+          );
         } else {
-          this.addResult("Points System", "pass", `Points system working: ${updatedStats.points} total points`);
+          this.addResult(
+            "Points System",
+            "pass",
+            `Points system working: ${updatedStats.points} total points`,
+          );
         }
       }
     } catch (error) {
@@ -215,13 +295,24 @@ export class DataIntegrityTester {
         .single();
 
       if (error) {
-        this.addResult("Streak Calculation", "fail", `Streak query failed: ${error.message}`);
+        this.addResult(
+          "Streak Calculation",
+          "fail",
+          `Streak query failed: ${error.message}`,
+        );
       } else {
-        this.addResult("Streak Calculation", "pass", 
-          `Streaks accessible: Current ${stats.current_streak}, Longest ${stats.longest_streak}`);
+        this.addResult(
+          "Streak Calculation",
+          "pass",
+          `Streaks accessible: Current ${stats.current_streak}, Longest ${stats.longest_streak}`,
+        );
       }
     } catch (error) {
-      this.addResult("Streak Calculation", "fail", `Streak test failed: ${error}`);
+      this.addResult(
+        "Streak Calculation",
+        "fail",
+        `Streak test failed: ${error}`,
+      );
     }
   }
 
@@ -233,8 +324,8 @@ export class DataIntegrityTester {
         mood: "Test Mood",
         rating: 5,
         emoji: "🧪",
-        date: new Date().toISOString().split('T')[0],
-        source: "integrity_test"
+        date: new Date().toISOString().split("T")[0],
+        source: "integrity_test",
       };
 
       const { data: inserted, error: insertError } = await supabase
@@ -244,7 +335,11 @@ export class DataIntegrityTester {
         .single();
 
       if (insertError) {
-        this.addResult("Data Persistence", "fail", `Test insertion failed: ${insertError.message}`);
+        this.addResult(
+          "Data Persistence",
+          "fail",
+          `Test insertion failed: ${insertError.message}`,
+        );
         return;
       }
 
@@ -256,39 +351,58 @@ export class DataIntegrityTester {
         .single();
 
       if (selectError) {
-        this.addResult("Data Persistence", "fail", `Test retrieval failed: ${selectError.message}`);
+        this.addResult(
+          "Data Persistence",
+          "fail",
+          `Test retrieval failed: ${selectError.message}`,
+        );
         return;
       }
 
       // Clean up test data
-      await supabase
-        .from("mood_entries")
-        .delete()
-        .eq("id", inserted.id);
+      await supabase.from("mood_entries").delete().eq("id", inserted.id);
 
-      this.addResult("Data Persistence", "pass", "Data persists correctly across operations");
+      this.addResult(
+        "Data Persistence",
+        "pass",
+        "Data persists correctly across operations",
+      );
     } catch (error) {
-      this.addResult("Data Persistence", "fail", `Persistence test failed: ${error}`);
+      this.addResult(
+        "Data Persistence",
+        "fail",
+        `Persistence test failed: ${error}`,
+      );
     }
   }
 
-  private addResult(test: string, status: "pass" | "fail" | "warning", message: string, data?: any) {
+  private addResult(
+    test: string,
+    status: "pass" | "fail" | "warning",
+    message: string,
+    data?: any,
+  ) {
     this.results.push({ test, status, message, data });
   }
 
   private logResults() {
-    const passed = this.results.filter(r => r.status === "pass").length;
-    const failed = this.results.filter(r => r.status === "fail").length;
-    const warnings = this.results.filter(r => r.status === "warning").length;
+    const passed = this.results.filter((r) => r.status === "pass").length;
+    const failed = this.results.filter((r) => r.status === "fail").length;
+    const warnings = this.results.filter((r) => r.status === "warning").length;
 
     console.log(`\n📊 Data Integrity Test Results:`);
     console.log(`✅ Passed: ${passed}`);
     console.log(`⚠️  Warnings: ${warnings}`);
     console.log(`❌ Failed: ${failed}`);
     console.log(`\nDetailed Results:`);
-    
-    this.results.forEach(result => {
-      const icon = result.status === "pass" ? "✅" : result.status === "warning" ? "⚠️" : "❌";
+
+    this.results.forEach((result) => {
+      const icon =
+        result.status === "pass"
+          ? "✅"
+          : result.status === "warning"
+            ? "⚠️"
+            : "❌";
       console.log(`${icon} ${result.test}: ${result.message}`);
     });
 
@@ -312,7 +426,9 @@ export class DataIntegrityTester {
 }
 
 // Utility function to run integrity check
-export async function runDataIntegrityCheck(userId: string): Promise<DataTestResult[]> {
+export async function runDataIntegrityCheck(
+  userId: string,
+): Promise<DataTestResult[]> {
   const tester = new DataIntegrityTester(userId);
   return await tester.runAllTests();
 }

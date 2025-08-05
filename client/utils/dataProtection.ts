@@ -26,15 +26,22 @@ export class DataProtection {
   }
 
   // Validates that operations are only performed on current user's data
-  validateUserOperation(operationUserId: string, operationName: string): boolean {
+  validateUserOperation(
+    operationUserId: string,
+    operationName: string,
+  ): boolean {
     if (!this.currentUserId) {
-      console.error(`🚨 Data Protection: No current user set for operation: ${operationName}`);
+      console.error(
+        `🚨 Data Protection: No current user set for operation: ${operationName}`,
+      );
       return false;
     }
 
     if (operationUserId !== this.currentUserId) {
       console.error(`🚨 Data Protection: User ID mismatch in ${operationName}`);
-      console.error(`🚨 Expected: ${this.currentUserId}, Got: ${operationUserId}`);
+      console.error(
+        `🚨 Expected: ${this.currentUserId}, Got: ${operationUserId}`,
+      );
       return false;
     }
 
@@ -45,7 +52,7 @@ export class DataProtection {
   async safeOperation<T>(
     operation: () => Promise<T>,
     operationName: string,
-    userId?: string
+    userId?: string,
   ): Promise<T | null> {
     try {
       if (userId && !this.validateUserOperation(userId, operationName)) {
@@ -57,55 +64,61 @@ export class DataProtection {
       return result;
     } catch (error) {
       console.error(`❌ Safe operation failed: ${operationName}`, error);
-      
+
       showNotification({
         type: "encouragement",
         title: "Data Operation Failed",
         message: `Could not complete ${operationName}. Your data remains safe.`,
         duration: 4000,
       });
-      
+
       return null;
     }
   }
 
   // Ensures user stats exist and are properly initialized
   async ensureUserStats(userId: string) {
-    return this.safeOperation(async () => {
-      const { data: existingStats, error: checkError } = await supabase
-        .from("user_stats")
-        .select("id")
-        .eq("user_id", userId)
-        .single();
-
-      if (checkError && checkError.code === "PGRST116") {
-        // No stats found, create them
-        const { data: newStats, error: createError } = await supabase
+    return this.safeOperation(
+      async () => {
+        const { data: existingStats, error: checkError } = await supabase
           .from("user_stats")
-          .insert({
-            user_id: userId,
-            level: 1,
-            points: 0,
-            current_streak: 0,
-            longest_streak: 0,
-            total_entries: 0,
-            total_words: 0,
-          })
-          .select()
+          .select("id")
+          .eq("user_id", userId)
           .single();
 
-        if (createError) {
-          throw new Error(`Failed to create user stats: ${createError.message}`);
+        if (checkError && checkError.code === "PGRST116") {
+          // No stats found, create them
+          const { data: newStats, error: createError } = await supabase
+            .from("user_stats")
+            .insert({
+              user_id: userId,
+              level: 1,
+              points: 0,
+              current_streak: 0,
+              longest_streak: 0,
+              total_entries: 0,
+              total_words: 0,
+            })
+            .select()
+            .single();
+
+          if (createError) {
+            throw new Error(
+              `Failed to create user stats: ${createError.message}`,
+            );
+          }
+
+          console.log("✅ Created initial user stats");
+          return newStats;
+        } else if (checkError) {
+          throw new Error(`Failed to check user stats: ${checkError.message}`);
         }
 
-        console.log("✅ Created initial user stats");
-        return newStats;
-      } else if (checkError) {
-        throw new Error(`Failed to check user stats: ${checkError.message}`);
-      }
-
-      return existingStats;
-    }, "ensureUserStats", userId);
+        return existingStats;
+      },
+      "ensureUserStats",
+      userId,
+    );
   }
 
   // Validates that RLS (Row Level Security) is working
@@ -157,7 +170,8 @@ export class DataProtection {
         .select("user_id")
         .eq("user_id", userId);
 
-      results.userIsolation = userTables?.every(row => row.user_id === userId) ?? false;
+      results.userIsolation =
+        userTables?.every((row) => row.user_id === userId) ?? false;
     } catch (error) {
       results.userIsolation = false;
     }
@@ -182,7 +196,7 @@ export const dataProtection = DataProtection.getInstance();
 export const protectedUserOperation = async <T>(
   operation: () => Promise<T>,
   operationName: string,
-  userId: string
+  userId: string,
 ): Promise<T | null> => {
   return dataProtection.safeOperation(operation, operationName, userId);
 };
