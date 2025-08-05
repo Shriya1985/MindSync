@@ -221,29 +221,42 @@ export function AuthProvider({ children }: AuthProviderProps) {
       } = supabase.auth.onAuthStateChange(async (event, session) => {
         console.log("🔄 Auth state change:", event, !!session?.user);
 
-        // Only handle actual sign in/out events, not session refresh
+        // Only handle critical auth events, ignore others to prevent unwanted logouts
         if (event === "SIGNED_IN" && session?.user) {
           console.log("✅ User signed in, updating profile");
           const userProfile = await fetchUserProfile(session.user);
           setUser(userProfile);
-        } else if (event === "SIGNED_OUT") {
+          setIsLoading(false);
+        } else if (event === "SIGNED_OUT" && !session?.user) {
           console.log("👋 User signed out, clearing user state");
           setUser(null);
-        } else if (event === "TOKEN_REFRESHED" && session?.user && !user) {
-          console.log("🔄 Token refreshed, restoring user profile");
-          const userProfile = await fetchUserProfile(session.user);
-          setUser(userProfile);
+          setIsLoading(false);
+        } else if (event === "TOKEN_REFRESHED" && session?.user) {
+          console.log("🔄 Token refreshed, maintaining user session");
+          // Don't change user state on token refresh if we already have a user
+          if (!user) {
+            const userProfile = await fetchUserProfile(session.user);
+            setUser(userProfile);
+          }
+          setIsLoading(false);
+        } else if (event === "INITIAL_SESSION") {
+          console.log("🎯 Initial session check:", !!session?.user);
+          if (session?.user && !user) {
+            const userProfile = await fetchUserProfile(session.user);
+            setUser(userProfile);
+          }
+          setIsLoading(false);
         } else {
           console.log(
-            "🔍 Other auth event:",
+            "🔍 Ignoring auth event:",
             event,
             "Session:",
             !!session?.user,
             "Current user:",
             !!user,
           );
+          // Don't change loading state for ignored events
         }
-        setIsLoading(false);
       });
 
       return () => {
