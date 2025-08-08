@@ -38,13 +38,14 @@ const App = () => (
         <Toaster />
         <Sonner />
         <AuthProvider>
-          <DataProvider>
-            <ThemeProvider>
-              <BrowserRouter>
-                <NotificationSystem />
-                <DatabaseSetupNotice />
-                <ThemeStatus />
-                <Routes>
+          <ErrorBoundary>
+            <DataProvider>
+              <ThemeProvider>
+                <BrowserRouter>
+                  <NotificationSystem />
+                  <DatabaseSetupNotice />
+                  <ThemeStatus />
+                  <Routes>
                   <Route path="/" element={<Index />} />
                   <Route
                     path="/chatbot"
@@ -101,10 +102,11 @@ const App = () => (
                   <Route path="/auth" element={<Auth />} />
                   {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                   <Route path="*" element={<NotFound />} />
-                </Routes>
-              </BrowserRouter>
-            </ThemeProvider>
-          </DataProvider>
+                  </Routes>
+                </BrowserRouter>
+              </ThemeProvider>
+            </DataProvider>
+          </ErrorBoundary>
         </AuthProvider>
       </TooltipProvider>
     </QueryClientProvider>
