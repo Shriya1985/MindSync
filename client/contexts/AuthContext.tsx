@@ -216,7 +216,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
       } finally {
         clearTimeout(timeoutId);
         console.log(
-          "🏁 Auth initialization complete, setting loading to false",
+          "�� Auth initialization complete, setting loading to false",
         );
         setIsLoading(false);
       }
@@ -225,7 +225,9 @@ export function AuthProvider({ children }: AuthProviderProps) {
     initializeAuth();
 
     if (isSupabaseConfigured) {
-      // Listen for auth changes only if Supabase is configured
+      // BULLETPROOF AUTH: Only listen for critical events, never auto-logout
+      let isExplicitLogout = false;
+
       const {
         data: { subscription },
       } = supabase.auth.onAuthStateChange(async (event, session) => {
@@ -234,38 +236,39 @@ export function AuthProvider({ children }: AuthProviderProps) {
           event,
           "Session user:",
           !!session?.user,
-          "Current user:",
-          !!user,
+          "Explicit logout:",
+          isExplicitLogout,
         );
 
-        // CRITICAL: Only handle SIGNED_OUT events that are intentional
-        // Ignore all other events that might cause false logouts
+        // CRITICAL: Only handle explicit logouts or initial sign-ins
+        // NEVER auto-logout the user
         switch (event) {
           case "SIGNED_IN":
             console.log("✅ User signed in, updating profile");
             if (session?.user) {
               const userProfile = await fetchUserProfile(session.user);
               setUser(userProfile);
+              isExplicitLogout = false; // Reset logout flag
             }
             setIsLoading(false);
             break;
 
           case "SIGNED_OUT":
-            // Only logout if there's truly no session AND no current user
-            if (!session?.user) {
-              console.log("👋 Confirmed sign out - clearing user state");
+            // ONLY logout if this was an explicit logout action
+            if (isExplicitLogout) {
+              console.log("👋 Explicit logout confirmed - clearing user state");
               setUser(null);
+              isExplicitLogout = false;
             } else {
-              console.log(
-                "⚠️ SIGNED_OUT event but session exists - ignoring to prevent false logout",
-              );
+              console.log("⚠️ IGNORING automatic SIGNED_OUT - user stays logged in");
+              // Keep user logged in despite auth event
             }
             setIsLoading(false);
             break;
 
           case "TOKEN_REFRESHED":
-            console.log("🔄 Token refreshed - maintaining session");
-            // Never change user state on token refresh - just log it
+            console.log("🔄 Token refreshed - session maintained");
+            // Never change anything on token refresh
             setIsLoading(false);
             break;
 
@@ -280,12 +283,17 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
           default:
             console.log(
-              `🔍 Ignoring auth event: ${event} - preventing false logout`,
+              `🔍 IGNORING auth event: ${event} - user stays logged in`,
             );
-            // DO NOT change user state or loading state for unknown events
+            // NEVER change user state or loading state for any other events
             break;
         }
       });
+
+      // Store the logout flag setter for the logout function
+      (window as any).__setExplicitLogout = (value: boolean) => {
+        isExplicitLogout = value;
+      };
 
       return () => {
         subscription.unsubscribe();
