@@ -52,19 +52,38 @@ export default function Auth() {
     motivationalTexts[Math.floor(Math.random() * motivationalTexts.length)],
   );
 
-  let authState;
+  // Robust auth context access with retry mechanism
+  const [contextError, setContextError] = useState<string | null>(null);
+  const [retryCount, setRetryCount] = useState(0);
+
+  let authState = null;
 
   try {
     authState = useAuth();
   } catch (error) {
     console.error("Auth context error in Auth component:", error);
-    // Return a minimal auth component without auth functionality
+
+    // Auto-retry after a short delay for hot-reload issues
+    if (retryCount < 3) {
+      setTimeout(() => {
+        setRetryCount(prev => prev + 1);
+      }, 1000);
+    } else {
+      setContextError("Context unavailable after retries");
+    }
+  }
+
+  // Show fallback UI if context is unavailable
+  if (!authState || contextError) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-mint-50 via-white to-sky-50 flex items-center justify-center">
         <Card className="w-full max-w-md mx-4">
           <CardContent className="p-6 text-center">
-            <div className="text-red-600 mb-4">
-              Authentication system temporarily unavailable
+            <div className="text-orange-600 mb-4">
+              {retryCount > 0 ? `Reconnecting... (${retryCount}/3)` : "Authentication system loading..."}
+            </div>
+            <div className="text-sm text-gray-600 mb-4">
+              This usually resolves automatically in development mode
             </div>
             <Button onClick={() => window.location.reload()}>
               Reload Page
