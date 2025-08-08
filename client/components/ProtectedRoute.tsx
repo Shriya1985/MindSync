@@ -28,8 +28,9 @@ export function ProtectedRoute({ children }: ProtectedRouteProps) {
           "🚨 Emergency bypass: Auth loading took too long, but being conservative",
         );
         // Only bypass if we're really stuck AND there's no user in localStorage
-        const hasStoredSession = localStorage.getItem('supabase.auth.token') ||
-                                localStorage.getItem('mindsync_current_user');
+        const hasStoredSession =
+          localStorage.getItem("supabase.auth.token") ||
+          localStorage.getItem("mindsync_current_user");
         if (!hasStoredSession) {
           setEmergencyBypass(true);
         } else {

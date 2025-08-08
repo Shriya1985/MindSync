@@ -81,9 +81,9 @@ export const supabase = isSupabaseConfigured
         storage: window.localStorage,
         autoRefreshToken: true,
         detectSessionInUrl: true,
-        flowType: 'pkce',
+        flowType: "pkce",
         // Make session more persistent
-        storageKey: 'mindsync-auth',
+        storageKey: "mindsync-auth",
         // Prevent automatic logout on tab changes
         debug: false,
       },

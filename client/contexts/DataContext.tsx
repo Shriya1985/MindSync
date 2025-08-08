@@ -1054,7 +1054,8 @@ export function DataProvider({ children }: DataProviderProps) {
       showNotification({
         type: "encouragement",
         title: "Quest Update Failed",
-        message: "Couldn't update quest status, but your progress is saved locally!",
+        message:
+          "Couldn't update quest status, but your progress is saved locally!",
         duration: 3000,
       });
       return;

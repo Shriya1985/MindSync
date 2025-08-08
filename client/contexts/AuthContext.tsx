@@ -260,7 +260,9 @@ export function AuthProvider({ children }: AuthProviderProps) {
               setUser(null);
               isExplicitLogout = false;
             } else {
-              console.log("⚠️ IGNORING automatic SIGNED_OUT - user stays logged in");
+              console.log(
+                "⚠️ IGNORING automatic SIGNED_OUT - user stays logged in",
+              );
               // Keep user logged in despite auth event
             }
             setIsLoading(false);
