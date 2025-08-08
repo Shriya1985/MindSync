@@ -484,11 +484,16 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
   const logout = async () => {
     try {
-      console.log("🚪 Logout function called - Stack trace:");
+      console.log("🚪 EXPLICIT LOGOUT - User clicked logout button");
       console.trace();
 
+      // Set explicit logout flag BEFORE calling signOut
+      if ((window as any).__setExplicitLogout) {
+        (window as any).__setExplicitLogout(true);
+      }
+
       if (isSupabaseConfigured) {
-        console.log("🔧 Calling Supabase signOut");
+        console.log("🔧 Calling Supabase signOut with explicit flag");
         await supabase.auth.signOut();
       } else {
         console.log("💾 Using localStorage logout");
@@ -497,7 +502,11 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
       // Clear data protection
       dataProtection.clearCurrentUser();
-      setUser(null);
+
+      // Clear user state immediately for non-Supabase mode
+      if (!isSupabaseConfigured) {
+        setUser(null);
+      }
 
       showNotification({
         type: "encouragement",
@@ -507,6 +516,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
       });
     } catch (error) {
       console.error("Error during logout:", error);
+      // Even if logout fails, clear local state
+      setUser(null);
     }
   };
 

@@ -18,23 +18,30 @@ export function ProtectedRoute({ children }: ProtectedRouteProps) {
     path: location.pathname,
   });
 
-  // Emergency bypass for stuck loading after 15 seconds
+  // Give more time for auth to resolve - be more patient
   const [emergencyBypass, setEmergencyBypass] = useState(false);
 
   useEffect(() => {
     if (isLoading) {
       const timer = setTimeout(() => {
         console.warn(
-          "🚨 Emergency bypass: Auth loading took too long, redirecting to auth page",
+          "🚨 Emergency bypass: Auth loading took too long, but being conservative",
         );
-        setEmergencyBypass(true);
-      }, 15000); // 15 second emergency bypass
+        // Only bypass if we're really stuck AND there's no user in localStorage
+        const hasStoredSession = localStorage.getItem('supabase.auth.token') ||
+                                localStorage.getItem('mindsync_current_user');
+        if (!hasStoredSession) {
+          setEmergencyBypass(true);
+        } else {
+          console.log("📦 Found stored session, staying patient...");
+        }
+      }, 30000); // 30 second timeout - more generous
 
       return () => clearTimeout(timer);
     }
   }, [isLoading]);
 
-  // Emergency redirect if stuck loading
+  // Only redirect in true emergency and no stored auth
   if (emergencyBypass) {
     return <Navigate to="/auth" state={{ from: location }} replace />;
   }
