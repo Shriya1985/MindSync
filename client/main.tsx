@@ -46,62 +46,62 @@ const App = () => (
                   <DatabaseSetupNotice />
                   <ThemeStatus />
                   <Routes>
-                  <Route path="/" element={<Index />} />
-                  <Route
-                    path="/chatbot"
-                    element={
-                      <ProtectedRoute>
-                        <SimplifiedChatbot />
-                      </ProtectedRoute>
-                    }
-                  />
-                  <Route
-                    path="/dashboard"
-                    element={
-                      <ProtectedRoute>
-                        <Dashboard />
-                      </ProtectedRoute>
-                    }
-                  />
-                  <Route
-                    path="/journal"
-                    element={
-                      <ProtectedRoute>
-                        <Journal />
-                      </ProtectedRoute>
-                    }
-                  />
-                  <Route
-                    path="/resources"
-                    element={
-                      <ProtectedRoute>
-                        <Resources />
-                      </ProtectedRoute>
-                    }
-                  />
-                  <Route
-                    path="/techniques"
-                    element={
-                      <ProtectedRoute>
-                        <Techniques />
-                      </ProtectedRoute>
-                    }
-                  />
-                  <Route
-                    path="/profile"
-                    element={
-                      <ProtectedRoute>
-                        <Profile />
-                      </ProtectedRoute>
-                    }
-                  />
-                  <Route path="/about" element={<About />} />
-                  <Route path="/faq" element={<FAQ />} />
-                  <Route path="/privacy" element={<Privacy />} />
-                  <Route path="/terms" element={<Terms />} />
-                  <Route path="/auth" element={<Auth />} />
-                  {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-                  <Route path="*" element={<NotFound />} />
+                    <Route path="/" element={<Index />} />
+                    <Route
+                      path="/chatbot"
+                      element={
+                        <ProtectedRoute>
+                          <SimplifiedChatbot />
+                        </ProtectedRoute>
+                      }
+                    />
+                    <Route
+                      path="/dashboard"
+                      element={
+                        <ProtectedRoute>
+                          <Dashboard />
+                        </ProtectedRoute>
+                      }
+                    />
+                    <Route
+                      path="/journal"
+                      element={
+                        <ProtectedRoute>
+                          <Journal />
+                        </ProtectedRoute>
+                      }
+                    />
+                    <Route
+                      path="/resources"
+                      element={
+                        <ProtectedRoute>
+                          <Resources />
+                        </ProtectedRoute>
+                      }
+                    />
+                    <Route
+                      path="/techniques"
+                      element={
+                        <ProtectedRoute>
+                          <Techniques />
+                        </ProtectedRoute>
+                      }
+                    />
+                    <Route
+                      path="/profile"
+                      element={
+                        <ProtectedRoute>
+                          <Profile />
+                        </ProtectedRoute>
+                      }
+                    />
+                    <Route path="/about" element={<About />} />
+                    <Route path="/faq" element={<FAQ />} />
+                    <Route path="/privacy" element={<Privacy />} />
+                    <Route path="/terms" element={<Terms />} />
+                    <Route path="/auth" element={<Auth />} />
+                    {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+                    <Route path="*" element={<NotFound />} />
                   </Routes>
                 </BrowserRouter>
               </ThemeProvider>

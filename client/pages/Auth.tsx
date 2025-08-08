@@ -66,7 +66,7 @@ export default function Auth() {
     // Auto-retry after a short delay for hot-reload issues
     if (retryCount < 3) {
       setTimeout(() => {
-        setRetryCount(prev => prev + 1);
+        setRetryCount((prev) => prev + 1);
       }, 1000);
     } else {
       setContextError("Context unavailable after retries");
@@ -80,7 +80,9 @@ export default function Auth() {
         <Card className="w-full max-w-md mx-4">
           <CardContent className="p-6 text-center">
             <div className="text-orange-600 mb-4">
-              {retryCount > 0 ? `Reconnecting... (${retryCount}/3)` : "Authentication system loading..."}
+              {retryCount > 0
+                ? `Reconnecting... (${retryCount}/3)`
+                : "Authentication system loading..."}
             </div>
             <div className="text-sm text-gray-600 mb-4">
               This usually resolves automatically in development mode
