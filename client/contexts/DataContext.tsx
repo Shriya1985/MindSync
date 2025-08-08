@@ -1045,7 +1045,18 @@ export function DataProvider({ children }: DataProviderProps) {
       .eq("user_id", user.id);
 
     if (error) {
-      console.error("Error completing daily quest:", error);
+      console.error("Error completing daily quest:", {
+        code: error.code,
+        message: error.message,
+        details: error.details,
+        hint: error.hint,
+      });
+      showNotification({
+        type: "encouragement",
+        title: "Quest Update Failed",
+        message: "Couldn't update quest status, but your progress is saved locally!",
+        duration: 3000,
+      });
       return;
     }
 
