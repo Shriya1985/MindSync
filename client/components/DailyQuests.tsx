@@ -94,8 +94,13 @@ export function DailyQuests() {
     );
 
     // Award XP through data context and mark quest as completed
-    await addPoints(quest.xp, `Daily Quest: ${quest.title}`);
-    await completeDailyQuest(questId);
+    try {
+      await addPoints(quest.xp, `Daily Quest: ${quest.title}`);
+      await completeDailyQuest(questId);
+    } catch (error) {
+      console.error("Error completing quest:", error);
+      // Quest is still marked as completed locally, so continue with notification
+    }
 
     // Show celebration notification
     showNotification({
