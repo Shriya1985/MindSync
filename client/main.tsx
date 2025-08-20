@@ -31,17 +31,24 @@ import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
 
-const App = () => (
-  <ErrorBoundary>
-    <QueryClientProvider client={queryClient}>
-      <TooltipProvider>
-        <Toaster />
-        <Sonner />
-        <AuthProvider>
-          <ErrorBoundary>
-            <DataProvider>
-              <ThemeProvider>
-                <BrowserRouter>
+const App = () => {
+  // Development check for context hierarchy
+  if (import.meta.env.DEV) {
+    console.log("🔧 App: Initializing context hierarchy");
+    console.log("📋 Order: ErrorBoundary → QueryClient → Tooltip → Auth → ErrorBoundary → Data → Theme → Router");
+  }
+
+  return (
+    <ErrorBoundary>
+      <QueryClientProvider client={queryClient}>
+        <TooltipProvider>
+          <Toaster />
+          <Sonner />
+          <AuthProvider>
+            <ErrorBoundary>
+              <DataProvider>
+                <ThemeProvider>
+                  <BrowserRouter>
                   <NotificationSystem />
                   <DatabaseSetupNotice />
                   <ThemeStatus />
