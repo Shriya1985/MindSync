@@ -14,7 +14,31 @@ import {
 } from "lucide-react";
 
 export function SupabaseConnectionStatus() {
-  const { testConnection, forceSync } = useData();
+  // Safe context access
+  let dataContext;
+  try {
+    dataContext = useData();
+  } catch (error) {
+    console.error("SupabaseConnectionStatus: DataContext not available:", error);
+    // Return minimal component if context fails
+    return (
+      <Card className="shadow-lg border-0 bg-white/90 backdrop-blur-sm">
+        <CardContent className="p-4">
+          <div className="flex items-center space-x-3">
+            <div className="p-2 rounded-full bg-gray-100">
+              <Database className="w-4 h-4" />
+            </div>
+            <div>
+              <span className="font-medium text-gray-900">Database</span>
+              <div className="text-sm text-gray-600">Initializing...</div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  const { testConnection, forceSync } = dataContext;
   const [isConnected, setIsConnected] = useState<boolean | null>(null);
   const [isTesting, setIsTesting] = useState(false);
   const [isSyncing, setIsSyncing] = useState(false);

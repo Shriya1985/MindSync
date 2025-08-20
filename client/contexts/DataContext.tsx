@@ -1151,18 +1151,19 @@ export function DataProvider({ children }: DataProviderProps) {
       .eq("user_id", user.id);
 
     if (error) {
-      console.error("Error completing daily quest:", {
-        code: error.code,
-        message: error.message,
-        details: error.details,
-        hint: error.hint,
+      console.error("❌ Error completing daily quest:", {
+        code: error.code || "UNKNOWN",
+        message: error.message || "Unknown error",
+        details: error.details || "No details available",
+        hint: error.hint || "No hint available",
+        fullError: error
       });
+
       showNotification({
         type: "encouragement",
         title: "Quest Update Failed",
-        message:
-          "Couldn't update quest status, but your progress is saved locally!",
-        duration: 3000,
+        message: `Database error: ${error.message || "Unknown error"}. Progress saved locally!`,
+        duration: 4000,
       });
       return;
     }
