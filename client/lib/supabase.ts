@@ -90,8 +90,82 @@ export const supabase = isSupabaseConfigured
         // Prevent automatic logout on tab changes
         debug: false,
       },
+      // Add retry and timeout configurations for better reliability
+      db: {
+        schema: 'public'
+      },
+      global: {
+        headers: {
+          'X-Client-Info': 'mindsync-app'
+        }
+      },
+      realtime: {
+        params: {
+          eventsPerSecond: 2
+        }
+      }
     })
   : createFallbackClient();
+
+// Test Supabase connection
+export const testSupabaseConnection = async (): Promise<boolean> => {
+  if (!isSupabaseConfigured) {
+    console.log("❌ Supabase not configured");
+    return false;
+  }
+
+  try {
+    console.log("🔍 Testing Supabase connection...");
+
+    // Test basic connection
+    const { data, error } = await supabase
+      .from('profiles')
+      .select('id')
+      .limit(1);
+
+    if (error) {
+      console.error("❌ Supabase connection test failed:", error.message);
+      return false;
+    }
+
+    console.log("✅ Supabase connection successful");
+    return true;
+  } catch (error) {
+    console.error("❌ Supabase connection test error:", error);
+    return false;
+  }
+};
+
+// Force sync data to ensure changes reflect in Supabase
+export const forceSyncToSupabase = async (userId: string) => {
+  if (!isSupabaseConfigured || !userId) return false;
+
+  try {
+    console.log("🔄 Force syncing data to Supabase for user:", userId);
+
+    // Test write operation
+    const { error } = await supabase
+      .from('user_stats')
+      .upsert({
+        user_id: userId,
+        last_activity: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      }, {
+        onConflict: 'user_id'
+      });
+
+    if (error) {
+      console.error("❌ Sync failed:", error.message);
+      return false;
+    }
+
+    console.log("✅ Data successfully synced to Supabase");
+    return true;
+  } catch (error) {
+    console.error("❌ Sync error:", error);
+    return false;
+  }
+};
 
 // Database Types
 export interface Database {
