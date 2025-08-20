@@ -161,6 +161,7 @@ type DataContextType = {
   // Connection and sync functions
   testConnection: () => Promise<boolean>;
   forceSync: () => Promise<boolean>;
+  runDatabaseDiagnostics: () => Promise<void>;
 };
 
 const DataContext = createContext<DataContextType | undefined>(undefined);
@@ -1379,6 +1380,72 @@ export function DataProvider({ children }: DataProviderProps) {
     }
   };
 
+  // Database diagnostics function
+  const runDatabaseDiagnostics = async (): Promise<void> => {
+    if (!user || !isSupabaseConfigured) {
+      console.log("🔍 Database diagnostics: Not configured or no user");
+      return;
+    }
+
+    console.log("🔍 Running database diagnostics for user:", user.id);
+
+    try {
+      // Test each table individually
+      const tables = [
+        'profiles',
+        'user_stats',
+        'mood_entries',
+        'journal_entries',
+        'chat_messages',
+        'achievements',
+        'daily_quests',
+        'point_activities'
+      ];
+
+      for (const table of tables) {
+        try {
+          const { data, error } = await supabase
+            .from(table)
+            .select('id')
+            .eq('user_id', user.id)
+            .limit(1);
+
+          if (error) {
+            console.error(`❌ Table ${table} error:`, {
+              code: error.code,
+              message: error.message,
+              details: error.details,
+              hint: error.hint
+            });
+          } else {
+            console.log(`✅ Table ${table}: ${data?.length || 0} records accessible`);
+          }
+        } catch (tableError) {
+          console.error(`❌ Table ${table} exception:`, tableError);
+        }
+      }
+
+      // Test RLS (Row Level Security)
+      try {
+        const { data: rlsTest } = await supabase
+          .from('user_stats')
+          .select('user_id')
+          .limit(1);
+
+        if (rlsTest && rlsTest.length > 0) {
+          console.log("✅ RLS working: Can access user_stats");
+        } else {
+          console.log("⚠️ RLS check: No data returned from user_stats");
+        }
+      } catch (rlsError) {
+        console.error("❌ RLS test failed:", rlsError);
+      }
+
+    } catch (error) {
+      console.error("❌ Database diagnostics failed:", error);
+    }
+  };
+
   const value: DataContextType = {
     // Data
     moodEntries,
@@ -1420,6 +1487,7 @@ export function DataProvider({ children }: DataProviderProps) {
     exportData,
     testConnection,
     forceSync,
+    runDatabaseDiagnostics,
   };
 
   return <DataContext.Provider value={value}>{children}</DataContext.Provider>;
