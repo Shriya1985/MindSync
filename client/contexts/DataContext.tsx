@@ -265,18 +265,17 @@ export function DataProvider({ children }: DataProviderProps) {
         console.log(`📊 Data load summary: ${successfulLoads.length} successful, ${failedLoads.length} failed`);
 
         if (failedLoads.length === 0) {
-          showNotification({
-            type: "encouragement",
-            title: "Database Connected ✅",
-            message: "All your data is syncing with Supabase",
-            duration: 3000,
-          });
+          // Only show connection success in development
+          if (import.meta.env.DEV) {
+            console.log("✅ Database Connected: All data loaded successfully");
+          }
         } else {
           console.log("⚠️ Some data loads failed:", failedLoads);
+          // Only show partial load issues if there are actual problems
           showNotification({
             type: "encouragement",
-            title: "Partial Data Load ⚠️",
-            message: `Connected to database, but ${failedLoads.length} data types had issues`,
+            title: "Data Sync Issue",
+            message: `Some data couldn't load from database. Using offline mode.`,
             duration: 4000,
           });
         }
@@ -284,12 +283,10 @@ export function DataProvider({ children }: DataProviderProps) {
         console.log("⚠️ Supabase connection failed, using localStorage");
         loadLocalStorageData();
 
-        showNotification({
-          type: "encouragement",
-          title: "Offline Mode 📱",
-          message: "Data will sync when connection is restored",
-          duration: 3000,
-        });
+        // Only notify about offline mode in development or if it's a new session
+        if (import.meta.env.DEV) {
+          console.log("📱 Using offline mode - data will sync when connection restored");
+        }
       }
     } catch (error) {
       console.error("Error loading data:", error);
@@ -374,12 +371,15 @@ export function DataProvider({ children }: DataProviderProps) {
         fullError: error
       });
 
-      showNotification({
-        type: "encouragement",
-        title: "Mood Data Issue",
-        message: `Database error: ${error.message || "Connection issue"}. Using offline mode.`,
-        duration: 4000,
-      });
+      // Only show error notifications in development or for critical issues
+      if (import.meta.env.DEV || error.code === "PGRST116" || error.message?.includes("permission")) {
+        showNotification({
+          type: "encouragement",
+          title: "Data Issue",
+          message: "Using offline mode while resolving connection",
+          duration: 3000,
+        });
+      }
 
       // Set empty array as fallback
       setMoodEntries([]);
@@ -417,12 +417,14 @@ export function DataProvider({ children }: DataProviderProps) {
         fullError: error
       });
 
-      showNotification({
-        type: "encouragement",
-        title: "Journal Data Issue",
-        message: `Database error: ${error.message || "Connection issue"}. Using offline mode.`,
-        duration: 4000,
-      });
+      if (import.meta.env.DEV || error.code === "PGRST116" || error.message?.includes("permission")) {
+        showNotification({
+          type: "encouragement",
+          title: "Data Issue",
+          message: "Using offline mode while resolving connection",
+          duration: 3000,
+        });
+      }
 
       // Set empty array as fallback
       setJournalEntries([]);
@@ -460,12 +462,14 @@ export function DataProvider({ children }: DataProviderProps) {
         fullError: error
       });
 
-      showNotification({
-        type: "encouragement",
-        title: "Chat Data Issue",
-        message: `Database error: ${error.message || "Connection issue"}. Using offline mode.`,
-        duration: 4000,
-      });
+      if (import.meta.env.DEV || error.code === "PGRST116" || error.message?.includes("permission")) {
+        showNotification({
+          type: "encouragement",
+          title: "Data Issue",
+          message: "Using offline mode while resolving connection",
+          duration: 3000,
+        });
+      }
 
       // Set empty array as fallback
       setChatMessages([]);
@@ -503,12 +507,14 @@ export function DataProvider({ children }: DataProviderProps) {
         fullError: error
       });
 
-      showNotification({
-        type: "encouragement",
-        title: "Achievement Data Issue",
-        message: `Database error: ${error.message || "Connection issue"}. Using offline mode.`,
-        duration: 4000,
-      });
+      if (import.meta.env.DEV || error.code === "PGRST116" || error.message?.includes("permission")) {
+        showNotification({
+          type: "encouragement",
+          title: "Data Issue",
+          message: "Using offline mode while resolving connection",
+          duration: 3000,
+        });
+      }
 
       // Set empty array as fallback
       setAchievements([]);
@@ -548,12 +554,14 @@ export function DataProvider({ children }: DataProviderProps) {
         fullError: error
       });
 
-      showNotification({
-        type: "encouragement",
-        title: "Stats Data Issue",
-        message: `Database error: ${error.message || "Connection issue"}. Using offline mode.`,
-        duration: 4000,
-      });
+      if (import.meta.env.DEV || error.code === "PGRST116" || error.message?.includes("permission")) {
+        showNotification({
+          type: "encouragement",
+          title: "Data Issue",
+          message: "Using offline mode while resolving connection",
+          duration: 3000,
+        });
+      }
 
       // Use default stats as fallback
       setUserStats({
@@ -601,12 +609,14 @@ export function DataProvider({ children }: DataProviderProps) {
         fullError: error
       });
 
-      showNotification({
-        type: "encouragement",
-        title: "Quest Data Issue",
-        message: `Database error: ${error.message || "Connection issue"}. Using offline mode.`,
-        duration: 4000,
-      });
+      if (import.meta.env.DEV || error.code === "PGRST116" || error.message?.includes("permission")) {
+        showNotification({
+          type: "encouragement",
+          title: "Data Issue",
+          message: "Using offline mode while resolving connection",
+          duration: 3000,
+        });
+      }
 
       // Set empty array as fallback
       setDailyQuests([]);
@@ -648,12 +658,14 @@ export function DataProvider({ children }: DataProviderProps) {
         fullError: error
       });
 
-      showNotification({
-        type: "encouragement",
-        title: "Activity Data Issue",
-        message: `Database error: ${error.message || "Connection issue"}. Using offline mode.`,
-        duration: 4000,
-      });
+      if (import.meta.env.DEV || error.code === "PGRST116" || error.message?.includes("permission")) {
+        showNotification({
+          type: "encouragement",
+          title: "Data Issue",
+          message: "Using offline mode while resolving connection",
+          duration: 3000,
+        });
+      }
 
       // Set empty array as fallback
       setPointActivities([]);
@@ -740,12 +752,10 @@ export function DataProvider({ children }: DataProviderProps) {
         // Update sync time
         setLastSyncTime(new Date());
 
-        showNotification({
-          type: "encouragement",
-          title: "Mood Logged! 💖",
-          message: "Your mood has been saved to the database",
-          duration: 2000,
-        });
+        // Only show save confirmations in development
+        if (import.meta.env.DEV) {
+          console.log("💖 Mood logged and saved to database");
+        }
       } catch (networkError) {
         console.error("🔌 Network error adding mood entry:", networkError);
 
@@ -777,12 +787,10 @@ export function DataProvider({ children }: DataProviderProps) {
         ]);
         await updateStreak();
 
-        showNotification({
-          type: "encouragement",
-          title: "Mood Logged! 💖",
-          message: "Your mood has been saved locally",
-          duration: 2000,
-        });
+        // Simple feedback for localStorage mode
+        if (import.meta.env.DEV) {
+          console.log("💖 Mood logged locally");
+        }
       }
     }
   };
@@ -1366,11 +1374,13 @@ export function DataProvider({ children }: DataProviderProps) {
         setLastSyncTime(new Date());
         // Reload data after sync
         await loadAllData();
+
+        // Only show sync confirmation when manually triggered
         showNotification({
           type: "encouragement",
           title: "Sync Complete ✅",
-          message: "All data synchronized with Supabase",
-          duration: 3000,
+          message: "Data synchronized successfully",
+          duration: 2000,
         });
       }
       return syncSuccess;
