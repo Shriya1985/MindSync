@@ -118,6 +118,8 @@ const App = () => {
       </TooltipProvider>
     </QueryClientProvider>
   </ErrorBoundary>
+  );
+};
 );
 
 // Safe root initialization to prevent double mounting in development
