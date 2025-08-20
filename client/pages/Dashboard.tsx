@@ -166,6 +166,29 @@ export default function Dashboard() {
   const [selectedPeriod, setSelectedPeriod] = useState("7d");
   const [currentMood, setCurrentMood] = useState<string | null>(null);
 
+  // Safe context access with fallback
+  let dataContext;
+  try {
+    dataContext = useData();
+  } catch (error) {
+    console.error("Dashboard: DataContext not available:", error);
+    // Return loading state if context is not available
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-mint-50 via-white to-sky-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-mint-500 mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading dashboard...</p>
+          <button
+            onClick={() => window.location.reload()}
+            className="mt-4 px-4 py-2 bg-mint-500 text-white rounded hover:bg-mint-600"
+          >
+            Reload Page
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   const {
     moodEntries,
     journalEntries,
@@ -173,7 +196,8 @@ export default function Dashboard() {
     userStats,
     addMoodEntry,
     getStreakInfo,
-  } = useData();
+  } = dataContext;
+
   const { currentTheme } = useMoodTheme();
 
   const averageMood = userStats.averageMood || 0;
