@@ -1,5 +1,5 @@
 import { createContext, useContext, useEffect, useState } from "react";
-import { supabase, isSupabaseConfigured } from "@/lib/supabase";
+import { supabase, isSupabaseConfigured, testSupabaseConnection, forceSyncToSupabase } from "@/lib/supabase";
 import { localStorageService } from "@/lib/localStorage";
 import { AuthContext } from "@/contexts/AuthContext";
 import { showNotification } from "@/components/ui/notification-system";
@@ -152,6 +152,10 @@ type DataContextType = {
   // Utility functions
   getStreakInfo: () => { current: number; longest: number };
   exportData: () => any;
+
+  // Connection and sync functions
+  testConnection: () => Promise<boolean>;
+  forceSync: () => Promise<boolean>;
 };
 
 const DataContext = createContext<DataContextType | undefined>(undefined);
@@ -192,6 +196,8 @@ export function DataProvider({ children }: DataProviderProps) {
   const [pointActivities, setPointActivities] = useState<PointActivity[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isInitialized, setIsInitialized] = useState(false);
+  const [isConnected, setIsConnected] = useState(false);
+  const [lastSyncTime, setLastSyncTime] = useState<Date | null>(null);
 
   // Load all user data when authenticated
   useEffect(() => {
@@ -216,17 +222,48 @@ export function DataProvider({ children }: DataProviderProps) {
 
     setIsLoading(true);
     try {
-      await Promise.all([
-        loadMoodEntries(),
-        loadJournalEntries(),
-        loadChatMessages(),
-        loadAchievements(),
-        loadUserStats(),
-        loadDailyQuests(),
-        loadPointActivities(),
-      ]);
+      // Test connection first
+      console.log("🔍 Testing Supabase connection...");
+      const connectionStatus = await testSupabaseConnection();
+      setIsConnected(connectionStatus);
+
+      if (connectionStatus) {
+        console.log("✅ Supabase connected, loading data from database");
+
+        // Force sync to ensure user data exists
+        await forceSyncToSupabase(user.id);
+        setLastSyncTime(new Date());
+
+        await Promise.all([
+          loadMoodEntries(),
+          loadJournalEntries(),
+          loadChatMessages(),
+          loadAchievements(),
+          loadUserStats(),
+          loadDailyQuests(),
+          loadPointActivities(),
+        ]);
+
+        showNotification({
+          type: "encouragement",
+          title: "Database Connected ✅",
+          message: "All your data is syncing with Supabase",
+          duration: 3000,
+        });
+      } else {
+        console.log("⚠️ Supabase connection failed, using localStorage");
+        loadLocalStorageData();
+
+        showNotification({
+          type: "encouragement",
+          title: "Offline Mode 📱",
+          message: "Data will sync when connection is restored",
+          duration: 3000,
+        });
+      }
     } catch (error) {
       console.error("Error loading data:", error);
+      setIsConnected(false);
     } finally {
       setIsLoading(false);
       setIsInitialized(true);
@@ -1150,7 +1187,40 @@ export function DataProvider({ children }: DataProviderProps) {
     dailyQuests,
     pointActivities,
     exportedAt: new Date().toISOString(),
+    connectionStatus: isConnected,
+    lastSync: lastSyncTime,
   });
+
+  // Test connection function
+  const testConnection = async (): Promise<boolean> => {
+    const status = await testSupabaseConnection();
+    setIsConnected(status);
+    return status;
+  };
+
+  // Force sync function
+  const forceSync = async (): Promise<boolean> => {
+    if (!user) return false;
+
+    try {
+      const syncSuccess = await forceSyncToSupabase(user.id);
+      if (syncSuccess) {
+        setLastSyncTime(new Date());
+        // Reload data after sync
+        await loadAllData();
+        showNotification({
+          type: "encouragement",
+          title: "Sync Complete ✅",
+          message: "All data synchronized with Supabase",
+          duration: 3000,
+        });
+      }
+      return syncSuccess;
+    } catch (error) {
+      console.error("Force sync failed:", error);
+      return false;
+    }
+  };
 
   const value: DataContextType = {
     // Data
@@ -1191,6 +1261,8 @@ export function DataProvider({ children }: DataProviderProps) {
     completeDailyQuest,
     getStreakInfo,
     exportData,
+    testConnection,
+    forceSync,
   };
 
   return <DataContext.Provider value={value}>{children}</DataContext.Provider>;
