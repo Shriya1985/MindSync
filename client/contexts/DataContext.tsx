@@ -582,43 +582,100 @@ export function DataProvider({ children }: DataProviderProps) {
   const addMoodEntry = async (entry: Omit<MoodEntry, "id">) => {
     if (!user) return;
 
+    console.log("📝 Adding mood entry:", entry);
+
     if (isSupabaseConfigured) {
-      const { data, error } = await supabase
-        .from("mood_entries")
-        .insert({
-          user_id: user.id,
-          mood: entry.mood,
-          rating: entry.rating,
-          emoji: entry.emoji,
-          source: entry.source,
-          notes: entry.notes,
-          date: entry.date,
-        })
-        .select()
-        .single();
+      try {
+        const { data, error } = await supabase
+          .from("mood_entries")
+          .insert({
+            user_id: user.id,
+            mood: entry.mood,
+            rating: entry.rating,
+            emoji: entry.emoji,
+            source: entry.source,
+            notes: entry.notes,
+            date: entry.date,
+          })
+          .select()
+          .single();
 
-      if (error) {
-        console.error("Error adding mood entry:", error);
-        return;
+        if (error) {
+          console.error("❌ Error adding mood entry to Supabase:", {
+            code: error.code,
+            message: error.message,
+            details: error.details,
+          });
+
+          // Fallback to localStorage with notification
+          showNotification({
+            type: "encouragement",
+            title: "Saved Locally",
+            message: "Mood saved offline - will sync when connection restored",
+            duration: 3000,
+          });
+
+          const result = await localStorageService.addMoodEntry(entry);
+          if (result) {
+            setMoodEntries((prev) => [
+              result,
+              ...(Array.isArray(prev) ? prev : []),
+            ]);
+            await updateStreak();
+          }
+          return;
+        }
+
+        console.log("✅ Mood entry successfully saved to Supabase");
+
+        const newEntry: MoodEntry = {
+          id: data.id,
+          date: data.date,
+          mood: data.mood,
+          rating: data.rating,
+          emoji: data.emoji,
+          source: data.source,
+          notes: data.notes,
+        };
+
+        setMoodEntries((prev) => [
+          newEntry,
+          ...(Array.isArray(prev) ? prev : []),
+        ]);
+        await updateStreak();
+
+        // Update sync time
+        setLastSyncTime(new Date());
+
+        showNotification({
+          type: "encouragement",
+          title: "Mood Logged! 💖",
+          message: "Your mood has been saved to the database",
+          duration: 2000,
+        });
+      } catch (networkError) {
+        console.error("🔌 Network error adding mood entry:", networkError);
+
+        showNotification({
+          type: "encouragement",
+          title: "Connection Issue",
+          message: "Saved locally - will sync when online",
+          duration: 3000,
+        });
+
+        // Fallback to localStorage
+        const result = await localStorageService.addMoodEntry(entry);
+        if (result) {
+          setMoodEntries((prev) => [
+            result,
+            ...(Array.isArray(prev) ? prev : []),
+          ]);
+          await updateStreak();
+        }
       }
-
-      const newEntry: MoodEntry = {
-        id: data.id,
-        date: data.date,
-        mood: data.mood,
-        rating: data.rating,
-        emoji: data.emoji,
-        source: data.source,
-        notes: data.notes,
-      };
-
-      setMoodEntries((prev) => [
-        newEntry,
-        ...(Array.isArray(prev) ? prev : []),
-      ]);
-      await updateStreak();
     } else {
       // Use localStorage fallback
+      console.log("💾 Using localStorage mode for mood entry");
       const result = await localStorageService.addMoodEntry(entry);
       if (result) {
         setMoodEntries((prev) => [
@@ -626,6 +683,13 @@ export function DataProvider({ children }: DataProviderProps) {
           ...(Array.isArray(prev) ? prev : []),
         ]);
         await updateStreak();
+
+        showNotification({
+          type: "encouragement",
+          title: "Mood Logged! 💖",
+          message: "Your mood has been saved locally",
+          duration: 2000,
+        });
       }
     }
   };
