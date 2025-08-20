@@ -42,9 +42,79 @@ type AuthProviderProps = {
   children: React.ReactNode;
 };
 
+// Helper function for localStorage authentication fallback
+const handleLocalStorageLogin = async (email: string, password: string): Promise<boolean> => {
+  const result = await localStorageService.login(email, password);
+
+  if (result.success && result.user) {
+    return true;
+  } else {
+    showNotification({
+      type: "encouragement",
+      title: "Login Failed",
+      message: result.error || "Invalid credentials",
+      duration: 3000,
+    });
+    return false;
+  }
+};
+
 export function AuthProvider({ children }: AuthProviderProps) {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+
+  // BULLETPROOF: Store user in both state and localStorage for persistence
+  const [sessionBackup, setSessionBackup] = useState<User | null>(null);
+
+  // Backup user session to localStorage
+  const backupUserSession = (userData: User) => {
+    try {
+      localStorage.setItem('mindsync_session_backup', JSON.stringify({
+        user: userData,
+        timestamp: Date.now(),
+        explicit_logout: false
+      }));
+      setSessionBackup(userData);
+      console.log("🔒 Session backed up to localStorage");
+    } catch (error) {
+      console.error("Failed to backup session:", error);
+    }
+  };
+
+  // Restore user session from localStorage
+  const restoreUserSession = (): User | null => {
+    try {
+      const backup = localStorage.getItem('mindsync_session_backup');
+      if (backup) {
+        const parsed = JSON.parse(backup);
+        // Check if session is recent (within 7 days) and not explicitly logged out
+        const isRecent = (Date.now() - parsed.timestamp) < (7 * 24 * 60 * 60 * 1000);
+        if (isRecent && !parsed.explicit_logout && parsed.user) {
+          console.log("🔓 Restored session from localStorage backup");
+          return parsed.user;
+        }
+      }
+    } catch (error) {
+      console.error("Failed to restore session:", error);
+    }
+    return null;
+  };
+
+  // Clear session backup (only on explicit logout)
+  const clearSessionBackup = () => {
+    try {
+      const backup = localStorage.getItem('mindsync_session_backup');
+      if (backup) {
+        const parsed = JSON.parse(backup);
+        parsed.explicit_logout = true;
+        localStorage.setItem('mindsync_session_backup', JSON.stringify(parsed));
+      }
+      setSessionBackup(null);
+      console.log("🗑️ Session backup cleared");
+    } catch (error) {
+      console.error("Failed to clear session backup:", error);
+    }
+  };
 
   // Fetch user profile from Supabase with quick timeout and fallback
   const fetchUserProfile = async (supabaseUser: SupabaseUser) => {
@@ -105,6 +175,15 @@ export function AuthProvider({ children }: AuthProviderProps) {
       }, 10000); // 10 second timeout
 
       try {
+        // FIRST: Try to restore from localStorage backup (fastest)
+        const restoredUser = restoreUserSession();
+        if (restoredUser) {
+          console.log("⚡ Using restored session, setting user immediately");
+          setUser(restoredUser);
+          setIsLoading(false);
+          // Continue with Supabase check in background but don't block UI
+        }
+
         if (isSupabaseConfigured) {
           console.log("🔧 Using Supabase authentication");
 
@@ -126,9 +205,16 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
           if (error && !session) {
             console.error("❌ Error getting session after retries:", error);
-            clearTimeout(timeoutId);
-            setIsLoading(false);
-            return;
+            // Don't clear user if we have a backup
+            if (!restoredUser) {
+              clearTimeout(timeoutId);
+              setIsLoading(false);
+              return;
+            } else {
+              console.log("✅ Using backup session despite Supabase error");
+              clearTimeout(timeoutId);
+              return;
+            }
           }
 
           console.log("📋 Session check complete:", !!session?.user);
@@ -141,6 +227,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
               if (userProfile) {
                 console.log("✅ User profile loaded:", userProfile.email);
                 setUser(userProfile);
+                backupUserSession(userProfile); // Backup the session
               } else {
                 console.log(
                   "⚠️ Profile fetch failed, creating fallback profile...",
@@ -225,7 +312,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     initializeAuth();
 
     if (isSupabaseConfigured) {
-      // BULLETPROOF AUTH: Only listen for critical events, never auto-logout
+      // BULLETPROOF AUTH: Completely ignore all automatic events
       let isExplicitLogout = false;
 
       const {
@@ -236,41 +323,64 @@ export function AuthProvider({ children }: AuthProviderProps) {
           event,
           "Session user:",
           !!session?.user,
+          "Current user:",
+          !!user,
           "Explicit logout:",
           isExplicitLogout,
         );
 
-        // CRITICAL: Only handle explicit logouts or initial sign-ins
-        // NEVER auto-logout the user
+        // ABSOLUTELY BULLETPROOF: Only handle explicit actions
         switch (event) {
           case "SIGNED_IN":
             console.log("✅ User signed in, updating profile");
             if (session?.user) {
               const userProfile = await fetchUserProfile(session.user);
-              setUser(userProfile);
-              isExplicitLogout = false; // Reset logout flag
+              if (userProfile) {
+                setUser(userProfile);
+                backupUserSession(userProfile);
+              }
+              isExplicitLogout = false;
             }
             setIsLoading(false);
             break;
 
           case "SIGNED_OUT":
-            // ONLY logout if this was an explicit logout action
-            if (isExplicitLogout) {
-              console.log("👋 Explicit logout confirmed - clearing user state");
+            // ABSOLUTELY ONLY logout if explicit AND we have backup confirmation
+            const backup = localStorage.getItem('mindsync_session_backup');
+            let shouldLogout = false;
+
+            try {
+              if (backup) {
+                const parsed = JSON.parse(backup);
+                shouldLogout = parsed.explicit_logout === true;
+              }
+            } catch (e) {
+              shouldLogout = isExplicitLogout;
+            }
+
+            if (shouldLogout && isExplicitLogout) {
+              console.log("👋 CONFIRMED explicit logout - clearing user state");
               setUser(null);
+              clearSessionBackup();
               isExplicitLogout = false;
             } else {
-              console.log(
-                "⚠️ IGNORING automatic SIGNED_OUT - user stays logged in",
-              );
-              // Keep user logged in despite auth event
+              console.log("🛡️ PROTECTED: Ignoring SIGNED_OUT event - keeping user logged in");
+              // If we have a backup and current user is null, restore it
+              if (!user && sessionBackup) {
+                console.log("🔄 Restoring user from backup due to false logout");
+                setUser(sessionBackup);
+              }
             }
             setIsLoading(false);
             break;
 
           case "TOKEN_REFRESHED":
-            console.log("🔄 Token refreshed - session maintained");
-            // Never change anything on token refresh
+            console.log("🔄 Token refreshed - maintaining user session");
+            // Ensure user is still set
+            if (!user && sessionBackup) {
+              console.log("🔧 Restoring user after token refresh");
+              setUser(sessionBackup);
+            }
             setIsLoading(false);
             break;
 
@@ -278,16 +388,17 @@ export function AuthProvider({ children }: AuthProviderProps) {
             console.log("🎯 Initial session check:", !!session?.user);
             if (session?.user && !user) {
               const userProfile = await fetchUserProfile(session.user);
-              setUser(userProfile);
+              if (userProfile) {
+                setUser(userProfile);
+                backupUserSession(userProfile);
+              }
             }
             setIsLoading(false);
             break;
 
           default:
-            console.log(
-              `🔍 IGNORING auth event: ${event} - user stays logged in`,
-            );
-            // NEVER change user state or loading state for any other events
+            console.log(`🛡️ IGNORING ${event} - user session protected`);
+            // NEVER EVER change user state for any other events
             break;
         }
       });
@@ -308,37 +419,76 @@ export function AuthProvider({ children }: AuthProviderProps) {
       setIsLoading(true);
 
       if (isSupabaseConfigured) {
-        // Use Supabase authentication
-        const { data, error } = await supabase.auth.signInWithPassword({
-          email,
-          password,
-        });
+        try {
+          // Use Supabase authentication with timeout
+          const timeoutPromise = new Promise((_, reject) =>
+            setTimeout(() => reject(new Error("Connection timeout")), 10000)
+          );
 
-        if (error) {
-          console.error("Supabase login error:", error);
-          let errorMessage = error.message;
+          const authPromise = supabase.auth.signInWithPassword({
+            email,
+            password,
+          });
 
-          // Provide more helpful error messages
-          if (error.message.includes("email not confirmed")) {
-            errorMessage =
-              "Please check your email and click the confirmation link, or contact support.";
-          } else if (error.message.includes("Invalid login credentials")) {
-            errorMessage =
-              "Invalid email or password. Please check your credentials.";
+          const { data, error } = await Promise.race([authPromise, timeoutPromise]) as any;
+
+          if (error) {
+            console.error("Supabase login error:", error);
+
+            // Check if it's a network/connectivity error
+            if (error.message.includes("Failed to fetch") ||
+                error.message.includes("Network") ||
+                error.message.includes("Connection timeout")) {
+              console.log("🔌 Network issue detected, falling back to localStorage");
+
+              showNotification({
+                type: "encouragement",
+                title: "Connection Issue",
+                message: "Using offline mode. Your data will sync when connection is restored.",
+                duration: 5000,
+              });
+
+              // Fallback to localStorage authentication
+              return await handleLocalStorageLogin(email, password);
+            }
+
+            let errorMessage = error.message;
+
+            // Provide more helpful error messages
+            if (error.message.includes("email not confirmed")) {
+              errorMessage =
+                "Please check your email and click the confirmation link, or contact support.";
+            } else if (error.message.includes("Invalid login credentials")) {
+              errorMessage =
+                "Invalid email or password. Please check your credentials.";
+            }
+
+            showNotification({
+              type: "encouragement",
+              title: "Login Failed",
+              message: errorMessage,
+              duration: 5000,
+            });
+            return false;
           }
+        } catch (networkError) {
+          console.error("Network error during Supabase login:", networkError);
 
           showNotification({
             type: "encouragement",
-            title: "Login Failed",
-            message: errorMessage,
+            title: "Connection Issue",
+            message: "Unable to connect to server. Using offline mode.",
             duration: 5000,
           });
-          return false;
+
+          // Fallback to localStorage authentication
+          return await handleLocalStorageLogin(email, password);
         }
 
         if (data.user) {
           const userProfile = await fetchUserProfile(data.user);
           setUser(userProfile);
+          backupUserSession(userProfile); // Backup session immediately
 
           // Initialize data protection for this user
           dataProtection.setCurrentUser(data.user.id);
@@ -368,27 +518,9 @@ export function AuthProvider({ children }: AuthProviderProps) {
           return true;
         }
       } else {
-        // Fallback to localStorage
-        const result = await localStorageService.login(email, password);
-
-        if (result.success && result.user) {
-          setUser(result.user);
-          showNotification({
-            type: "encouragement",
-            title: "Welcome back! 🎉",
-            message: `Good to see you again, ${result.user.name}! (Using local storage)`,
-            duration: 3000,
-          });
-          return true;
-        } else {
-          showNotification({
-            type: "encouragement",
-            title: "Login Failed",
-            message: result.error || "Invalid credentials",
-            duration: 3000,
-          });
-          return false;
-        }
+        // Direct localStorage mode
+        console.log("💾 Using localStorage authentication mode");
+        return await handleLocalStorageLogin(email, password);
       }
 
       return false;
@@ -414,26 +546,99 @@ export function AuthProvider({ children }: AuthProviderProps) {
       setIsLoading(true);
 
       if (isSupabaseConfigured) {
-        // Use Supabase authentication
-        const { data, error } = await supabase.auth.signUp({
-          email,
-          password,
-          options: {
-            data: {
-              name: name,
-            },
-            emailRedirectTo: undefined, // Skip email confirmation for development
-          },
-        });
+        try {
+          // Use Supabase authentication with timeout
+          const timeoutPromise = new Promise((_, reject) =>
+            setTimeout(() => reject(new Error("Connection timeout")), 10000)
+          );
 
-        if (error) {
+          const authPromise = supabase.auth.signUp({
+            email,
+            password,
+            options: {
+              data: {
+                name: name,
+              },
+              emailRedirectTo: undefined, // Skip email confirmation for development
+            },
+          });
+
+          const { data, error } = await Promise.race([authPromise, timeoutPromise]) as any;
+
+          if (error) {
+            // Check if it's a network/connectivity error
+            if (error.message.includes("Failed to fetch") ||
+                error.message.includes("Network") ||
+                error.message.includes("Connection timeout")) {
+              console.log("🔌 Network issue during registration, falling back to localStorage");
+
+              showNotification({
+                type: "encouragement",
+                title: "Connection Issue",
+                message: "Using offline mode for registration. Your account will sync when connection is restored.",
+                duration: 5000,
+              });
+
+              // Fallback to localStorage registration
+              const result = await localStorageService.register(name, email, password);
+              if (result.success && result.user) {
+                setUser(result.user);
+                showNotification({
+                  type: "encouragement",
+                  title: "Welcome to MindSync! 🌟",
+                  message: `Account created successfully for ${name}! (Offline mode)`,
+                  duration: 4000,
+                });
+                return true;
+              } else {
+                showNotification({
+                  type: "encouragement",
+                  title: "Registration Failed",
+                  message: result.error || "Could not create account",
+                  duration: 3000,
+                });
+                return false;
+              }
+            }
+
+            showNotification({
+              type: "encouragement",
+              title: "Registration Failed",
+              message: error.message,
+              duration: 3000,
+            });
+            return false;
+          }
+        } catch (networkError) {
+          console.error("Network error during Supabase registration:", networkError);
+
           showNotification({
             type: "encouragement",
-            title: "Registration Failed",
-            message: error.message,
-            duration: 3000,
+            title: "Connection Issue",
+            message: "Unable to connect to server. Using offline registration.",
+            duration: 5000,
           });
-          return false;
+
+          // Fallback to localStorage registration
+          const result = await localStorageService.register(name, email, password);
+          if (result.success && result.user) {
+            setUser(result.user);
+            showNotification({
+              type: "encouragement",
+              title: "Welcome to MindSync! 🌟",
+              message: `Account created successfully for ${name}! (Offline mode)`,
+              duration: 4000,
+            });
+            return true;
+          } else {
+            showNotification({
+              type: "encouragement",
+              title: "Registration Failed",
+              message: result.error || "Could not create account",
+              duration: 3000,
+            });
+            return false;
+          }
         }
 
         if (data.user) {
@@ -497,6 +702,9 @@ export function AuthProvider({ children }: AuthProviderProps) {
       console.log("🚪 EXPLICIT LOGOUT - User clicked logout button");
       console.trace();
 
+      // Mark as explicit logout in backup FIRST
+      clearSessionBackup();
+
       // Set explicit logout flag BEFORE calling signOut
       if ((window as any).__setExplicitLogout) {
         (window as any).__setExplicitLogout(true);
@@ -513,10 +721,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
       // Clear data protection
       dataProtection.clearCurrentUser();
 
-      // Clear user state immediately for non-Supabase mode
-      if (!isSupabaseConfigured) {
-        setUser(null);
-      }
+      // Clear user state
+      setUser(null);
 
       showNotification({
         type: "encouragement",
@@ -526,7 +732,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
       });
     } catch (error) {
       console.error("Error during logout:", error);
-      // Even if logout fails, clear local state
+      // Clear everything on error
+      clearSessionBackup();
       setUser(null);
     }
   };
