@@ -259,10 +259,16 @@ export function DataProvider({ children }: DataProviderProps) {
         ]);
 
         // Check for any failed data loads
-        const failedLoads = dataLoadResults.filter(result => result.status === 'rejected');
-        const successfulLoads = dataLoadResults.filter(result => result.status === 'fulfilled');
+        const failedLoads = dataLoadResults.filter(
+          (result) => result.status === "rejected",
+        );
+        const successfulLoads = dataLoadResults.filter(
+          (result) => result.status === "fulfilled",
+        );
 
-        console.log(`📊 Data load summary: ${successfulLoads.length} successful, ${failedLoads.length} failed`);
+        console.log(
+          `📊 Data load summary: ${successfulLoads.length} successful, ${failedLoads.length} failed`,
+        );
 
         if (failedLoads.length === 0) {
           // Only show connection success in development
@@ -285,7 +291,9 @@ export function DataProvider({ children }: DataProviderProps) {
 
         // Only notify about offline mode in development or if it's a new session
         if (import.meta.env.DEV) {
-          console.log("📱 Using offline mode - data will sync when connection restored");
+          console.log(
+            "📱 Using offline mode - data will sync when connection restored",
+          );
         }
       }
     } catch (error) {
@@ -368,11 +376,15 @@ export function DataProvider({ children }: DataProviderProps) {
         message: error.message || "Unknown error",
         details: error.details || "No details available",
         hint: error.hint || "No hint available",
-        fullError: error
+        fullError: error,
       });
 
       // Only show error notifications in development or for critical issues
-      if (import.meta.env.DEV || error.code === "PGRST116" || error.message?.includes("permission")) {
+      if (
+        import.meta.env.DEV ||
+        error.code === "PGRST116" ||
+        error.message?.includes("permission")
+      ) {
         showNotification({
           type: "encouragement",
           title: "Data Issue",
@@ -414,10 +426,14 @@ export function DataProvider({ children }: DataProviderProps) {
         message: error.message || "Unknown error",
         details: error.details || "No details available",
         hint: error.hint || "No hint available",
-        fullError: error
+        fullError: error,
       });
 
-      if (import.meta.env.DEV || error.code === "PGRST116" || error.message?.includes("permission")) {
+      if (
+        import.meta.env.DEV ||
+        error.code === "PGRST116" ||
+        error.message?.includes("permission")
+      ) {
         showNotification({
           type: "encouragement",
           title: "Data Issue",
@@ -459,10 +475,14 @@ export function DataProvider({ children }: DataProviderProps) {
         message: error.message || "Unknown error",
         details: error.details || "No details available",
         hint: error.hint || "No hint available",
-        fullError: error
+        fullError: error,
       });
 
-      if (import.meta.env.DEV || error.code === "PGRST116" || error.message?.includes("permission")) {
+      if (
+        import.meta.env.DEV ||
+        error.code === "PGRST116" ||
+        error.message?.includes("permission")
+      ) {
         showNotification({
           type: "encouragement",
           title: "Data Issue",
@@ -504,10 +524,14 @@ export function DataProvider({ children }: DataProviderProps) {
         message: error.message || "Unknown error",
         details: error.details || "No details available",
         hint: error.hint || "No hint available",
-        fullError: error
+        fullError: error,
       });
 
-      if (import.meta.env.DEV || error.code === "PGRST116" || error.message?.includes("permission")) {
+      if (
+        import.meta.env.DEV ||
+        error.code === "PGRST116" ||
+        error.message?.includes("permission")
+      ) {
         showNotification({
           type: "encouragement",
           title: "Data Issue",
@@ -551,10 +575,14 @@ export function DataProvider({ children }: DataProviderProps) {
         message: error.message || "Unknown error",
         details: error.details || "No details available",
         hint: error.hint || "No hint available",
-        fullError: error
+        fullError: error,
       });
 
-      if (import.meta.env.DEV || error.code === "PGRST116" || error.message?.includes("permission")) {
+      if (
+        import.meta.env.DEV ||
+        error.code === "PGRST116" ||
+        error.message?.includes("permission")
+      ) {
         showNotification({
           type: "encouragement",
           title: "Data Issue",
@@ -606,10 +634,14 @@ export function DataProvider({ children }: DataProviderProps) {
         message: error.message || "Unknown error",
         details: error.details || "No details available",
         hint: error.hint || "No hint available",
-        fullError: error
+        fullError: error,
       });
 
-      if (import.meta.env.DEV || error.code === "PGRST116" || error.message?.includes("permission")) {
+      if (
+        import.meta.env.DEV ||
+        error.code === "PGRST116" ||
+        error.message?.includes("permission")
+      ) {
         showNotification({
           type: "encouragement",
           title: "Data Issue",
@@ -655,10 +687,14 @@ export function DataProvider({ children }: DataProviderProps) {
         message: error.message || "Unknown error",
         details: error.details || "No details available",
         hint: error.hint || "No hint available",
-        fullError: error
+        fullError: error,
       });
 
-      if (import.meta.env.DEV || error.code === "PGRST116" || error.message?.includes("permission")) {
+      if (
+        import.meta.env.DEV ||
+        error.code === "PGRST116" ||
+        error.message?.includes("permission")
+      ) {
         showNotification({
           type: "encouragement",
           title: "Data Issue",
@@ -1252,7 +1288,7 @@ export function DataProvider({ children }: DataProviderProps) {
         message: error.message || "Unknown error",
         details: error.details || "No details available",
         hint: error.hint || "No hint available",
-        fullError: error
+        fullError: error,
       });
 
       showNotification({
@@ -1402,22 +1438,22 @@ export function DataProvider({ children }: DataProviderProps) {
     try {
       // Test each table individually
       const tables = [
-        'profiles',
-        'user_stats',
-        'mood_entries',
-        'journal_entries',
-        'chat_messages',
-        'achievements',
-        'daily_quests',
-        'point_activities'
+        "profiles",
+        "user_stats",
+        "mood_entries",
+        "journal_entries",
+        "chat_messages",
+        "achievements",
+        "daily_quests",
+        "point_activities",
       ];
 
       for (const table of tables) {
         try {
           const { data, error } = await supabase
             .from(table)
-            .select('id')
-            .eq('user_id', user.id)
+            .select("id")
+            .eq("user_id", user.id)
             .limit(1);
 
           if (error) {
@@ -1425,10 +1461,12 @@ export function DataProvider({ children }: DataProviderProps) {
               code: error.code,
               message: error.message,
               details: error.details,
-              hint: error.hint
+              hint: error.hint,
             });
           } else {
-            console.log(`✅ Table ${table}: ${data?.length || 0} records accessible`);
+            console.log(
+              `✅ Table ${table}: ${data?.length || 0} records accessible`,
+            );
           }
         } catch (tableError) {
           console.error(`❌ Table ${table} exception:`, tableError);
@@ -1438,8 +1476,8 @@ export function DataProvider({ children }: DataProviderProps) {
       // Test RLS (Row Level Security)
       try {
         const { data: rlsTest } = await supabase
-          .from('user_stats')
-          .select('user_id')
+          .from("user_stats")
+          .select("user_id")
           .limit(1);
 
         if (rlsTest && rlsTest.length > 0) {
@@ -1450,7 +1488,6 @@ export function DataProvider({ children }: DataProviderProps) {
       } catch (rlsError) {
         console.error("❌ RLS test failed:", rlsError);
       }
-
     } catch (error) {
       console.error("❌ Database diagnostics failed:", error);
     }

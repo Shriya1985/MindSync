@@ -19,7 +19,10 @@ export function SupabaseConnectionStatus() {
   try {
     dataContext = useData();
   } catch (error) {
-    console.error("SupabaseConnectionStatus: DataContext not available:", error);
+    console.error(
+      "SupabaseConnectionStatus: DataContext not available:",
+      error,
+    );
     // Return minimal component if context fails
     return (
       <Card className="shadow-lg border-0 bg-white/90 backdrop-blur-sm">
