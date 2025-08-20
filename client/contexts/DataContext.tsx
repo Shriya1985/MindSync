@@ -237,12 +237,17 @@ export function DataProvider({ children }: DataProviderProps) {
 
       if (connectionStatus) {
         console.log("✅ Supabase connected, loading data from database");
+        console.log("👤 Loading data for user:", user.id);
 
         // Force sync to ensure user data exists
-        await forceSyncToSupabase(user.id);
-        setLastSyncTime(new Date());
+        const syncSuccess = await forceSyncToSupabase(user.id);
+        if (syncSuccess) {
+          setLastSyncTime(new Date());
+          console.log("🔄 User stats synchronized");
+        }
 
-        await Promise.all([
+        // Load data with individual error handling
+        const dataLoadResults = await Promise.allSettled([
           loadMoodEntries(),
           loadJournalEntries(),
           loadChatMessages(),
@@ -252,12 +257,28 @@ export function DataProvider({ children }: DataProviderProps) {
           loadPointActivities(),
         ]);
 
-        showNotification({
-          type: "encouragement",
-          title: "Database Connected ✅",
-          message: "All your data is syncing with Supabase",
-          duration: 3000,
-        });
+        // Check for any failed data loads
+        const failedLoads = dataLoadResults.filter(result => result.status === 'rejected');
+        const successfulLoads = dataLoadResults.filter(result => result.status === 'fulfilled');
+
+        console.log(`📊 Data load summary: ${successfulLoads.length} successful, ${failedLoads.length} failed`);
+
+        if (failedLoads.length === 0) {
+          showNotification({
+            type: "encouragement",
+            title: "Database Connected ✅",
+            message: "All your data is syncing with Supabase",
+            duration: 3000,
+          });
+        } else {
+          console.log("⚠️ Some data loads failed:", failedLoads);
+          showNotification({
+            type: "encouragement",
+            title: "Partial Data Load ⚠️",
+            message: `Connected to database, but ${failedLoads.length} data types had issues`,
+            duration: 4000,
+          });
+        }
       } else {
         console.log("⚠️ Supabase connection failed, using localStorage");
         loadLocalStorageData();
