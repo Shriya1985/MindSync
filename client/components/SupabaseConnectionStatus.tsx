@@ -38,7 +38,7 @@ export function SupabaseConnectionStatus() {
     );
   }
 
-  const { testConnection, forceSync } = dataContext;
+  const { testConnection, forceSync, runDatabaseDiagnostics } = dataContext;
   const [isConnected, setIsConnected] = useState<boolean | null>(null);
   const [isTesting, setIsTesting] = useState(false);
   const [isSyncing, setIsSyncing] = useState(false);
@@ -78,6 +78,12 @@ export function SupabaseConnectionStatus() {
     } finally {
       setIsSyncing(false);
     }
+  };
+
+  const handleDiagnostics = async () => {
+    console.log("🔍 Running database diagnostics...");
+    await runDatabaseDiagnostics();
+    console.log("✅ Diagnostics complete - check console for results");
   };
 
   const getStatusColor = () => {
@@ -142,6 +148,7 @@ export function SupabaseConnectionStatus() {
               disabled={isTesting}
               variant="outline"
               size="sm"
+              title="Test Connection"
             >
               {isTesting ? (
                 <RefreshCw className="w-4 h-4 animate-spin" />
@@ -155,12 +162,22 @@ export function SupabaseConnectionStatus() {
               disabled={isSyncing || !isConnected}
               variant="outline"
               size="sm"
+              title="Force Sync"
             >
               {isSyncing ? (
                 <RefreshCw className="w-4 h-4 animate-spin" />
               ) : (
                 <Database className="w-4 h-4" />
               )}
+            </Button>
+
+            <Button
+              onClick={handleDiagnostics}
+              variant="outline"
+              size="sm"
+              title="Run Diagnostics (Check Console)"
+            >
+              <AlertCircle className="w-4 h-4" />
             </Button>
           </div>
         </div>
