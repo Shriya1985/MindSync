@@ -43,7 +43,10 @@ type AuthProviderProps = {
 };
 
 // Helper function for localStorage authentication fallback
-const handleLocalStorageLogin = async (email: string, password: string): Promise<boolean> => {
+const handleLocalStorageLogin = async (
+  email: string,
+  password: string,
+): Promise<boolean> => {
   const result = await localStorageService.login(email, password);
 
   if (result.success && result.user) {
@@ -69,11 +72,14 @@ export function AuthProvider({ children }: AuthProviderProps) {
   // Backup user session to localStorage
   const backupUserSession = (userData: User) => {
     try {
-      localStorage.setItem('mindsync_session_backup', JSON.stringify({
-        user: userData,
-        timestamp: Date.now(),
-        explicit_logout: false
-      }));
+      localStorage.setItem(
+        "mindsync_session_backup",
+        JSON.stringify({
+          user: userData,
+          timestamp: Date.now(),
+          explicit_logout: false,
+        }),
+      );
       setSessionBackup(userData);
       console.log("🔒 Session backed up to localStorage");
     } catch (error) {
@@ -84,11 +90,12 @@ export function AuthProvider({ children }: AuthProviderProps) {
   // Restore user session from localStorage
   const restoreUserSession = (): User | null => {
     try {
-      const backup = localStorage.getItem('mindsync_session_backup');
+      const backup = localStorage.getItem("mindsync_session_backup");
       if (backup) {
         const parsed = JSON.parse(backup);
         // Check if session is recent (within 7 days) and not explicitly logged out
-        const isRecent = (Date.now() - parsed.timestamp) < (7 * 24 * 60 * 60 * 1000);
+        const isRecent =
+          Date.now() - parsed.timestamp < 7 * 24 * 60 * 60 * 1000;
         if (isRecent && !parsed.explicit_logout && parsed.user) {
           console.log("🔓 Restored session from localStorage backup");
           return parsed.user;
@@ -103,11 +110,11 @@ export function AuthProvider({ children }: AuthProviderProps) {
   // Clear session backup (only on explicit logout)
   const clearSessionBackup = () => {
     try {
-      const backup = localStorage.getItem('mindsync_session_backup');
+      const backup = localStorage.getItem("mindsync_session_backup");
       if (backup) {
         const parsed = JSON.parse(backup);
         parsed.explicit_logout = true;
-        localStorage.setItem('mindsync_session_backup', JSON.stringify(parsed));
+        localStorage.setItem("mindsync_session_backup", JSON.stringify(parsed));
       }
       setSessionBackup(null);
       console.log("🗑️ Session backup cleared");
@@ -339,17 +346,20 @@ export function AuthProvider({ children }: AuthProviderProps) {
       };
 
       // Add event listeners
-      document.addEventListener('visibilitychange', handleVisibilityChange);
-      window.addEventListener('focus', handleFocus);
-      window.addEventListener('blur', handleFocus); // Also protect on blur
-      window.addEventListener('beforeunload', handleBeforeUnload);
+      document.addEventListener("visibilitychange", handleVisibilityChange);
+      window.addEventListener("focus", handleFocus);
+      window.addEventListener("blur", handleFocus); // Also protect on blur
+      window.addEventListener("beforeunload", handleBeforeUnload);
 
       // Cleanup function
       return () => {
-        document.removeEventListener('visibilitychange', handleVisibilityChange);
-        window.removeEventListener('focus', handleFocus);
-        window.removeEventListener('blur', handleFocus);
-        window.removeEventListener('beforeunload', handleBeforeUnload);
+        document.removeEventListener(
+          "visibilitychange",
+          handleVisibilityChange,
+        );
+        window.removeEventListener("focus", handleFocus);
+        window.removeEventListener("blur", handleFocus);
+        window.removeEventListener("beforeunload", handleBeforeUnload);
       };
     };
 
@@ -390,7 +400,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
           case "SIGNED_OUT":
             // ABSOLUTELY ONLY logout if explicit AND we have backup confirmation
-            const backup = localStorage.getItem('mindsync_session_backup');
+            const backup = localStorage.getItem("mindsync_session_backup");
             let shouldLogout = false;
 
             try {
@@ -408,10 +418,14 @@ export function AuthProvider({ children }: AuthProviderProps) {
               clearSessionBackup();
               isExplicitLogout = false;
             } else {
-              console.log("🛡️ PROTECTED: Ignoring SIGNED_OUT event - keeping user logged in");
+              console.log(
+                "🛡️ PROTECTED: Ignoring SIGNED_OUT event - keeping user logged in",
+              );
               // If we have a backup and current user is null, restore it
               if (!user && sessionBackup) {
-                console.log("🔄 Restoring user from backup due to false logout");
+                console.log(
+                  "🔄 Restoring user from backup due to false logout",
+                );
                 setUser(sessionBackup);
               }
             }
@@ -469,7 +483,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
         try {
           // Use Supabase authentication with timeout
           const timeoutPromise = new Promise((_, reject) =>
-            setTimeout(() => reject(new Error("Connection timeout")), 10000)
+            setTimeout(() => reject(new Error("Connection timeout")), 10000),
           );
 
           const authPromise = supabase.auth.signInWithPassword({
@@ -477,21 +491,29 @@ export function AuthProvider({ children }: AuthProviderProps) {
             password,
           });
 
-          const { data, error } = await Promise.race([authPromise, timeoutPromise]) as any;
+          const { data, error } = (await Promise.race([
+            authPromise,
+            timeoutPromise,
+          ])) as any;
 
           if (error) {
             console.error("Supabase login error:", error);
 
             // Check if it's a network/connectivity error
-            if (error.message.includes("Failed to fetch") ||
-                error.message.includes("Network") ||
-                error.message.includes("Connection timeout")) {
-              console.log("🔌 Network issue detected, falling back to localStorage");
+            if (
+              error.message.includes("Failed to fetch") ||
+              error.message.includes("Network") ||
+              error.message.includes("Connection timeout")
+            ) {
+              console.log(
+                "🔌 Network issue detected, falling back to localStorage",
+              );
 
               showNotification({
                 type: "encouragement",
                 title: "Connection Issue",
-                message: "Using offline mode. Your data will sync when connection is restored.",
+                message:
+                  "Using offline mode. Your data will sync when connection is restored.",
                 duration: 5000,
               });
 
@@ -596,7 +618,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
         try {
           // Use Supabase authentication with timeout
           const timeoutPromise = new Promise((_, reject) =>
-            setTimeout(() => reject(new Error("Connection timeout")), 10000)
+            setTimeout(() => reject(new Error("Connection timeout")), 10000),
           );
 
           const authPromise = supabase.auth.signUp({
@@ -610,24 +632,36 @@ export function AuthProvider({ children }: AuthProviderProps) {
             },
           });
 
-          const { data, error } = await Promise.race([authPromise, timeoutPromise]) as any;
+          const { data, error } = (await Promise.race([
+            authPromise,
+            timeoutPromise,
+          ])) as any;
 
           if (error) {
             // Check if it's a network/connectivity error
-            if (error.message.includes("Failed to fetch") ||
-                error.message.includes("Network") ||
-                error.message.includes("Connection timeout")) {
-              console.log("🔌 Network issue during registration, falling back to localStorage");
+            if (
+              error.message.includes("Failed to fetch") ||
+              error.message.includes("Network") ||
+              error.message.includes("Connection timeout")
+            ) {
+              console.log(
+                "🔌 Network issue during registration, falling back to localStorage",
+              );
 
               showNotification({
                 type: "encouragement",
                 title: "Connection Issue",
-                message: "Using offline mode for registration. Your account will sync when connection is restored.",
+                message:
+                  "Using offline mode for registration. Your account will sync when connection is restored.",
                 duration: 5000,
               });
 
               // Fallback to localStorage registration
-              const result = await localStorageService.register(name, email, password);
+              const result = await localStorageService.register(
+                name,
+                email,
+                password,
+              );
               if (result.success && result.user) {
                 setUser(result.user);
                 showNotification({
@@ -657,7 +691,10 @@ export function AuthProvider({ children }: AuthProviderProps) {
             return false;
           }
         } catch (networkError) {
-          console.error("Network error during Supabase registration:", networkError);
+          console.error(
+            "Network error during Supabase registration:",
+            networkError,
+          );
 
           showNotification({
             type: "encouragement",
@@ -667,7 +704,11 @@ export function AuthProvider({ children }: AuthProviderProps) {
           });
 
           // Fallback to localStorage registration
-          const result = await localStorageService.register(name, email, password);
+          const result = await localStorageService.register(
+            name,
+            email,
+            password,
+          );
           if (result.success && result.user) {
             setUser(result.user);
             showNotification({

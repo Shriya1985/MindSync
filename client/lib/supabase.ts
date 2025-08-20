@@ -1,8 +1,12 @@
 import { createClient } from "@supabase/supabase-js";
 
 // Get Supabase credentials with fallback
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || "https://ehyxltlcioovssbpttch.supabase.co";
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVoeXhsdGxjaW9vdnNzYnB0dGNoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTExMDQ5NTgsImV4cCI6MjA2NjY4MDk1OH0.VoVZlcAst1uwzLccPsqIVbsSQEfGgy4OTOBHfjfEwdM";
+const supabaseUrl =
+  import.meta.env.VITE_SUPABASE_URL ||
+  "https://ehyxltlcioovssbpttch.supabase.co";
+const supabaseAnonKey =
+  import.meta.env.VITE_SUPABASE_ANON_KEY ||
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVoeXhsdGxjaW9vdnNzYnB0dGNoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTExMDQ5NTgsImV4cCI6MjA2NjY4MDk1OH0.VoVZlcAst1uwzLccPsqIVbsSQEfGgy4OTOBHfjfEwdM";
 
 // Check if Supabase is configured
 export const isSupabaseConfigured = !!(
@@ -92,18 +96,18 @@ export const supabase = isSupabaseConfigured
       },
       // Add retry and timeout configurations for better reliability
       db: {
-        schema: 'public'
+        schema: "public",
       },
       global: {
         headers: {
-          'X-Client-Info': 'mindsync-app'
-        }
+          "X-Client-Info": "mindsync-app",
+        },
       },
       realtime: {
         params: {
-          eventsPerSecond: 2
-        }
-      }
+          eventsPerSecond: 2,
+        },
+      },
     })
   : createFallbackClient();
 
@@ -119,8 +123,8 @@ export const testSupabaseConnection = async (): Promise<boolean> => {
 
     // Test basic connection
     const { data, error } = await supabase
-      .from('profiles')
-      .select('id')
+      .from("profiles")
+      .select("id")
       .limit(1);
 
     if (error) {
@@ -144,15 +148,16 @@ export const forceSyncToSupabase = async (userId: string) => {
     console.log("🔄 Force syncing data to Supabase for user:", userId);
 
     // Test write operation
-    const { error } = await supabase
-      .from('user_stats')
-      .upsert({
+    const { error } = await supabase.from("user_stats").upsert(
+      {
         user_id: userId,
         last_activity: new Date().toISOString(),
-        updated_at: new Date().toISOString()
-      }, {
-        onConflict: 'user_id'
-      });
+        updated_at: new Date().toISOString(),
+      },
+      {
+        onConflict: "user_id",
+      },
+    );
 
     if (error) {
       console.error("❌ Sync failed:", error.message);
