@@ -168,6 +168,9 @@ const DataContext = createContext<DataContextType | undefined>(undefined);
 export function useData() {
   const context = useContext(DataContext);
   if (context === undefined) {
+    console.error("🚨 useData called outside DataProvider context!");
+    console.error("Component tree:", new Error().stack);
+    console.error("Make sure the component is wrapped in <DataProvider>");
     throw new Error("useData must be used within a DataProvider");
   }
   return context;
