@@ -311,6 +311,50 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
     initializeAuth();
 
+    // BULLETPROOF: Protect against browser events that might trigger logout
+    const protectAgainstBrowserEvents = () => {
+      // Prevent any focus/blur events from affecting auth
+      const handleVisibilityChange = () => {
+        console.log("👁️ Page visibility changed - protecting user session");
+        // Restore user if somehow lost during tab change
+        if (!user && sessionBackup) {
+          console.log("🔧 Restoring user after visibility change");
+          setUser(sessionBackup);
+        }
+      };
+
+      const handleFocus = () => {
+        console.log("👁️ Window focused - protecting user session");
+        // Restore user if somehow lost during focus change
+        if (!user && sessionBackup) {
+          console.log("🔧 Restoring user after focus");
+          setUser(sessionBackup);
+        }
+      };
+
+      const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+        // Prevent any unload events from triggering logout
+        console.log("🚪 Page unloading - session will be preserved");
+        // Don't actually prevent unload, just log it
+      };
+
+      // Add event listeners
+      document.addEventListener('visibilitychange', handleVisibilityChange);
+      window.addEventListener('focus', handleFocus);
+      window.addEventListener('blur', handleFocus); // Also protect on blur
+      window.addEventListener('beforeunload', handleBeforeUnload);
+
+      // Cleanup function
+      return () => {
+        document.removeEventListener('visibilitychange', handleVisibilityChange);
+        window.removeEventListener('focus', handleFocus);
+        window.removeEventListener('blur', handleFocus);
+        window.removeEventListener('beforeunload', handleBeforeUnload);
+      };
+    };
+
+    const cleanupBrowserEvents = protectAgainstBrowserEvents();
+
     if (isSupabaseConfigured) {
       // BULLETPROOF AUTH: Completely ignore all automatic events
       let isExplicitLogout = false;
@@ -410,7 +454,10 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
       return () => {
         subscription.unsubscribe();
+        cleanupBrowserEvents();
       };
+    } else {
+      return cleanupBrowserEvents;
     }
   }, []);
 
