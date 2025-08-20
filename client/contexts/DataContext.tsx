@@ -344,12 +344,21 @@ export function DataProvider({ children }: DataProviderProps) {
       .order("date", { ascending: false });
 
     if (error) {
-      console.error("Error loading mood entries:", {
-        code: error.code,
-        message: error.message,
-        details: error.details,
-        hint: error.hint,
+      console.error("❌ Error loading mood entries:", {
+        code: error.code || "UNKNOWN",
+        message: error.message || "Unknown error",
+        details: error.details || "No details available",
+        hint: error.hint || "No hint available",
+        fullError: error
       });
+
+      showNotification({
+        type: "encouragement",
+        title: "Mood Data Issue",
+        message: `Database error: ${error.message || "Connection issue"}. Using offline mode.`,
+        duration: 4000,
+      });
+
       // Set empty array as fallback
       setMoodEntries([]);
       return;
@@ -378,12 +387,21 @@ export function DataProvider({ children }: DataProviderProps) {
       .order("date", { ascending: false });
 
     if (error) {
-      console.error("Error loading journal entries:", {
-        code: error.code,
-        message: error.message,
-        details: error.details,
-        hint: error.hint,
+      console.error("❌ Error loading journal entries:", {
+        code: error.code || "UNKNOWN",
+        message: error.message || "Unknown error",
+        details: error.details || "No details available",
+        hint: error.hint || "No hint available",
+        fullError: error
       });
+
+      showNotification({
+        type: "encouragement",
+        title: "Journal Data Issue",
+        message: `Database error: ${error.message || "Connection issue"}. Using offline mode.`,
+        duration: 4000,
+      });
+
       // Set empty array as fallback
       setJournalEntries([]);
       return;
@@ -412,12 +430,21 @@ export function DataProvider({ children }: DataProviderProps) {
       .order("created_at", { ascending: true });
 
     if (error) {
-      console.error("Error loading chat messages:", {
-        code: error.code,
-        message: error.message,
-        details: error.details,
-        hint: error.hint,
+      console.error("❌ Error loading chat messages:", {
+        code: error.code || "UNKNOWN",
+        message: error.message || "Unknown error",
+        details: error.details || "No details available",
+        hint: error.hint || "No hint available",
+        fullError: error
       });
+
+      showNotification({
+        type: "encouragement",
+        title: "Chat Data Issue",
+        message: `Database error: ${error.message || "Connection issue"}. Using offline mode.`,
+        duration: 4000,
+      });
+
       // Set empty array as fallback
       setChatMessages([]);
       return;
@@ -446,12 +473,21 @@ export function DataProvider({ children }: DataProviderProps) {
       .order("earned_at", { ascending: false });
 
     if (error) {
-      console.error("Error loading achievements:", {
-        code: error.code,
-        message: error.message,
-        details: error.details,
-        hint: error.hint,
+      console.error("❌ Error loading achievements:", {
+        code: error.code || "UNKNOWN",
+        message: error.message || "Unknown error",
+        details: error.details || "No details available",
+        hint: error.hint || "No hint available",
+        fullError: error
       });
+
+      showNotification({
+        type: "encouragement",
+        title: "Achievement Data Issue",
+        message: `Database error: ${error.message || "Connection issue"}. Using offline mode.`,
+        duration: 4000,
+      });
+
       // Set empty array as fallback
       setAchievements([]);
       return;
@@ -482,12 +518,21 @@ export function DataProvider({ children }: DataProviderProps) {
       .single();
 
     if (error) {
-      console.error("Error loading user stats:", {
-        code: error.code,
-        message: error.message,
-        details: error.details,
-        hint: error.hint,
+      console.error("❌ Error loading user stats:", {
+        code: error.code || "UNKNOWN",
+        message: error.message || "Unknown error",
+        details: error.details || "No details available",
+        hint: error.hint || "No hint available",
+        fullError: error
       });
+
+      showNotification({
+        type: "encouragement",
+        title: "Stats Data Issue",
+        message: `Database error: ${error.message || "Connection issue"}. Using offline mode.`,
+        duration: 4000,
+      });
+
       // Use default stats as fallback
       setUserStats({
         level: 1,
@@ -526,12 +571,21 @@ export function DataProvider({ children }: DataProviderProps) {
       .order("created_at", { ascending: true });
 
     if (error) {
-      console.error("Error loading daily quests:", {
-        code: error.code,
-        message: error.message,
-        details: error.details,
-        hint: error.hint,
+      console.error("❌ Error loading daily quests:", {
+        code: error.code || "UNKNOWN",
+        message: error.message || "Unknown error",
+        details: error.details || "No details available",
+        hint: error.hint || "No hint available",
+        fullError: error
       });
+
+      showNotification({
+        type: "encouragement",
+        title: "Quest Data Issue",
+        message: `Database error: ${error.message || "Connection issue"}. Using offline mode.`,
+        duration: 4000,
+      });
+
       // Set empty array as fallback
       setDailyQuests([]);
       return;
@@ -564,12 +618,21 @@ export function DataProvider({ children }: DataProviderProps) {
       .limit(50); // Load recent activities
 
     if (error) {
-      console.error("Error loading point activities:", {
-        code: error.code,
-        message: error.message,
-        details: error.details,
-        hint: error.hint,
+      console.error("❌ Error loading point activities:", {
+        code: error.code || "UNKNOWN",
+        message: error.message || "Unknown error",
+        details: error.details || "No details available",
+        hint: error.hint || "No hint available",
+        fullError: error
       });
+
+      showNotification({
+        type: "encouragement",
+        title: "Activity Data Issue",
+        message: `Database error: ${error.message || "Connection issue"}. Using offline mode.`,
+        duration: 4000,
+      });
+
       // Set empty array as fallback
       setPointActivities([]);
       return;
