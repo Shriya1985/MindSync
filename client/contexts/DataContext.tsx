@@ -1,5 +1,10 @@
 import { createContext, useContext, useEffect, useState } from "react";
-import { supabase, isSupabaseConfigured, testSupabaseConnection, forceSyncToSupabase } from "@/lib/supabase";
+import {
+  supabase,
+  isSupabaseConfigured,
+  testSupabaseConnection,
+  forceSyncToSupabase,
+} from "@/lib/supabase";
 import { localStorageService } from "@/lib/localStorage";
 import { AuthContext } from "@/contexts/AuthContext";
 import { showNotification } from "@/components/ui/notification-system";

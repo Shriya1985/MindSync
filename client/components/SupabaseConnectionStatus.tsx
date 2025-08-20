@@ -3,14 +3,14 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useData } from "@/contexts/DataContext";
-import { 
-  Database, 
-  Wifi, 
-  WifiOff, 
-  RefreshCw, 
-  CheckCircle, 
+import {
+  Database,
+  Wifi,
+  WifiOff,
+  RefreshCw,
+  CheckCircle,
   AlertCircle,
-  Clock
+  Clock,
 } from "lucide-react";
 
 export function SupabaseConnectionStatus() {
@@ -23,7 +23,7 @@ export function SupabaseConnectionStatus() {
   // Test connection on mount
   useEffect(() => {
     checkConnection();
-    
+
     // Check connection every 30 seconds
     const interval = setInterval(checkConnection, 30000);
     return () => clearInterval(interval);
@@ -69,9 +69,11 @@ export function SupabaseConnectionStatus() {
   const getStatusIcon = () => {
     if (isTesting) return <RefreshCw className="w-4 h-4 animate-spin" />;
     if (isConnected === null) return <Database className="w-4 h-4" />;
-    return isConnected ? 
-      <CheckCircle className="w-4 h-4 text-green-600" /> : 
-      <AlertCircle className="w-4 h-4 text-red-600" />;
+    return isConnected ? (
+      <CheckCircle className="w-4 h-4 text-green-600" />
+    ) : (
+      <AlertCircle className="w-4 h-4 text-red-600" />
+    );
   };
 
   const getStatusText = () => {
@@ -91,7 +93,9 @@ export function SupabaseConnectionStatus() {
             <div>
               <div className="flex items-center space-x-2">
                 <span className="font-medium text-gray-900">Supabase</span>
-                <Badge className={`${getStatusColor()} ${getStatusTextColor()}`}>
+                <Badge
+                  className={`${getStatusColor()} ${getStatusTextColor()}`}
+                >
                   {getStatusText()}
                 </Badge>
               </div>
@@ -107,7 +111,7 @@ export function SupabaseConnectionStatus() {
               </div>
             </div>
           </div>
-          
+
           <div className="flex space-x-2">
             <Button
               onClick={checkConnection}
@@ -121,7 +125,7 @@ export function SupabaseConnectionStatus() {
                 <Wifi className="w-4 h-4" />
               )}
             </Button>
-            
+
             <Button
               onClick={handleForceSync}
               disabled={isSyncing || !isConnected}
@@ -136,13 +140,13 @@ export function SupabaseConnectionStatus() {
             </Button>
           </div>
         </div>
-        
+
         {isConnected && (
           <div className="mt-3 text-xs text-green-600 bg-green-50 p-2 rounded">
             ✅ All changes are automatically saved to Supabase database
           </div>
         )}
-        
+
         {isConnected === false && (
           <div className="mt-3 text-xs text-red-600 bg-red-50 p-2 rounded">
             ⚠️ Using offline mode - data will sync when connection is restored
