@@ -120,7 +120,6 @@ const App = () => {
   </ErrorBoundary>
   );
 };
-);
 
 // Safe root initialization to prevent double mounting in development
 const container = document.getElementById("root")!;
