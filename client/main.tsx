@@ -15,6 +15,7 @@ import { NotificationSystem } from "@/components/ui/notification-system";
 import { ThemeStatus } from "@/components/ThemeStatus";
 import { DatabaseSetupNotice } from "@/components/DatabaseSetupNotice";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
+import { DataContextErrorBoundary } from "@/components/DataContextErrorBoundary";
 import Index from "./pages/Index";
 import SimplifiedChatbot from "./pages/SimplifiedChatbot";
 import Dashboard from "./pages/Dashboard";
@@ -46,8 +47,9 @@ const App = () => {
           <Sonner />
           <AuthProvider>
             <ErrorBoundary>
-              <DataProvider>
-                <ThemeProvider>
+              <DataContextErrorBoundary>
+                <DataProvider>
+                  <ThemeProvider>
                   <BrowserRouter>
                   <NotificationSystem />
                   <DatabaseSetupNotice />
@@ -113,7 +115,8 @@ const App = () => {
                 </BrowserRouter>
               </ThemeProvider>
             </DataProvider>
-          </ErrorBoundary>
+          </DataContextErrorBoundary>
+        </ErrorBoundary>
         </AuthProvider>
       </TooltipProvider>
     </QueryClientProvider>
