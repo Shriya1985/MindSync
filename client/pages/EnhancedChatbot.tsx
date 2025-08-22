@@ -394,8 +394,8 @@ export default function EnhancedChatbot() {
               <h1 className="text-3xl font-bold text-gray-900 flex items-center space-x-2">
                 <div
                   className={cn(
-                    "w-8 h-8 rounded-full flex items-center justify-center",
-                    gradientClass,
+                    "w-8 h-8 rounded-full flex items-center justify-center bg-gradient-to-r",
+                    currentTheme.gradient,
                   )}
                 >
                   <Heart className="w-5 h-5 text-white" />
