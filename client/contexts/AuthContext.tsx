@@ -554,37 +554,39 @@ export function AuthProvider({ children }: AuthProviderProps) {
           return await handleLocalStorageLogin(email, password);
         }
 
-        if (data.user) {
+        if (data?.user) {
           const userProfile = await fetchUserProfile(data.user);
-          setUser(userProfile);
-          backupUserSession(userProfile); // Backup session immediately
+          if (userProfile) {
+            setUser(userProfile);
+            backupUserSession(userProfile); // Backup session immediately
 
-          // Initialize data protection for this user
-          dataProtection.setCurrentUser(data.user.id);
-          await dataProtection.ensureUserStats(data.user.id);
+            // Initialize data protection for this user
+            dataProtection.setCurrentUser(data.user.id);
+            await dataProtection.ensureUserStats(data.user.id);
 
-          // Run critical data integrity checks
-          const checks = await dataProtection.performCriticalChecks(
-            data.user.id,
-          );
+            // Run critical data integrity checks
+            const checks = await dataProtection.performCriticalChecks(
+              data.user.id,
+            );
 
-          if (!checks.rlsWorking) {
-            console.error("🚨 CRITICAL: Row Level Security not working!");
+            if (!checks.rlsWorking) {
+              console.error("🚨 CRITICAL: Row Level Security not working!");
+              showNotification({
+                type: "encouragement",
+                title: "Security Warning",
+                message: "Data isolation issue detected. Please contact support.",
+                duration: 10000,
+              });
+            }
+
             showNotification({
               type: "encouragement",
-              title: "Security Warning",
-              message: "Data isolation issue detected. Please contact support.",
-              duration: 10000,
+              title: "Welcome back! 🎉",
+              message: `Good to see you again, ${userProfile?.name || "there"}! Your data is secure.`,
+              duration: 3000,
             });
+            return true;
           }
-
-          showNotification({
-            type: "encouragement",
-            title: "Welcome back! 🎉",
-            message: `Good to see you again, ${userProfile?.name || "there"}! Your data is secure.`,
-            duration: 3000,
-          });
-          return true;
         }
       } else {
         // Direct localStorage mode
@@ -729,7 +731,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
           }
         }
 
-        if (data.user) {
+        if (data?.user) {
           // Initialize data protection for new user
           dataProtection.setCurrentUser(data.user.id);
           await dataProtection.ensureUserStats(data.user.id);
