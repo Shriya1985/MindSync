@@ -282,7 +282,7 @@ export function GuidedMeditation() {
             animation: isPlaying ? "breathe 8s infinite ease-in-out" : "none",
           }}
         />
-        <style jsx>{`
+        <style>{`
           @keyframes breathe {
             0%,
             100% {
