@@ -43,7 +43,7 @@ type ViewMode = "chat" | "history";
 
 export default function EnhancedChatbot() {
   const navigate = useNavigate();
-  const { gradientClass } = useMoodTheme();
+  const { currentTheme } = useMoodTheme();
   const {
     chatMessages,
     moodEntries,

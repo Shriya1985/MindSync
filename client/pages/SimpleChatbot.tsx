@@ -17,7 +17,7 @@ import { MessageCircle, Send, Brain, Heart, Sparkles } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export default function SimpleChatbot() {
-  const { gradientClass } = useMoodTheme();
+  const { currentTheme } = useMoodTheme();
   const {
     chatMessages,
     moodEntries,
