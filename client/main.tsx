@@ -130,11 +130,11 @@ const App = () => {
 const container = document.getElementById("root")!;
 
 // Check if root already exists (for hot module reloading)
-if (!container._reactRoot) {
+if (!(container as any)._reactRoot) {
   const root = createRoot(container);
-  container._reactRoot = root;
+  (container as any)._reactRoot = root;
   root.render(<App />);
 } else {
   // Use existing root for hot reloading
-  container._reactRoot.render(<App />);
+  (container as any)._reactRoot.render(<App />);
 }
