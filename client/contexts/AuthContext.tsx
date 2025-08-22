@@ -574,7 +574,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
               showNotification({
                 type: "encouragement",
                 title: "Security Warning",
-                message: "Data isolation issue detected. Please contact support.",
+                message:
+                  "Data isolation issue detected. Please contact support.",
                 duration: 10000,
               });
             }
