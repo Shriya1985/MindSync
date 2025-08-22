@@ -640,8 +640,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
       setUser(updatedUser);
       backupUserSession(updatedUser);
 
-      // Update localStorage
-      await localStorageService.updateProfile(user.id, data);
+      // Note: localStorage profile update would be implemented here if needed
 
       showNotification({
         type: "encouragement",
