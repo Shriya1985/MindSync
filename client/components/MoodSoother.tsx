@@ -78,7 +78,7 @@ const ambientSounds: AmbientSound[] = [
     icon: Flame,
     color: "from-orange-400 to-red-500",
     audioUrl: "https://www2.cs.uic.edu/~i101/SoundFiles/StarWars60.wav",
-    mood: "cozy",
+    mood: "calm",
   },
   {
     id: "birds-chirping",
