@@ -1,7 +1,7 @@
 import { useState, useRef } from "react";
 import { Navigation } from "@/components/ui/navigation";
 import { Footer } from "@/components/ui/footer";
-import { useData, type JournalEntry } from "@/contexts/DataContext";
+import { useData, type JournalEntry as DataJournalEntry } from "@/contexts/DataContext";
 import { showNotification } from "@/components/ui/notification-system";
 import { JournalSummarizer } from "@/components/JournalSummarizer";
 import { useMoodTheme } from "@/hooks/useMoodTheme";
