@@ -554,37 +554,50 @@ export function AuthProvider({ children }: AuthProviderProps) {
           return await handleLocalStorageLogin(email, password);
         }
 
-        if (data.user) {
-          const userProfile = await fetchUserProfile(data.user);
-          setUser(userProfile);
-          backupUserSession(userProfile); // Backup session immediately
+          if (data?.user) {
+            const userProfile = await fetchUserProfile(data.user);
+            setUser(userProfile);
+            backupUserSession(userProfile); // Backup session immediately
 
-          // Initialize data protection for this user
-          dataProtection.setCurrentUser(data.user.id);
-          await dataProtection.ensureUserStats(data.user.id);
+            // Initialize data protection for this user
+            dataProtection.setCurrentUser(data.user.id);
+            await dataProtection.ensureUserStats(data.user.id);
 
-          // Run critical data integrity checks
-          const checks = await dataProtection.performCriticalChecks(
-            data.user.id,
-          );
+            // Run critical data integrity checks
+            const checks = await dataProtection.performCriticalChecks(
+              data.user.id,
+            );
 
-          if (!checks.rlsWorking) {
-            console.error("🚨 CRITICAL: Row Level Security not working!");
+            if (!checks.rlsWorking) {
+              console.error("🚨 CRITICAL: Row Level Security not working!");
+              showNotification({
+                type: "encouragement",
+                title: "Security Warning",
+                message: "Data isolation issue detected. Please contact support.",
+                duration: 10000,
+              });
+            }
+
             showNotification({
               type: "encouragement",
-              title: "Security Warning",
-              message: "Data isolation issue detected. Please contact support.",
-              duration: 10000,
+              title: "Welcome back! 🎉",
+              message: `Good to see you again, ${userProfile?.name || "there"}! Your data is secure.`,
+              duration: 3000,
             });
+            return true;
           }
+        } catch (networkError) {
+          console.error("Network error during Supabase login:", networkError);
 
           showNotification({
             type: "encouragement",
-            title: "Welcome back! 🎉",
-            message: `Good to see you again, ${userProfile?.name || "there"}! Your data is secure.`,
-            duration: 3000,
+            title: "Connection Issue",
+            message: "Unable to connect to server. Using offline mode.",
+            duration: 5000,
           });
-          return true;
+
+          // Fallback to localStorage authentication
+          return await handleLocalStorageLogin(email, password);
         }
       } else {
         // Direct localStorage mode
@@ -729,19 +742,57 @@ export function AuthProvider({ children }: AuthProviderProps) {
           }
         }
 
-        if (data.user) {
-          // Initialize data protection for new user
-          dataProtection.setCurrentUser(data.user.id);
-          await dataProtection.ensureUserStats(data.user.id);
+          if (data?.user) {
+            // Initialize data protection for new user
+            dataProtection.setCurrentUser(data.user.id);
+            await dataProtection.ensureUserStats(data.user.id);
 
-          // Profile will be created automatically by the database trigger
+            // Profile will be created automatically by the database trigger
+            showNotification({
+              type: "encouragement",
+              title: "Welcome to MindSync! 🌟",
+              message: `Account created successfully for ${name}! Your secure data space is ready.`,
+              duration: 4000,
+            });
+            return true;
+          }
+        } catch (networkError) {
+          console.error(
+            "Network error during Supabase registration:",
+            networkError,
+          );
+
           showNotification({
             type: "encouragement",
-            title: "Welcome to MindSync! 🌟",
-            message: `Account created successfully for ${name}! Your secure data space is ready.`,
-            duration: 4000,
+            title: "Connection Issue",
+            message: "Unable to connect to server. Using offline registration.",
+            duration: 5000,
           });
-          return true;
+
+          // Fallback to localStorage registration
+          const result = await localStorageService.register(
+            name,
+            email,
+            password,
+          );
+          if (result.success && result.user) {
+            setUser(result.user);
+            showNotification({
+              type: "encouragement",
+              title: "Welcome to MindSync! 🌟",
+              message: `Account created successfully for ${name}! (Offline mode)`,
+              duration: 4000,
+            });
+            return true;
+          } else {
+            showNotification({
+              type: "encouragement",
+              title: "Registration Failed",
+              message: result.error || "Could not create account",
+              duration: 3000,
+            });
+            return false;
+          }
         }
       } else {
         // Fallback to localStorage
