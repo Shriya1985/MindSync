@@ -480,8 +480,8 @@ export default function Journal() {
                   <CardContent className="p-6">
                     <div className="flex items-start justify-between mb-4">
                       <div className="flex items-center space-x-3">
-                        {entry.mood && (
-                          <span className="text-2xl">{entry.mood}</span>
+                        {entry.sentiment && (
+                          <span className="text-2xl">{entry.sentiment === 'positive' ? '😊' : entry.sentiment === 'negative' ? '😔' : '😐'}</span>
                         )}
                         <div>
                           <h3 className="text-lg font-semibold text-gray-900">
