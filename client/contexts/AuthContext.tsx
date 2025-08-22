@@ -540,20 +540,6 @@ export function AuthProvider({ children }: AuthProviderProps) {
             });
             return false;
           }
-        } catch (networkError) {
-          console.error("Network error during Supabase login:", networkError);
-
-          showNotification({
-            type: "encouragement",
-            title: "Connection Issue",
-            message: "Unable to connect to server. Using offline mode.",
-            duration: 5000,
-          });
-
-          // Fallback to localStorage authentication
-          return await handleLocalStorageLogin(email, password);
-        }
-
           if (data?.user) {
             const userProfile = await fetchUserProfile(data.user);
             setUser(userProfile);
@@ -586,6 +572,18 @@ export function AuthProvider({ children }: AuthProviderProps) {
             });
             return true;
           }
+        } catch (networkError) {
+          console.error("Network error during Supabase login:", networkError);
+
+          showNotification({
+            type: "encouragement",
+            title: "Connection Issue",
+            message: "Unable to connect to server. Using offline mode.",
+            duration: 5000,
+          });
+
+          // Fallback to localStorage authentication
+          return await handleLocalStorageLogin(email, password);
         }
       } else {
         // Direct localStorage mode
