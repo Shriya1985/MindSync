@@ -215,8 +215,8 @@ export function GuidedMeditation() {
         date: new Date().toISOString().split("T")[0],
         mood: "Calm",
         rating: 8,
-        emoji: "🧘",
-        activities: ["meditation"],
+        emoji: "���",
+        notes: "meditation",
         source: "dashboard",
       });
 
