@@ -985,7 +985,12 @@ export function DataProvider({ children }: DataProviderProps) {
 
       if (error) {
         console.error("Error adding chat message:", error.message || error);
-        showNotification("Failed to save chat message", "error");
+        showNotification({
+          type: "encouragement",
+          title: "Error",
+          message: "Failed to save chat message",
+          duration: 3000,
+        });
         return;
       }
 
