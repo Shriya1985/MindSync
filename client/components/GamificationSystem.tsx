@@ -250,9 +250,7 @@ export function GamificationSystem() {
         icon: "☀️",
         category: "special",
         rarity: "rare",
-        unlocked:
-          userStats.totalEntries > 0 &&
-          userStats.positiveEntries / userStats.totalEntries >= 0.75,
+        unlocked: userStats.totalEntries >= 30,
       },
       {
         id: "deep_thinker",
