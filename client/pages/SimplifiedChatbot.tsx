@@ -15,7 +15,7 @@ import {
   ExternalLink,
   RefreshCw,
   Maximize2,
-  Minimize2
+  Minimize2,
 } from "lucide-react";
 
 export default function SimplifiedChatbot() {
@@ -52,7 +52,8 @@ export default function SimplifiedChatbot() {
           showNotification({
             type: "encouragement",
             title: "Great conversation! 💬",
-            message: "You earned 10 points for engaging with your AI companion.",
+            message:
+              "You earned 10 points for engaging with your AI companion.",
             duration: 3000,
           });
         }
@@ -66,7 +67,9 @@ export default function SimplifiedChatbot() {
   const refreshChatbot = () => {
     setIsLoading(true);
     // Force reload the iframe
-    const iframe = document.getElementById("chatbot-iframe") as HTMLIFrameElement;
+    const iframe = document.getElementById(
+      "chatbot-iframe",
+    ) as HTMLIFrameElement;
     if (iframe) {
       iframe.src = iframe.src;
     }
@@ -81,9 +84,11 @@ export default function SimplifiedChatbot() {
     <div className="min-h-screen bg-gradient-to-br from-mint-50 to-sky-50">
       <Navigation />
 
-      <div className={`mx-auto px-4 sm:px-6 lg:px-8 py-8 transition-all duration-300 ${
-        isFullscreen ? "max-w-full" : "max-w-6xl"
-      }`}>
+      <div
+        className={`mx-auto px-4 sm:px-6 lg:px-8 py-8 transition-all duration-300 ${
+          isFullscreen ? "max-w-full" : "max-w-6xl"
+        }`}
+      >
         {/* Header */}
         <div className="text-center mb-6">
           <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-mint-500 to-sky-500 rounded-2xl mb-4">
@@ -93,12 +98,16 @@ export default function SimplifiedChatbot() {
             Buddy - Your AI Companion
           </h1>
           <p className="text-gray-600 mb-4">
-            Powered by advanced empathetic AI • Share your thoughts in a safe, supportive space
+            Powered by advanced empathetic AI • Share your thoughts in a safe,
+            supportive space
           </p>
 
           {/* Stats and Controls */}
           <div className="flex justify-center items-center space-x-6 text-sm mb-6">
-            <Badge variant="outline" className="bg-mint-100 text-mint-700 border-mint-300">
+            <Badge
+              variant="outline"
+              className="bg-mint-100 text-mint-700 border-mint-300"
+            >
               Level {userStats.level} • {userStats.points} points
             </Badge>
             <div className="flex space-x-2">
@@ -213,7 +222,9 @@ export default function SimplifiedChatbot() {
           </div>
           <div className="text-center p-4 bg-white/60 backdrop-blur-sm rounded-lg">
             <Shield className="w-8 h-8 text-sky-500 mx-auto mb-2" />
-            <h4 className="font-semibold text-gray-900 mb-1">Privacy Protected</h4>
+            <h4 className="font-semibold text-gray-900 mb-1">
+              Privacy Protected
+            </h4>
             <p className="text-sm text-gray-600">
               Your conversations are secure and confidential
             </p>
