@@ -205,7 +205,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     if (isSupabaseConfigured) {
       console.log("🛡️ Setting up Supabase auth listener");
 
-      const subscription = supabase.auth.onAuthStateChange(
+      const { data: authListener } = supabase.auth.onAuthStateChange(
         async (event, session) => {
           console.log(`🔔 Auth event: ${event}`);
 
@@ -259,7 +259,9 @@ export function AuthProvider({ children }: AuthProviderProps) {
       };
 
       return () => {
-        subscription.unsubscribe();
+        if (authListener?.subscription?.unsubscribe) {
+          authListener.subscription.unsubscribe();
+        }
         cleanupBrowserEvents();
       };
     } else {
