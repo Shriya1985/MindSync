@@ -527,17 +527,21 @@ export default function Journal() {
                       {entry.content}
                     </p>
 
-                    {entry.aiPrompt && (
+                    {entry.tags && entry.tags.length > 0 && (
                       <div className="p-3 bg-mint-50 rounded-lg border border-mint-200 mb-4">
                         <div className="flex items-center space-x-2 mb-1">
                           <Brain className="w-4 h-4 text-mint-600" />
                           <span className="text-sm font-medium text-mint-700">
-                            AI Reflection Prompt
+                            Tags
                           </span>
                         </div>
-                        <p className="text-sm text-mint-600">
-                          {entry.aiPrompt}
-                        </p>
+                        <div className="flex flex-wrap gap-1">
+                          {entry.tags.map((tag, i) => (
+                            <Badge key={i} variant="outline" className="text-xs bg-mint-100 text-mint-700 border-mint-300">
+                              {tag}
+                            </Badge>
+                          ))}
+                        </div>
                       </div>
                     )}
 
