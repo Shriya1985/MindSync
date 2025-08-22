@@ -176,7 +176,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
       // Add timeout to prevent infinite loading
       const timeoutId = setTimeout(() => {
         console.warn(
-          "⚠️ Auth initialization timeout, setting loading to false",
+          "⚠�� Auth initialization timeout, setting loading to false",
         );
         setIsLoading(false);
       }, 10000); // 10 second timeout
@@ -586,18 +586,6 @@ export function AuthProvider({ children }: AuthProviderProps) {
             });
             return true;
           }
-        } catch (networkError) {
-          console.error("Network error during Supabase login:", networkError);
-
-          showNotification({
-            type: "encouragement",
-            title: "Connection Issue",
-            message: "Unable to connect to server. Using offline mode.",
-            duration: 5000,
-          });
-
-          // Fallback to localStorage authentication
-          return await handleLocalStorageLogin(email, password);
         }
       } else {
         // Direct localStorage mode
