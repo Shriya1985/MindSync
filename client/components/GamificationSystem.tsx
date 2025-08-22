@@ -112,7 +112,7 @@ const getLevelInfo = (xp: number): LevelInfo => {
     },
   ];
 
-  const currentLevel = levels.findLast((level) => xp >= level.xpRequired);
+  const currentLevel = [...levels].reverse().find((level) => xp >= level.xpRequired);
   return currentLevel || levels[0];
 };
 
