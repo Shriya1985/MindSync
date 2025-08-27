@@ -76,59 +76,86 @@ export const runSupabaseHealthCheck = async (): Promise<HealthCheckResult> => {
       }
     }
 
-    // Check 3: Authentication Status
+    // Check 3: Authentication Status (with 2 second timeout)
     try {
-      const { data: { session }, error } = await supabase.auth.getSession();
+      console.log('🔐 Testing authentication...');
+      const authTest = supabase.auth.getSession();
+      const { data: { session }, error } = await withTimeout(authTest, 2000);
+
       if (error) {
         result.errors.push(`❌ Auth check failed: ${error.message}`);
       } else if (session?.user) {
         result.authenticated = true;
         result.details.push(`✅ User authenticated: ${session.user.email}`);
-        
-        // Check 4: Authenticated Data Access
+
+        // Check 4: Authenticated Data Access (with timeout)
         try {
-          const { data: profileData, error: profileError } = await supabase
+          console.log('👤 Testing profile access...');
+          const profileTest = supabase
             .from('profiles')
             .select('id, name')
             .eq('id', session.user.id)
             .single();
-            
+
+          const { data: profileData, error: profileError } = await withTimeout(profileTest, 2000);
+
           if (profileError) {
-            result.errors.push(`❌ Profile access error: ${profileError.message}`);
+            if (profileError.message.includes('PGRST116')) {
+              result.details.push('ℹ️ Profile not found (new user)');
+            } else {
+              result.errors.push(`❌ Profile access error: ${profileError.message}`);
+            }
           } else if (profileData) {
             result.details.push(`✅ Profile data accessible: ${profileData.name}`);
           }
         } catch (e: any) {
-          result.errors.push(`❌ Profile check failed: ${e.message}`);
+          if (e.message.includes('timed out')) {
+            result.errors.push(`❌ Profile check timeout`);
+          } else {
+            result.errors.push(`❌ Profile check failed: ${e.message}`);
+          }
         }
       } else {
         result.details.push('ℹ️ No active session (user not logged in)');
       }
     } catch (e: any) {
-      result.errors.push(`❌ Auth status check failed: ${e.message}`);
+      if (e.message.includes('timed out')) {
+        result.errors.push(`❌ Auth check timeout`);
+      } else {
+        result.errors.push(`❌ Auth status check failed: ${e.message}`);
+      }
     }
 
-    // Check 5: Database Write Test (if authenticated)
+    // Check 5: Database Write Test (if authenticated, with timeout)
     if (result.authenticated) {
       try {
+        console.log('💾 Testing database write...');
         const testTime = new Date().toISOString();
-        const { error: writeError } = await supabase
+        const userResponse = await withTimeout(supabase.auth.getUser(), 1000);
+
+        const writeTest = supabase
           .from('user_stats')
           .upsert({
-            user_id: (await supabase.auth.getUser()).data.user?.id,
+            user_id: userResponse.data.user?.id,
             last_activity: testTime,
             updated_at: testTime
           }, {
             onConflict: 'user_id'
           });
-          
+
+        const { error: writeError } = await withTimeout(writeTest, 3000);
+
         if (writeError) {
           result.errors.push(`❌ Write test failed: ${writeError.message}`);
         } else {
           result.details.push('✅ Database write test successful');
         }
       } catch (e: any) {
-        result.errors.push(`❌ Write test error: ${e.message}`);
+        if (e.message.includes('timed out')) {
+          result.errors.push(`❌ Write test timeout`);
+        } else {
+          result.errors.push(`❌ Write test error: ${e.message}`);
+        }
       }
     }
 
@@ -146,7 +173,7 @@ export const formatHealthCheckResults = (result: HealthCheckResult): string => {
   lines.push('================================');
   lines.push(`Configuration: ${result.configured ? '✅ Ready' : '❌ Not Configured'}`);
   lines.push(`Connection: ${result.connected ? '✅ Active' : '❌ Failed'}`);
-  lines.push(`Authentication: ${result.authenticated ? '✅ Logged In' : 'ℹ️ Not Logged In'}`);
+  lines.push(`Authentication: ${result.authenticated ? '✅ Logged In' : '���️ Not Logged In'}`);
   lines.push(`Security (RLS): ${result.rlsWorking ? '✅ Active' : '❌ Not Working'}`);
   lines.push('');
   
