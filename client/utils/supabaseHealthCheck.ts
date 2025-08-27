@@ -160,9 +160,11 @@ export const runSupabaseHealthCheck = async (): Promise<HealthCheckResult> => {
     }
 
   } catch (e: any) {
+    console.error('Health check exception:', e);
     result.errors.push(`❌ Health check failed: ${e.message}`);
   }
 
+  console.log('🔍 Health check completed:', result);
   return result;
 };
 
@@ -173,7 +175,7 @@ export const formatHealthCheckResults = (result: HealthCheckResult): string => {
   lines.push('================================');
   lines.push(`Configuration: ${result.configured ? '✅ Ready' : '❌ Not Configured'}`);
   lines.push(`Connection: ${result.connected ? '✅ Active' : '❌ Failed'}`);
-  lines.push(`Authentication: ${result.authenticated ? '✅ Logged In' : '���️ Not Logged In'}`);
+  lines.push(`Authentication: ${result.authenticated ? '✅ Logged In' : 'ℹ️ Not Logged In'}`);
   lines.push(`Security (RLS): ${result.rlsWorking ? '✅ Active' : '❌ Not Working'}`);
   lines.push('');
   
