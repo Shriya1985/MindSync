@@ -301,6 +301,9 @@ export default function Dashboard() {
         {/* Supabase Connection Status */}
         <SupabaseConnectionStatus />
 
+        {/* Detailed Supabase Health Check */}
+        <SupabaseHealthCheck />
+
         {/* Quick Mood Log */}
         <Card className="mb-8 shadow-lg border-0 bg-gradient-to-r from-mint-100 to-sky-100">
           <CardContent className="p-6">
