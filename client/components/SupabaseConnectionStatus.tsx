@@ -59,9 +59,16 @@ export function SupabaseConnectionStatus() {
   const checkConnection = async () => {
     setIsTesting(true);
     try {
-      const status = await testConnection();
+      // Add timeout to prevent hanging
+      const connectionPromise = testConnection();
+      const timeoutPromise = new Promise<boolean>((_, reject) =>
+        setTimeout(() => reject(new Error('Connection test timeout')), 5000)
+      );
+
+      const status = await Promise.race([connectionPromise, timeoutPromise]);
       setIsConnected(status);
     } catch (error) {
+      console.error('Connection test failed:', error);
       setIsConnected(false);
     } finally {
       setIsTesting(false);
