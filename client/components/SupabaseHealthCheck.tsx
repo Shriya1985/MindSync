@@ -21,10 +21,30 @@ export default function SupabaseHealthCheck() {
   const runCheck = async () => {
     setIsLoading(true);
     try {
-      const checkResult = await runSupabaseHealthCheck();
+      console.log('🚀 Starting health check...');
+
+      // Add overall timeout of 10 seconds
+      const healthCheckPromise = runSupabaseHealthCheck();
+      const timeoutPromise = new Promise<never>((_, reject) =>
+        setTimeout(() => reject(new Error('Health check timed out after 10 seconds')), 10000)
+      );
+
+      const checkResult = await Promise.race([healthCheckPromise, timeoutPromise]);
       setResult(checkResult);
-    } catch (error) {
-      console.error('Health check failed:', error);
+      console.log('✅ Health check completed successfully');
+    } catch (error: any) {
+      console.error('❌ Health check failed:', error);
+
+      // Create a fallback result if the check fails completely
+      const fallbackResult = {
+        configured: false,
+        connected: false,
+        authenticated: false,
+        rlsWorking: false,
+        details: [],
+        errors: [`Health check failed: ${error.message}`]
+      };
+      setResult(fallbackResult);
     } finally {
       setIsLoading(false);
     }
