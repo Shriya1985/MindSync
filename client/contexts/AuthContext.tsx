@@ -172,11 +172,22 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
+  // CRITICAL: Force isLoading to false after maximum 3 seconds
+  useEffect(() => {
+    const emergencyTimeout = setTimeout(() => {
+      console.log("🚨 EMERGENCY: Force setting isLoading to false after timeout");
+      setIsLoading(false);
+    }, 3000);
+
+    return () => clearTimeout(emergencyTimeout);
+  }, []);
+
   // Try to restore session from backup on mount
   useEffect(() => {
     const restoredUser = restoreSessionFromBackup();
     if (restoredUser) {
       setUser(restoredUser);
+      setIsLoading(false); // Immediately stop loading if user restored
       console.log("🔄 Session restored from backup");
     }
   }, []);
