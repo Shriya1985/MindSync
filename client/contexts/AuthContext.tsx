@@ -195,6 +195,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
   // Setup Supabase auth listener
   useEffect(() => {
     let isExplicitLogout = false;
+    let mounted = true;
 
     // Browser event protection
     const handleFocus = () => {
@@ -213,70 +214,115 @@ export function AuthProvider({ children }: AuthProviderProps) {
     window.addEventListener("focus", handleFocus);
     window.addEventListener("blur", handleBlur);
 
+    // Set a timeout to ensure loading stops even if Supabase fails
+    const authTimeout = setTimeout(() => {
+      if (mounted) {
+        console.log("⏰ Auth timeout - stopping loading state");
+        setIsLoading(false);
+      }
+    }, 2000);
+
     if (isSupabaseConfigured) {
       console.log("🛡️ Setting up Supabase auth listener");
 
-      const { data: authListener } = supabase.auth.onAuthStateChange(
-        async (event, session) => {
-          console.log(`🔔 Auth event: ${event}`);
+      try {
+        const { data: authListener } = supabase.auth.onAuthStateChange(
+          async (event, session) => {
+            if (!mounted) return;
 
-          switch (event) {
-            case "SIGNED_IN":
-              if (session?.user) {
-                console.log("✅ User signed in");
-                const userProfile = await fetchUserProfile(session.user);
-                setUser(userProfile);
-                backupUserSession(userProfile);
-              }
-              setIsLoading(false);
-              break;
+            console.log(`🔔 Auth event: ${event}`);
 
-            case "SIGNED_OUT":
-              if (isExplicitLogout) {
-                console.log("🚪 Explicit logout - clearing user");
-                setUser(null);
-                clearSessionBackup();
-              } else {
-                console.log("🛡️ Automatic logout blocked - session protected");
-                const restoredUser = restoreSessionFromBackup();
-                if (restoredUser) {
-                  setUser(restoredUser);
-                  backupUserSession(restoredUser);
+            switch (event) {
+              case "SIGNED_IN":
+                if (session?.user) {
+                  console.log("✅ User signed in");
+                  const userProfile = await fetchUserProfile(session.user);
+                  setUser(userProfile);
+                  backupUserSession(userProfile);
                 }
-              }
-              setIsLoading(false);
-              break;
+                setIsLoading(false);
+                break;
 
-            case "TOKEN_REFRESHED":
-              console.log("🔄 Token refreshed");
-              if (session?.user && user) {
-                const userProfile = await fetchUserProfile(session.user);
-                setUser(userProfile);
-                backupUserSession(userProfile);
-              }
-              setIsLoading(false);
-              break;
+              case "SIGNED_OUT":
+                if (isExplicitLogout) {
+                  console.log("🚪 Explicit logout - clearing user");
+                  setUser(null);
+                  clearSessionBackup();
+                } else {
+                  console.log("🛡️ Automatic logout blocked - session protected");
+                  const restoredUser = restoreSessionFromBackup();
+                  if (restoredUser) {
+                    setUser(restoredUser);
+                    backupUserSession(restoredUser);
+                  }
+                }
+                setIsLoading(false);
+                break;
 
-            default:
-              console.log(`🛡️ IGNORING ${event} - user session protected`);
-              break;
+              case "TOKEN_REFRESHED":
+                console.log("🔄 Token refreshed");
+                if (session?.user && user) {
+                  const userProfile = await fetchUserProfile(session.user);
+                  setUser(userProfile);
+                  backupUserSession(userProfile);
+                }
+                setIsLoading(false);
+                break;
+
+              case "INITIAL_SESSION":
+                console.log("🔧 Initial session loaded");
+                if (session?.user) {
+                  const userProfile = await fetchUserProfile(session.user);
+                  setUser(userProfile);
+                  backupUserSession(userProfile);
+                } else {
+                  // No initial session, check backup
+                  const restoredUser = restoreSessionFromBackup();
+                  if (restoredUser) {
+                    setUser(restoredUser);
+                  }
+                }
+                setIsLoading(false);
+                break;
+
+              default:
+                console.log(`🛡️ Auth event ${event} - ensuring loading stops`);
+                setIsLoading(false);
+                break;
+            }
+          },
+        );
+
+        // Store the logout flag setter for the logout function
+        (window as any).__setExplicitLogout = (value: boolean) => {
+          isExplicitLogout = value;
+        };
+
+        return () => {
+          mounted = false;
+          clearTimeout(authTimeout);
+          if (authListener?.subscription?.unsubscribe) {
+            authListener.subscription.unsubscribe();
           }
-        },
-      );
-
-      // Store the logout flag setter for the logout function
-      (window as any).__setExplicitLogout = (value: boolean) => {
-        isExplicitLogout = value;
-      };
-
+          cleanupBrowserEvents();
+        };
+      } catch (error) {
+        console.error("❌ Failed to setup Supabase auth listener:", error);
+        setIsLoading(false);
+        return () => {
+          mounted = false;
+          clearTimeout(authTimeout);
+          cleanupBrowserEvents();
+        };
+      }
+    } else {
+      console.log("💾 Supabase not configured, using localStorage mode");
+      setIsLoading(false);
       return () => {
-        if (authListener?.subscription?.unsubscribe) {
-          authListener.subscription.unsubscribe();
-        }
+        mounted = false;
+        clearTimeout(authTimeout);
         cleanupBrowserEvents();
       };
-    } else {
-      return cleanupBrowserEvents;
     }
   }, [user]);
 
