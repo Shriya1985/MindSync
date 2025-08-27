@@ -9,6 +9,16 @@ export interface HealthCheckResult {
   errors: string[];
 }
 
+// Helper function to add timeout to promises
+const withTimeout = <T>(promise: Promise<T>, timeoutMs: number = 5000): Promise<T> => {
+  return Promise.race([
+    promise,
+    new Promise<T>((_, reject) =>
+      setTimeout(() => reject(new Error(`Operation timed out after ${timeoutMs}ms`)), timeoutMs)
+    )
+  ]);
+};
+
 export const runSupabaseHealthCheck = async (): Promise<HealthCheckResult> => {
   const result: HealthCheckResult = {
     configured: false,
@@ -20,7 +30,7 @@ export const runSupabaseHealthCheck = async (): Promise<HealthCheckResult> => {
   };
 
   try {
-    // Check 1: Configuration
+    // Check 1: Configuration (immediate)
     result.configured = isSupabaseConfigured;
     if (result.configured) {
       result.details.push('✅ Supabase credentials configured');
@@ -29,20 +39,25 @@ export const runSupabaseHealthCheck = async (): Promise<HealthCheckResult> => {
       return result;
     }
 
-    // Check 2: Basic Connection
+    // Check 2: Basic Connection (with 3 second timeout)
     try {
-      const { data, error } = await supabase
+      console.log('🔍 Testing basic connection...');
+      const connectionTest = supabase
         .from('profiles')
         .select('id')
         .limit(1);
-      
+
+      const { data, error } = await withTimeout(connectionTest, 3000);
+
       if (error) {
-        if (error.message.includes('JWT') || error.message.includes('auth')) {
+        console.log('Connection error:', error.message);
+        if (error.message.includes('JWT') || error.message.includes('auth') || error.message.includes('RLS')) {
           result.connected = true;
           result.rlsWorking = true;
           result.details.push('✅ Connection successful');
           result.details.push('✅ RLS security active (requires authentication)');
         } else {
+          result.connected = false;
           result.errors.push(`❌ Connection error: ${error.message}`);
         }
       } else {
@@ -53,14 +68,19 @@ export const runSupabaseHealthCheck = async (): Promise<HealthCheckResult> => {
         }
       }
     } catch (e: any) {
-      result.errors.push(`❌ Connection failed: ${e.message}`);
+      console.error('Connection test failed:', e);
+      if (e.message.includes('timed out')) {
+        result.errors.push(`❌ Connection timeout: Database unreachable`);
+      } else {
+        result.errors.push(`❌ Connection failed: ${e.message}`);
+      }
     }
 
     // Check 3: Authentication Status
     try {
       const { data: { session }, error } = await supabase.auth.getSession();
       if (error) {
-        result.errors.push(`��� Auth check failed: ${error.message}`);
+        result.errors.push(`❌ Auth check failed: ${error.message}`);
       } else if (session?.user) {
         result.authenticated = true;
         result.details.push(`✅ User authenticated: ${session.user.email}`);
