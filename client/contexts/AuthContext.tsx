@@ -175,7 +175,9 @@ export function AuthProvider({ children }: AuthProviderProps) {
   // CRITICAL: Force isLoading to false after maximum 3 seconds
   useEffect(() => {
     const emergencyTimeout = setTimeout(() => {
-      console.log("🚨 EMERGENCY: Force setting isLoading to false after timeout");
+      console.log(
+        "🚨 EMERGENCY: Force setting isLoading to false after timeout",
+      );
       setIsLoading(false);
     }, 3000);
 
@@ -199,11 +201,13 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
     // Browser event protection
     const handleFocus = () => {
-      if (import.meta.env.DEV) console.log("🔍 Window focused - session protected");
+      if (import.meta.env.DEV)
+        console.log("🔍 Window focused - session protected");
     };
 
     const handleBlur = () => {
-      if (import.meta.env.DEV) console.log("👁️ Window blurred - session protected");
+      if (import.meta.env.DEV)
+        console.log("👁️ Window blurred - session protected");
     };
 
     const cleanupBrowserEvents = () => {
@@ -249,7 +253,9 @@ export function AuthProvider({ children }: AuthProviderProps) {
                   setUser(null);
                   clearSessionBackup();
                 } else {
-                  console.log("🛡️ Automatic logout blocked - session protected");
+                  console.log(
+                    "🛡️ Automatic logout blocked - session protected",
+                  );
                   const restoredUser = restoreSessionFromBackup();
                   if (restoredUser) {
                     setUser(restoredUser);
@@ -411,7 +417,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
               showNotification({
                 type: "encouragement",
                 title: "Security Warning",
-                message: "Data isolation issue detected. Please contact support.",
+                message:
+                  "Data isolation issue detected. Please contact support.",
                 duration: 10000,
               });
             }

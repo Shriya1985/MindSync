@@ -1,18 +1,21 @@
-import React, { useState, useEffect } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { 
-  CheckCircle, 
-  XCircle, 
-  AlertCircle, 
-  RefreshCw, 
+import React, { useState, useEffect } from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import {
+  CheckCircle,
+  XCircle,
+  AlertCircle,
+  RefreshCw,
   Database,
   Shield,
   User,
-  Zap
-} from 'lucide-react';
-import { runSupabaseHealthCheck, type HealthCheckResult } from '@/utils/supabaseHealthCheck';
+  Zap,
+} from "lucide-react";
+import {
+  runSupabaseHealthCheck,
+  type HealthCheckResult,
+} from "@/utils/supabaseHealthCheck";
 
 export default function SupabaseHealthCheck() {
   const [result, setResult] = useState<HealthCheckResult | null>(null);
@@ -21,19 +24,25 @@ export default function SupabaseHealthCheck() {
   const runCheck = async () => {
     setIsLoading(true);
     try {
-      console.log('🚀 Starting health check...');
+      console.log("🚀 Starting health check...");
 
       // Add overall timeout of 10 seconds
       const healthCheckPromise = runSupabaseHealthCheck();
       const timeoutPromise = new Promise<never>((_, reject) =>
-        setTimeout(() => reject(new Error('Health check timed out after 10 seconds')), 10000)
+        setTimeout(
+          () => reject(new Error("Health check timed out after 10 seconds")),
+          10000,
+        ),
       );
 
-      const checkResult = await Promise.race([healthCheckPromise, timeoutPromise]);
+      const checkResult = await Promise.race([
+        healthCheckPromise,
+        timeoutPromise,
+      ]);
       setResult(checkResult);
-      console.log('✅ Health check completed successfully');
+      console.log("✅ Health check completed successfully");
     } catch (error: any) {
-      console.error('❌ Health check failed:', error);
+      console.error("❌ Health check failed:", error);
 
       // Create a fallback result if the check fails completely
       const fallbackResult = {
@@ -42,7 +51,7 @@ export default function SupabaseHealthCheck() {
         authenticated: false,
         rlsWorking: false,
         details: [],
-        errors: [`Health check failed: ${error.message}`]
+        errors: [`Health check failed: ${error.message}`],
       };
       setResult(fallbackResult);
     } finally {
@@ -64,14 +73,14 @@ export default function SupabaseHealthCheck() {
   };
 
   const getOverallStatus = () => {
-    if (!result) return { text: 'Checking...', color: 'gray' };
-    
+    if (!result) return { text: "Checking...", color: "gray" };
+
     if (result.configured && result.connected && result.errors.length === 0) {
-      return { text: 'Ready for Deployment', color: 'green' };
+      return { text: "Ready for Deployment", color: "green" };
     } else if (result.configured && result.connected) {
-      return { text: 'Needs Attention', color: 'yellow' };
+      return { text: "Needs Attention", color: "yellow" };
     } else {
-      return { text: 'Not Ready', color: 'red' };
+      return { text: "Not Ready", color: "red" };
     }
   };
 
@@ -85,26 +94,34 @@ export default function SupabaseHealthCheck() {
           Supabase Connection Status
         </CardTitle>
         <div className="flex items-center gap-2">
-          <Badge 
-            variant={status.color === 'green' ? 'default' : status.color === 'yellow' ? 'secondary' : 'destructive'}
+          <Badge
+            variant={
+              status.color === "green"
+                ? "default"
+                : status.color === "yellow"
+                  ? "secondary"
+                  : "destructive"
+            }
             className="flex items-center gap-1"
           >
-            {status.color === 'green' && <CheckCircle className="w-3 h-3" />}
-            {status.color === 'yellow' && <AlertCircle className="w-3 h-3" />}
-            {status.color === 'red' && <XCircle className="w-3 h-3" />}
+            {status.color === "green" && <CheckCircle className="w-3 h-3" />}
+            {status.color === "yellow" && <AlertCircle className="w-3 h-3" />}
+            {status.color === "red" && <XCircle className="w-3 h-3" />}
             {status.text}
           </Badge>
-          <Button 
-            variant="outline" 
+          <Button
+            variant="outline"
             size="sm"
             onClick={runCheck}
             disabled={isLoading}
           >
-            <RefreshCw className={`w-4 h-4 ${isLoading ? 'animate-spin' : ''}`} />
+            <RefreshCw
+              className={`w-4 h-4 ${isLoading ? "animate-spin" : ""}`}
+            />
           </Button>
         </div>
       </CardHeader>
-      
+
       <CardContent className="space-y-4">
         {/* Status Grid */}
         <div className="grid grid-cols-2 gap-4">
@@ -112,18 +129,18 @@ export default function SupabaseHealthCheck() {
             {getStatusIcon(result?.configured || false, isLoading)}
             <span className="text-sm">Configuration</span>
           </div>
-          
+
           <div className="flex items-center gap-2">
             {getStatusIcon(result?.connected || false, isLoading)}
             <span className="text-sm">Connection</span>
           </div>
-          
+
           <div className="flex items-center gap-2">
             {getStatusIcon(result?.authenticated || false, isLoading)}
             <User className="w-4 h-4" />
             <span className="text-sm">Authentication</span>
           </div>
-          
+
           <div className="flex items-center gap-2">
             {getStatusIcon(result?.rlsWorking || false, isLoading)}
             <Shield className="w-4 h-4" />
@@ -140,7 +157,10 @@ export default function SupabaseHealthCheck() {
             </h4>
             <div className="space-y-1">
               {result.details.map((detail, index) => (
-                <div key={index} className="text-xs text-green-600 bg-green-50 px-2 py-1 rounded">
+                <div
+                  key={index}
+                  className="text-xs text-green-600 bg-green-50 px-2 py-1 rounded"
+                >
                   {detail}
                 </div>
               ))}
@@ -157,7 +177,10 @@ export default function SupabaseHealthCheck() {
             </h4>
             <div className="space-y-1">
               {result.errors.map((error, index) => (
-                <div key={index} className="text-xs text-red-600 bg-red-50 px-2 py-1 rounded">
+                <div
+                  key={index}
+                  className="text-xs text-red-600 bg-red-50 px-2 py-1 rounded"
+                >
                   {error}
                 </div>
               ))}
@@ -170,12 +193,18 @@ export default function SupabaseHealthCheck() {
           <div className="flex items-center justify-between">
             <span className="text-sm font-medium">Deployment Status:</span>
             <div className="flex items-center gap-2">
-              <Zap className={`w-4 h-4 ${status.color === 'green' ? 'text-green-500' : 'text-gray-400'}`} />
-              <span className={`text-sm font-medium ${
-                status.color === 'green' ? 'text-green-700' : 
-                status.color === 'yellow' ? 'text-yellow-700' : 
-                'text-red-700'
-              }`}>
+              <Zap
+                className={`w-4 h-4 ${status.color === "green" ? "text-green-500" : "text-gray-400"}`}
+              />
+              <span
+                className={`text-sm font-medium ${
+                  status.color === "green"
+                    ? "text-green-700"
+                    : status.color === "yellow"
+                      ? "text-yellow-700"
+                      : "text-red-700"
+                }`}
+              >
                 {status.text}
               </span>
             </div>
