@@ -78,7 +78,13 @@ export function SupabaseConnectionStatus() {
   const handleForceSync = async () => {
     setIsSyncing(true);
     try {
-      const success = await forceSync();
+      // Add timeout to prevent hanging
+      const syncPromise = forceSync();
+      const timeoutPromise = new Promise<boolean>((_, reject) =>
+        setTimeout(() => reject(new Error('Sync timeout')), 5000)
+      );
+
+      const success = await Promise.race([syncPromise, timeoutPromise]);
       if (success) {
         setLastSync(new Date());
         await checkConnection(); // Retest connection after sync
