@@ -356,27 +356,24 @@ export function AuthProvider({ children }: AuthProviderProps) {
           if (error) {
             console.error("Supabase login error:", error);
 
-            // Check if it's a network/connectivity error
-            if (
-              error.message.includes("Failed to fetch") ||
-              error.message.includes("Network") ||
-              error.message.includes("Connection timeout")
-            ) {
-              console.log(
-                "🔌 Network issue detected, falling back to localStorage",
-              );
+            // Handle authentication errors
+            let errorMessage = error.message;
 
-              showNotification({
-                type: "encouragement",
-                title: "Connection Issue",
-                message:
-                  "Using offline mode. Your data will sync when connection is restored.",
-                duration: 5000,
-              });
-
-              // Fallback to localStorage authentication
-              return await handleLocalStorageLogin(email, password);
+            if (error.message.includes("email not confirmed")) {
+              errorMessage =
+                "Please check your email and click the confirmation link, or contact support.";
+            } else if (error.message.includes("Invalid login credentials")) {
+              errorMessage =
+                "Invalid email or password. Please check your credentials.";
             }
+
+            showNotification({
+              type: "encouragement",
+              title: "Login Failed",
+              message: errorMessage,
+              duration: 5000,
+            });
+            return false;
 
             let errorMessage = error.message;
 
@@ -437,17 +434,19 @@ export function AuthProvider({ children }: AuthProviderProps) {
           showNotification({
             type: "encouragement",
             title: "Connection Issue",
-            message: "Unable to connect to server. Using offline mode.",
+            message: "Unable to connect to server. Please check your internet connection.",
             duration: 5000,
           });
-
-          // Fallback to localStorage authentication
-          return await handleLocalStorageLogin(email, password);
+          return false;
         }
       } else {
-        // Direct localStorage mode
-        console.log("💾 Using localStorage authentication mode");
-        return await handleLocalStorageLogin(email, password);
+        showNotification({
+          type: "encouragement",
+          title: "Configuration Error",
+          message: "Database not configured. Please contact support.",
+          duration: 5000,
+        });
+        return false;
       }
 
       return false;
