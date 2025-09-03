@@ -10,9 +10,9 @@ interface SupabaseEnforcerProps {
   onConnectionEstablished?: () => void;
 }
 
-export default function SupabaseEnforcer({ 
-  children, 
-  onConnectionEstablished 
+export default function SupabaseEnforcer({
+  children,
+  onConnectionEstablished,
 }: SupabaseEnforcerProps) {
   const [isConnected, setIsConnected] = useState(false);
   const [isRetrying, setIsRetrying] = useState(false);
@@ -35,7 +35,7 @@ export default function SupabaseEnforcer({
       const connected = await testSupabaseConnection();
       setIsConnected(connected);
       setHasChecked(true);
-      
+
       if (connected) {
         console.log("✅ Supabase connection established");
         onConnectionEstablished?.();
@@ -47,14 +47,14 @@ export default function SupabaseEnforcer({
         });
       } else {
         console.error("❌ Supabase connection failed");
-        setRetryCount(prev => prev + 1);
+        setRetryCount((prev) => prev + 1);
       }
-      
+
       return connected;
     } catch (error) {
       console.error("Connection test error:", error);
       setIsConnected(false);
-      setRetryCount(prev => prev + 1);
+      setRetryCount((prev) => prev + 1);
       return false;
     } finally {
       setIsRetrying(false);
@@ -71,8 +71,10 @@ export default function SupabaseEnforcer({
   useEffect(() => {
     if (!isConnected && hasChecked && retryCount > 0 && retryCount < 5) {
       const retryDelay = Math.min(1000 * Math.pow(2, retryCount - 1), 10000); // Exponential backoff
-      console.log(`🔄 Retrying connection in ${retryDelay}ms (attempt ${retryCount}/5)`);
-      
+      console.log(
+        `🔄 Retrying connection in ${retryDelay}ms (attempt ${retryCount}/5)`,
+      );
+
       const timer = setTimeout(() => {
         testConnection();
       }, retryDelay);
@@ -95,26 +97,28 @@ export default function SupabaseEnforcer({
             <div className="mx-auto w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mb-4">
               <Database className="w-8 h-8 text-red-600" />
             </div>
-            <CardTitle className="text-xl">Database Connection Required</CardTitle>
+            <CardTitle className="text-xl">
+              Database Connection Required
+            </CardTitle>
           </CardHeader>
-          
+
           <CardContent className="space-y-4 text-center">
             <div className="space-y-2">
               <div className="flex items-center justify-center gap-2 text-red-600">
                 <AlertCircle className="w-4 h-4" />
                 <span className="text-sm">
-                  {!isSupabaseConfigured 
-                    ? "Supabase not configured" 
+                  {!isSupabaseConfigured
+                    ? "Supabase not configured"
                     : "Unable to connect to database"}
                 </span>
               </div>
-              
+
               {retryCount > 0 && retryCount < 5 && (
                 <div className="text-xs text-gray-500">
                   Retry attempt {retryCount}/5
                 </div>
               )}
-              
+
               {retryCount >= 5 && (
                 <div className="text-xs text-red-500">
                   Maximum retry attempts reached. Please check your connection.
@@ -123,8 +127,8 @@ export default function SupabaseEnforcer({
             </div>
 
             <div className="space-y-3">
-              <Button 
-                onClick={handleManualRetry} 
+              <Button
+                onClick={handleManualRetry}
                 disabled={isRetrying}
                 className="w-full"
               >
@@ -140,7 +144,7 @@ export default function SupabaseEnforcer({
                   </>
                 )}
               </Button>
-              
+
               <div className="text-xs text-gray-600 space-y-1">
                 <p>Make sure:</p>
                 <ul className="text-left space-y-1">

@@ -326,7 +326,9 @@ export function DataProvider({ children }: DataProviderProps) {
           });
         }
       } else {
-        console.error("❌ Supabase connection failed - retrying in 3 seconds...");
+        console.error(
+          "❌ Supabase connection failed - retrying in 3 seconds...",
+        );
         setIsConnected(false);
 
         showNotification({
@@ -353,7 +355,6 @@ export function DataProvider({ children }: DataProviderProps) {
       setIsInitialized(true);
     }
   };
-
 
   const clearAllData = () => {
     setMoodEntries([]);

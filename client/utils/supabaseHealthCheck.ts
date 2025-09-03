@@ -114,10 +114,8 @@ export const runSupabaseHealthCheck = async (): Promise<HealthCheckResult> => {
             .eq("id", session.user.id)
             .single();
 
-          const { data: profileData, error: profileError }: any = await withTimeout(
-            profileTest,
-            2000,
-          );
+          const { data: profileData, error: profileError }: any =
+            await withTimeout(profileTest, 2000);
 
           if (profileError) {
             if (profileError.message.includes("PGRST116")) {
