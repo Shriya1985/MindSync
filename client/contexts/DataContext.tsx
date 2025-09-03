@@ -762,22 +762,12 @@ export function DataProvider({ children }: DataProviderProps) {
             details: error.details,
           });
 
-          // Fallback to localStorage with notification
           showNotification({
             type: "encouragement",
-            title: "Saved Locally",
-            message: "Mood saved offline - will sync when connection restored",
-            duration: 3000,
+            title: "Save Failed",
+            message: "Unable to save mood entry. Please check your connection.",
+            duration: 5000,
           });
-
-          const result = await localStorageService.addMoodEntry(entry);
-          if (result) {
-            setMoodEntries((prev) => [
-              result,
-              ...(Array.isArray(prev) ? prev : []),
-            ]);
-            await updateStreak();
-          }
           return;
         }
 
@@ -809,33 +799,19 @@ export function DataProvider({ children }: DataProviderProps) {
         showNotification({
           type: "encouragement",
           title: "Connection Issue",
-          message: "Saved locally - will sync when online",
-          duration: 3000,
+          message: "Unable to save mood entry. Please try again.",
+          duration: 5000,
         });
-
-        // Fallback to localStorage
-        const result = await localStorageService.addMoodEntry(entry);
-        if (result) {
-          setMoodEntries((prev) => [
-            result,
-            ...(Array.isArray(prev) ? prev : []),
-          ]);
-          await updateStreak();
-        }
+        return;
       }
     } else {
-      // Use localStorage fallback
-      console.log("💾 Using localStorage mode for mood entry");
-      const result = await localStorageService.addMoodEntry(entry);
-      if (result) {
-        setMoodEntries((prev) => [
-          result,
-          ...(Array.isArray(prev) ? prev : []),
-        ]);
-        await updateStreak();
-
-        console.log("💖 Mood logged locally");
-      }
+      showNotification({
+        type: "encouragement",
+        title: "Database Required",
+        message: "Please configure Supabase to save mood entries.",
+        duration: 5000,
+      });
+      return;
     }
   };
 
