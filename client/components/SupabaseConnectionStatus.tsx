@@ -51,8 +51,8 @@ export function SupabaseConnectionStatus() {
   useEffect(() => {
     checkConnection();
 
-    // Check connection every 30 seconds
-    const interval = setInterval(checkConnection, 30000);
+    // Check connection every 10 seconds for more responsive status
+    const interval = setInterval(checkConnection, 10000);
     return () => clearInterval(interval);
   }, []);
 
