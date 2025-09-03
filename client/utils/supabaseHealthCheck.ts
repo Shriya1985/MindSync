@@ -88,7 +88,7 @@ export const runSupabaseHealthCheck = async (): Promise<HealthCheckResult> => {
     // Check 3: Authentication Status (with 2 second timeout)
     try {
       console.log("🔐 Testing authentication...");
-      const authTest = supabase.auth.getSession();
+      const authTest = safeGetSession();
       const {
         data: { session },
         error,
@@ -150,7 +150,7 @@ export const runSupabaseHealthCheck = async (): Promise<HealthCheckResult> => {
       try {
         console.log("💾 Testing database write...");
         const testTime = new Date().toISOString();
-        const userResponse = await withTimeout(supabase.auth.getUser(), 1000);
+        const userResponse = await withTimeout(safeGetUser(), 1000);
 
         const writeTest = supabase.from("user_stats").upsert(
           {
