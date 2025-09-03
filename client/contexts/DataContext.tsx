@@ -289,10 +289,7 @@ export function DataProvider({ children }: DataProviderProps) {
         );
 
         if (failedLoads.length === 0) {
-          // Only show connection success in development
-          if (import.meta.env.DEV) {
-            console.log("✅ Database Connected: All data loaded successfully");
-          }
+          console.log("✅ Database Connected: All data loaded successfully");
         } else {
           console.log("⚠️ Some data loads failed:", failedLoads);
           // Only show partial load issues if there are actual problems
@@ -307,12 +304,9 @@ export function DataProvider({ children }: DataProviderProps) {
         console.log("⚠️ Supabase connection failed, using localStorage");
         loadLocalStorageData();
 
-        // Only notify about offline mode in development or if it's a new session
-        if (import.meta.env.DEV) {
-          console.log(
-            "📱 Using offline mode - data will sync when connection restored",
-          );
-        }
+        console.log(
+          "📱 Using offline mode - data will sync when connection restored",
+        );
       }
     } catch (error) {
       console.error("Error loading data:", error);
@@ -806,10 +800,7 @@ export function DataProvider({ children }: DataProviderProps) {
         // Update sync time
         setLastSyncTime(new Date());
 
-        // Only show save confirmations in development
-        if (import.meta.env.DEV) {
-          console.log("💖 Mood logged and saved to database");
-        }
+        console.log("💖 Mood logged and saved to database");
       } catch (networkError) {
         console.error("🔌 Network error adding mood entry:", networkError);
 
@@ -841,10 +832,7 @@ export function DataProvider({ children }: DataProviderProps) {
         ]);
         await updateStreak();
 
-        // Simple feedback for localStorage mode
-        if (import.meta.env.DEV) {
-          console.log("💖 Mood logged locally");
-        }
+        console.log("💖 Mood logged locally");
       }
     }
   };
@@ -1192,7 +1180,7 @@ export function DataProvider({ children }: DataProviderProps) {
     if (isSupabaseConfigured) {
       // Streak calculation is now handled by database triggers
       // Just reload the stats to get the updated values
-      console.log("📊 Reloading user stats after streak update");
+      console.log("�� Reloading user stats after streak update");
       setTimeout(async () => {
         await loadUserStats();
       }, 500);
