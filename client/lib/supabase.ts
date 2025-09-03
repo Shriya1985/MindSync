@@ -49,6 +49,8 @@ const createFallbackClient = () => {
       onAuthStateChange: () => ({
         data: { subscription: { unsubscribe: () => {} } },
       }),
+      getUser: () =>
+        Promise.resolve({ data: { user: null }, error: null }),
     },
     from: () => ({
       select: () => ({
@@ -110,6 +112,73 @@ export const supabase = isSupabaseConfigured
       },
     })
   : createFallbackClient();
+
+// Proactively clean up invalid or partial sessions to avoid refresh errors
+const AUTH_STORAGE_KEYS = ["mindsync-auth"]; // our configured storage key
+const clearSupabaseAuthStorage = () => {
+  try {
+    AUTH_STORAGE_KEYS.forEach((key) => localStorage.removeItem(key));
+    // Also clear any default sb-* auth tokens that might exist
+    Object.keys(localStorage)
+      .filter((k) => k.startsWith("sb-") && k.endsWith("-auth-token"))
+      .forEach((k) => localStorage.removeItem(k));
+    console.log("🧹 Cleared invalid Supabase auth storage");
+  } catch (e) {
+    console.warn("Failed to clear Supabase auth storage", e);
+  }
+};
+
+const ensureValidSession = () => {
+  try {
+    const raw = localStorage.getItem("mindsync-auth");
+    if (!raw) return;
+    const parsed = JSON.parse(raw);
+    const refreshToken = parsed?.currentSession?.refresh_token;
+    const accessToken = parsed?.currentSession?.access_token;
+    if (!refreshToken || !accessToken) {
+      clearSupabaseAuthStorage();
+    }
+  } catch (e) {
+    clearSupabaseAuthStorage();
+  }
+};
+
+if (typeof window !== "undefined") {
+  ensureValidSession();
+}
+
+// Safe wrappers to guard against invalid refresh token crashes
+export const safeGetSession = async (): Promise<any> => {
+  try {
+    return await supabase.auth.getSession();
+  } catch (e: any) {
+    const msg = e?.message || "";
+    if (msg.includes("Invalid Refresh Token") || msg.includes("Refresh Token Not Found")) {
+      clearSupabaseAuthStorage();
+      try {
+        await supabase.auth.signOut();
+      } catch {}
+      return { data: { session: null }, error: null };
+    }
+    throw e;
+  }
+};
+
+export const safeGetUser = async (): Promise<any> => {
+  try {
+    return await supabase.auth.getUser();
+  } catch (e: any) {
+    const msg = e?.message || "";
+    if (msg.includes("Invalid Refresh Token") || msg.includes("Refresh Token Not Found")) {
+      clearSupabaseAuthStorage();
+      try {
+        await supabase.auth.signOut();
+      } catch {}
+      return { data: { user: null }, error: null };
+    }
+    throw e;
+  }
+};
 
 // Test Supabase connection
 export const testSupabaseConnection = async (): Promise<boolean> => {
