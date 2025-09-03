@@ -213,14 +213,19 @@ export function DataProvider({ children }: DataProviderProps) {
   // Load all user data when authenticated
   useEffect(() => {
     if (isAuthenticated && user) {
-      // Always try to use Supabase first, fallback to localStorage only if needed
+      // Enforce Supabase-only operation
       if (isSupabaseConfigured) {
         loadAllData();
       } else {
-        console.warn(
-          "⚠️ Supabase not configured. Using localStorage fallback. Please configure Supabase for full functionality.",
+        console.error(
+          "❌ Supabase not configured. Cannot operate without database.",
         );
-        loadLocalStorageData();
+        showNotification({
+          type: "encouragement",
+          title: "Database Required",
+          message: "Please configure Supabase to use the application.",
+          duration: 10000,
+        });
       }
     } else {
       // Clear data when not authenticated
@@ -244,19 +249,34 @@ export function DataProvider({ children }: DataProviderProps) {
         const sessionUserId = sessionData?.session?.user?.id;
         if (!sessionUserId) {
           console.warn(
-            "⚠️ Connected but not authenticated with Supabase; using offline mode",
+            "⚠️ Connected but not authenticated with Supabase; re-authenticating",
           );
           setIsConnected(false);
-          loadLocalStorageData();
+          // Force user to re-authenticate instead of falling back
+          showNotification({
+            type: "encouragement",
+            title: "Authentication Required",
+            message: "Please sign in again to sync your data.",
+            duration: 5000,
+          });
           return;
         }
         if (sessionUserId !== user.id) {
           console.warn(
-            "⚠️ Session user does not match app user; using offline mode",
+            "��️ Session user does not match app user; clearing session",
             { sessionUserId, appUserId: user.id },
           );
           setIsConnected(false);
-          loadLocalStorageData();
+          // Clear invalid session and force re-auth
+          try {
+            await supabase.auth.signOut();
+          } catch (e) {}
+          showNotification({
+            type: "encouragement",
+            title: "Session Mismatch",
+            message: "Please sign in again to access your data.",
+            duration: 5000,
+          });
           return;
         }
 
@@ -306,12 +326,24 @@ export function DataProvider({ children }: DataProviderProps) {
           });
         }
       } else {
-        console.log("⚠️ Supabase connection failed, using localStorage");
-        loadLocalStorageData();
+        console.error("❌ Supabase connection failed - retrying in 3 seconds...");
+        setIsConnected(false);
 
-        console.log(
-          "📱 Using offline mode - data will sync when connection restored",
-        );
+        showNotification({
+          type: "encouragement",
+          title: "Connection Failed",
+          message: "Unable to connect to database. Retrying...",
+          duration: 3000,
+        });
+
+        // Retry connection after 3 seconds
+        setTimeout(() => {
+          if (user && isAuthenticated) {
+            console.log("🔄 Retrying Supabase connection...");
+            loadAllData();
+          }
+        }, 3000);
+        return;
       }
     } catch (error) {
       console.error("Error loading data:", error);
