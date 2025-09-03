@@ -263,7 +263,7 @@ export function DataProvider({ children }: DataProviderProps) {
         }
         if (sessionUserId !== user.id) {
           console.warn(
-            "��️ Session user does not match app user; clearing session",
+            "⚠️ Session user does not match app user; clearing session",
             { sessionUserId, appUserId: user.id },
           );
           setIsConnected(false);
@@ -354,41 +354,6 @@ export function DataProvider({ children }: DataProviderProps) {
     }
   };
 
-  const loadLocalStorageData = () => {
-    if (!user) return;
-
-    setIsLoading(true);
-    try {
-      // Load data from localStorage service
-      const data = localStorageService.getAllUserData();
-
-      setMoodEntries(data.moodEntries || []);
-      setJournalEntries(data.journalEntries || []);
-      setChatMessages(data.chatMessages || []);
-      setAchievements(data.achievements || []);
-      setUserStats(
-        data.userStats || {
-          level: 1,
-          points: 0,
-          currentStreak: 0,
-          longestStreak: 0,
-          totalEntries: 0,
-          totalWords: 0,
-          lastActivity: new Date().toISOString(),
-        },
-      );
-      setDailyQuests(data.dailyQuests || []);
-      setCopingSessions(data.copingSessions || []);
-      setPointActivities(data.pointActivities || []);
-
-      console.log("✅ Loaded data from localStorage (Supabase not configured)");
-    } catch (error) {
-      console.error("Error loading localStorage data:", error);
-    } finally {
-      setIsLoading(false);
-      setIsInitialized(true);
-    }
-  };
 
   const clearAllData = () => {
     setMoodEntries([]);
