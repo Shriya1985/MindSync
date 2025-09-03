@@ -4,6 +4,7 @@ import {
   isSupabaseConfigured,
   testSupabaseConnection,
   forceSyncToSupabase,
+  safeGetSession,
 } from "@/lib/supabase";
 import { localStorageService } from "@/lib/localStorage";
 import { AuthContext } from "@/contexts/AuthContext";
