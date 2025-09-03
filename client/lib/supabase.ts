@@ -1,36 +1,31 @@
 import { createClient } from "@supabase/supabase-js";
 
-// Get Supabase credentials with fallback
-const supabaseUrl =
-  import.meta.env.VITE_SUPABASE_URL ||
-  "https://ehyxltlcioovssbpttch.supabase.co";
-const supabaseAnonKey =
-  import.meta.env.VITE_SUPABASE_ANON_KEY ||
-  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVoeXhsdGxjaW9vdnNzYnB0dGNoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTExMDQ5NTgsImV4cCI6MjA2NjY4MDk1OH0.VoVZlcAst1uwzLccPsqIVbsSQEfGgy4OTOBHfjfEwdM";
+// Read Supabase credentials from environment only (no hardcoded fallbacks)
+const envSupabaseUrl = import.meta.env.VITE_SUPABASE_URL as string | undefined;
+const envSupabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY as
+  | string
+  | undefined;
 
-// Check if Supabase is configured
-export const isSupabaseConfigured = !!(
-  supabaseUrl &&
-  supabaseAnonKey &&
-  supabaseUrl !== "https://your-project-id.supabase.co" &&
-  supabaseAnonKey !== "your-anon-key-here"
+// Configured only when both env vars are present
+export const isSupabaseConfigured = Boolean(
+  envSupabaseUrl && envSupabaseAnonKey,
 );
 
 console.log("🔧 Supabase configured:", isSupabaseConfigured);
-console.log("🔗 Supabase URL:", supabaseUrl);
-console.log("🔑 Supabase Key:", supabaseAnonKey ? "Present" : "Missing");
+if (isSupabaseConfigured) {
+  console.log("🔗 Supabase URL:", envSupabaseUrl);
+} else {
+  console.warn(
+    "Supabase env vars missing. App will run in offline mode until configured.",
+  );
+}
 
-// Create a fallback client for development
+// Create a fallback client for when Supabase isn't configured
 const createFallbackClient = () => {
   console.warn(
-    "🔧 Supabase not configured. Using development mode with localStorage fallback.\n" +
-      "To enable database features:\n" +
-      "1. Create a Supabase project at https://supabase.com\n" +
-      "2. Add VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY to your .env file\n" +
-      "3. Run the database migration from SUPABASE_SETUP.md",
+    "🔧 Supabase not configured. Using local-only mode with graceful fallbacks.",
   );
 
-  // Return a mock client that won't crash the app
   return {
     auth: {
       getSession: () =>
@@ -83,19 +78,16 @@ const createFallbackClient = () => {
 };
 
 export const supabase = isSupabaseConfigured
-  ? createClient(supabaseUrl!, supabaseAnonKey!, {
+  ? createClient(envSupabaseUrl!, envSupabaseAnonKey!, {
       auth: {
         persistSession: true,
         storage: window.localStorage,
         autoRefreshToken: true,
         detectSessionInUrl: true,
         flowType: "pkce",
-        // Make session more persistent
         storageKey: "mindsync-auth",
-        // Prevent automatic logout on tab changes
         debug: false,
       },
-      // Add retry and timeout configurations for better reliability
       db: {
         schema: "public",
       },
@@ -113,11 +105,10 @@ export const supabase = isSupabaseConfigured
   : createFallbackClient();
 
 // Proactively clean up invalid or partial sessions to avoid refresh errors
-const AUTH_STORAGE_KEYS = ["mindsync-auth"]; // our configured storage key
+const AUTH_STORAGE_KEYS = ["mindsync-auth"];
 const clearSupabaseAuthStorage = () => {
   try {
     AUTH_STORAGE_KEYS.forEach((key) => localStorage.removeItem(key));
-    // Also clear any default sb-* auth tokens that might exist
     Object.keys(localStorage)
       .filter((k) => k.startsWith("sb-") && k.endsWith("-auth-token"))
       .forEach((k) => localStorage.removeItem(k));
@@ -195,11 +186,13 @@ export const testSupabaseConnection = async (): Promise<boolean> => {
   try {
     console.log("🔍 Testing Supabase connection...");
 
-    // Test basic connection with 5-second timeout
     const connectionPromise = supabase.from("profiles").select("id").limit(1);
 
     const timeoutPromise = new Promise((_, reject) =>
-      setTimeout(() => reject(new Error("Connection timeout after 5s")), 5000),
+      setTimeout(
+        () => reject(new Error("Connection timeout after 12s")),
+        12000,
+      ),
     );
 
     const { data, error } = (await Promise.race([
@@ -209,7 +202,6 @@ export const testSupabaseConnection = async (): Promise<boolean> => {
 
     if (error) {
       console.error("❌ Supabase connection test failed:", error.message);
-      // RLS errors actually mean connection is working
       if (
         error.message.includes("RLS") ||
         error.message.includes("policy") ||
@@ -238,7 +230,6 @@ export const forceSyncToSupabase = async (userId: string) => {
   if (!isSupabaseConfigured || !userId) return false;
 
   try {
-    // Require an authenticated Supabase session to satisfy RLS
     const { data: sessionData } = await safeGetSession();
     const sessionUserId = sessionData?.session?.user?.id;
     if (!sessionUserId) {
@@ -255,7 +246,6 @@ export const forceSyncToSupabase = async (userId: string) => {
 
     console.log("🔄 Force syncing data to Supabase for user:", userId);
 
-    // Test write operation (allowed by RLS because auth.uid() matches user_id)
     const { error } = await supabase.from("user_stats").upsert(
       {
         user_id: userId,
