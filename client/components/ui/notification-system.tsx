@@ -71,6 +71,22 @@ export function NotificationSystem() {
 
   return (
     <div className="fixed top-12 right-4 z-50 space-y-3 max-w-sm">
+      {notifications.length > 2 && (
+        <div className="flex justify-end">
+          <Button
+            onClick={() => {
+              notificationQueue = [];
+              setNotifications([]);
+            }}
+            variant="outline"
+            size="sm"
+            className="bg-white/90 backdrop-blur-sm shadow-lg border-red-200 text-red-600 hover:bg-red-50"
+          >
+            <X className="w-4 h-4 mr-1" />
+            Clear All
+          </Button>
+        </div>
+      )}
       {notifications.map((notification) => {
         const IconComponent = notificationIcons[notification.type] || Gift;
         return (
