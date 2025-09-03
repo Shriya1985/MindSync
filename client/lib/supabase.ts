@@ -1,12 +1,8 @@
 import { createClient } from "@supabase/supabase-js";
 
 // Get Supabase credentials with fallback
-const supabaseUrl =
-  import.meta.env.VITE_SUPABASE_URL ||
-  "https://ehyxltlcioovssbpttch.supabase.co";
-const supabaseAnonKey =
-  import.meta.env.VITE_SUPABASE_ANON_KEY ||
-  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVoeXhsdGxjaW9vdnNzYnB0dGNoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTExMDQ5NTgsImV4cCI6MjA2NjY4MDk1OH0.VoVZlcAst1uwzLccPsqIVbsSQEfGgy4OTOBHfjfEwdM";
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || "";
+const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || "";
 
 // Check if Supabase is configured
 export const isSupabaseConfigured = !!(
@@ -17,8 +13,8 @@ export const isSupabaseConfigured = !!(
 );
 
 console.log("🔧 Supabase configured:", isSupabaseConfigured);
-console.log("🔗 Supabase URL:", supabaseUrl);
-console.log("🔑 Supabase Key:", supabaseAnonKey ? "Present" : "Missing");
+console.log("🔗 Supabase URL configured:", !!supabaseUrl);
+console.log("🔑 Supabase Key present:", !!supabaseAnonKey);
 
 // Create a fallback client for development
 const createFallbackClient = () => {
