@@ -896,6 +896,13 @@ export function DataProvider({ children }: DataProviderProps) {
   const addJournalEntry = async (entry: Omit<JournalEntry, "id">) => {
     if (!user) return;
 
+    // Process journal for mood analysis and auto-create mood entry
+    try {
+      await processJournalEntry(entry.title, entry.content, addMoodEntry);
+    } catch (error) {
+      console.error("Mood analysis failed:", error);
+    }
+
     const { data, error } = await supabase
       .from("journal_entries")
       .insert({
