@@ -155,7 +155,7 @@ export function NotificationSystem() {
 export function showNotification(notification: Omit<Notification, "id">) {
   // Prevent duplicate notifications with same title and message
   const isDuplicate = notificationQueue.some(
-    (n) => n.title === notification.title && n.message === notification.message
+    (n) => n.title === notification.title && n.message === notification.message,
   );
 
   if (isDuplicate) {
