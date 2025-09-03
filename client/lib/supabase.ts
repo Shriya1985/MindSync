@@ -214,9 +214,24 @@ export const forceSyncToSupabase = async (userId: string) => {
   if (!isSupabaseConfigured || !userId) return false;
 
   try {
+    // Require an authenticated Supabase session to satisfy RLS
+    const { data: sessionData } = await safeGetSession();
+    const sessionUserId = sessionData?.session?.user?.id;
+    if (!sessionUserId) {
+      console.warn("⚠️ Skipping sync: no Supabase session");
+      return false;
+    }
+    if (sessionUserId !== userId) {
+      console.warn("⚠️ Skipping sync: session/user mismatch", {
+        sessionUserId,
+        userId,
+      });
+      return false;
+    }
+
     console.log("🔄 Force syncing data to Supabase for user:", userId);
 
-    // Test write operation
+    // Test write operation (allowed by RLS because auth.uid() matches user_id)
     const { error } = await supabase.from("user_stats").upsert(
       {
         user_id: userId,
