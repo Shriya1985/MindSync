@@ -16,7 +16,6 @@ import { ThemeStatus } from "@/components/ThemeStatus";
 import { DatabaseSetupNotice } from "@/components/DatabaseSetupNotice";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { DataContextErrorBoundary } from "@/components/DataContextErrorBoundary";
-import SupabaseEnforcer from "@/components/SupabaseEnforcer";
 import Index from "./pages/Index";
 import SimplifiedChatbot from "./pages/SimplifiedChatbot";
 import Dashboard from "./pages/Dashboard";
