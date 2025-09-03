@@ -239,7 +239,7 @@ export function DataProvider({ children }: DataProviderProps) {
 
       if (connectionStatus) {
         // Ensure we have an authenticated Supabase session before DB ops
-        const { data: sessionData } = await supabase.auth.getSession();
+        const { data: sessionData } = await safeGetSession();
         const sessionUserId = sessionData?.session?.user?.id;
         if (!sessionUserId) {
           console.warn("⚠️ Connected but not authenticated with Supabase; using offline mode");
