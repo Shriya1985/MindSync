@@ -137,6 +137,16 @@ export function NotificationSystem() {
 }
 
 export function showNotification(notification: Omit<Notification, "id">) {
+  // Prevent duplicate notifications with same title and message
+  const isDuplicate = notificationQueue.some(
+    (n) => n.title === notification.title && n.message === notification.message
+  );
+
+  if (isDuplicate) {
+    console.log("🚫 Prevented duplicate notification:", notification.title);
+    return;
+  }
+
   const newNotification: Notification = {
     ...notification,
     id: `notification-${Date.now()}-${++notificationCounter}`,
@@ -155,4 +165,12 @@ export function showNotification(notification: Omit<Notification, "id">) {
       (n) => n.id !== newNotification.id,
     );
   }, newNotification.duration || 5000);
+}
+
+export function clearAllNotifications() {
+  console.log("🧹 Clearing all notifications");
+  notificationQueue = [];
+  if (notifyCallback) {
+    notifyCallback([]);
+  }
 }
