@@ -42,22 +42,6 @@ type AuthProviderProps = {
   children: React.ReactNode;
 };
 
-// Helper function for localStorage authentication fallback
-const handleLocalStorageLogin = async (
-  email: string,
-  password: string,
-): Promise<boolean> => {
-  console.log("🔄 Attempting localStorage authentication...");
-
-  const result = await localStorageService.login(email, password);
-  if (result.success && result.user) {
-    console.log("✅ LocalStorage authentication successful");
-    return true;
-  }
-
-  console.log("❌ LocalStorage authentication failed");
-  return false;
-};
 
 // Backup user session to localStorage
 const backupUserSession = (userData: User) => {
