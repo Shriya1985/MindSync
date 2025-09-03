@@ -185,7 +185,7 @@ export const safeGetUser = async (): Promise<any> => {
   }
 };
 
-// Test Supabase connection
+// Test Supabase connection with timeout
 export const testSupabaseConnection = async (): Promise<boolean> => {
   if (!isSupabaseConfigured) {
     console.log("❌ Supabase not configured");
@@ -195,21 +195,39 @@ export const testSupabaseConnection = async (): Promise<boolean> => {
   try {
     console.log("🔍 Testing Supabase connection...");
 
-    // Test basic connection
-    const { data, error } = await supabase
+    // Test basic connection with 5-second timeout
+    const connectionPromise = supabase
       .from("profiles")
       .select("id")
       .limit(1);
 
+    const timeoutPromise = new Promise((_, reject) =>
+      setTimeout(() => reject(new Error("Connection timeout after 5s")), 5000)
+    );
+
+    const { data, error } = await Promise.race([
+      connectionPromise,
+      timeoutPromise
+    ]) as any;
+
     if (error) {
       console.error("❌ Supabase connection test failed:", error.message);
+      // RLS errors actually mean connection is working
+      if (error.message.includes("RLS") || error.message.includes("policy") || error.message.includes("JWT")) {
+        console.log("✅ Supabase connection successful (RLS active)");
+        return true;
+      }
       return false;
     }
 
     console.log("✅ Supabase connection successful");
     return true;
-  } catch (error) {
-    console.error("❌ Supabase connection test error:", error);
+  } catch (error: any) {
+    if (error.message?.includes("timeout")) {
+      console.error("❌ Supabase connection timeout - check network/CORS");
+    } else {
+      console.error("❌ Supabase connection test error:", error);
+    }
     return false;
   }
 };
