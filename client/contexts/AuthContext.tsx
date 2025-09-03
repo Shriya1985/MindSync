@@ -357,25 +357,6 @@ export function AuthProvider({ children }: AuthProviderProps) {
               duration: 5000,
             });
             return false;
-
-            let errorMessage = error.message;
-
-            // Provide more helpful error messages
-            if (error.message.includes("email not confirmed")) {
-              errorMessage =
-                "Please check your email and click the confirmation link, or contact support.";
-            } else if (error.message.includes("Invalid login credentials")) {
-              errorMessage =
-                "Invalid email or password. Please check your credentials.";
-            }
-
-            showNotification({
-              type: "encouragement",
-              title: "Login Failed",
-              message: errorMessage,
-              duration: 5000,
-            });
-            return false;
           }
 
           if (data?.user) {
