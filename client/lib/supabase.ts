@@ -188,7 +188,7 @@ export const testSupabaseConnection = async (): Promise<boolean> => {
     const connectionPromise = supabase.from("profiles").select("id").limit(1);
 
     const timeoutPromise = new Promise((_, reject) =>
-      setTimeout(() => reject(new Error("Connection timeout after 5s")), 5000),
+      setTimeout(() => reject(new Error("Connection timeout after 12s")), 12000),
     );
 
     const { data, error } = (await Promise.race([
