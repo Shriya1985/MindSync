@@ -55,7 +55,7 @@ export const runSupabaseHealthCheck = async (): Promise<HealthCheckResult> => {
       console.log("🔍 Testing basic connection...");
       const connectionTest = supabase.from("profiles").select("id").limit(1);
 
-      const { data, error } = await withTimeout(connectionTest, 3000);
+      const { data, error }: any = await withTimeout(connectionTest, 3000);
 
       if (error) {
         console.log("Connection error:", error.message);
@@ -97,7 +97,7 @@ export const runSupabaseHealthCheck = async (): Promise<HealthCheckResult> => {
       const {
         data: { session },
         error,
-      } = await withTimeout(authTest, 2000);
+      }: any = await withTimeout(authTest, 2000);
 
       if (error) {
         result.errors.push(`❌ Auth check failed: ${error.message}`);
@@ -168,7 +168,7 @@ export const runSupabaseHealthCheck = async (): Promise<HealthCheckResult> => {
           },
         );
 
-        const { error: writeError } = await withTimeout(writeTest, 3000);
+        const { error: writeError }: any = await withTimeout(writeTest, 3000);
 
         if (writeError) {
           result.errors.push(`❌ Write test failed: ${writeError.message}`);
