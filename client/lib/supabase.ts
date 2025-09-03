@@ -2,8 +2,9 @@ import { createClient } from "@supabase/supabase-js";
 
 // Read Supabase credentials from environment only (no hardcoded fallbacks)
 const envSupabaseUrl = import.meta.env.VITE_SUPABASE_URL as string | undefined;
-const envSupabaseAnonKey = import.meta.env
-  .VITE_SUPABASE_ANON_KEY as string | undefined;
+const envSupabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY as
+  | string
+  | undefined;
 
 // Configured only when both env vars are present
 export const isSupabaseConfigured = Boolean(
@@ -188,7 +189,10 @@ export const testSupabaseConnection = async (): Promise<boolean> => {
     const connectionPromise = supabase.from("profiles").select("id").limit(1);
 
     const timeoutPromise = new Promise((_, reject) =>
-      setTimeout(() => reject(new Error("Connection timeout after 12s")), 12000),
+      setTimeout(
+        () => reject(new Error("Connection timeout after 12s")),
+        12000,
+      ),
     );
 
     const { data, error } = (await Promise.race([
