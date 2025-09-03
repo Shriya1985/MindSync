@@ -9,6 +9,7 @@ import {
 import { localStorageService } from "@/lib/localStorage";
 import { AuthContext } from "@/contexts/AuthContext";
 import { showNotification } from "@/components/ui/notification-system";
+import { processJournalEntry } from "@/utils/journalMoodAnalysis";
 import type { ChatSession } from "@/utils/chatSessions";
 
 // Types
