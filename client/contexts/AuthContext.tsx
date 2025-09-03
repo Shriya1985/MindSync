@@ -495,49 +495,6 @@ export function AuthProvider({ children }: AuthProviderProps) {
           ])) as any;
 
           if (error) {
-            // Check if it's a network/connectivity error
-            if (
-              error.message.includes("Failed to fetch") ||
-              error.message.includes("Network") ||
-              error.message.includes("Connection timeout")
-            ) {
-              console.log(
-                "🔌 Network issue during registration, falling back to localStorage",
-              );
-
-              showNotification({
-                type: "encouragement",
-                title: "Connection Issue",
-                message:
-                  "Using offline mode for registration. Your account will sync when connection is restored.",
-                duration: 5000,
-              });
-
-              // Fallback to localStorage registration
-              const result = await localStorageService.register(
-                name,
-                email,
-                password,
-              );
-              if (result.success && result.user) {
-                setUser(result.user);
-                showNotification({
-                  type: "encouragement",
-                  title: "Welcome to MindSync! 🌟",
-                  message: `Account created successfully for ${name}! (Offline mode)`,
-                  duration: 4000,
-                });
-                return true;
-              } else {
-                showNotification({
-                  type: "encouragement",
-                  title: "Registration Failed",
-                  message: result.error || "Could not create account",
-                  duration: 3000,
-                });
-                return false;
-              }
-            }
 
             showNotification({
               type: "encouragement",
@@ -571,60 +528,19 @@ export function AuthProvider({ children }: AuthProviderProps) {
           showNotification({
             type: "encouragement",
             title: "Connection Issue",
-            message: "Unable to connect to server. Using offline registration.",
+            message: "Unable to connect to server. Please check your internet connection.",
             duration: 5000,
-          });
-
-          // Fallback to localStorage registration
-          const result = await localStorageService.register(
-            name,
-            email,
-            password,
-          );
-          if (result.success && result.user) {
-            setUser(result.user);
-            showNotification({
-              type: "encouragement",
-              title: "Welcome to MindSync! 🌟",
-              message: `Account created successfully for ${name}! (Offline mode)`,
-              duration: 4000,
-            });
-            return true;
-          } else {
-            showNotification({
-              type: "encouragement",
-              title: "Registration Failed",
-              message: result.error || "Could not create account",
-              duration: 3000,
-            });
-            return false;
-          }
-        }
-      } else {
-        // Fallback to localStorage
-        const result = await localStorageService.register(
-          name,
-          email,
-          password,
-        );
-        if (result.success && result.user) {
-          setUser(result.user);
-          showNotification({
-            type: "encouragement",
-            title: "Welcome to MindSync! 🌟",
-            message: `Account created successfully for ${name}!`,
-            duration: 4000,
-          });
-          return true;
-        } else {
-          showNotification({
-            type: "encouragement",
-            title: "Registration Failed",
-            message: result.error || "Could not create account",
-            duration: 3000,
           });
           return false;
         }
+      } else {
+        showNotification({
+          type: "encouragement",
+          title: "Configuration Error",
+          message: "Database not configured. Please contact support.",
+          duration: 5000,
+        });
+        return false;
       }
 
       return false;
