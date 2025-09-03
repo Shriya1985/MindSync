@@ -13,6 +13,7 @@ import { GamificationSystem } from "@/components/GamificationSystem";
 import { DataVerificationPanel } from "@/components/DataVerificationPanel";
 import { SupabaseConnectionStatus } from "@/components/SupabaseConnectionStatus";
 import SupabaseHealthCheck from "@/components/SupabaseHealthCheck";
+import DeploymentTest from "@/components/DeploymentTest";
 import { useMoodTheme } from "@/hooks/useMoodTheme";
 import { predictMood } from "@/utils/emotionAI";
 import {
