@@ -114,7 +114,7 @@ export const runSupabaseHealthCheck = async (): Promise<HealthCheckResult> => {
             .eq("id", session.user.id)
             .single();
 
-          const { data: profileData, error: profileError } = await withTimeout(
+          const { data: profileData, error: profileError }: any = await withTimeout(
             profileTest,
             2000,
           );
@@ -210,7 +210,7 @@ export const formatHealthCheckResults = (result: HealthCheckResult): string => {
   lines.push("");
 
   if (result.details.length > 0) {
-    lines.push("📋 Details:");
+    lines.push("�� Details:");
     result.details.forEach((detail) => lines.push(`  ${detail}`));
     lines.push("");
   }
