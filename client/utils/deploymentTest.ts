@@ -21,7 +21,7 @@ export async function runDeploymentTest(): Promise<DeploymentTestResult> {
     rlsEnabled: false,
     overallReady: false,
     errors: [],
-    recommendations: []
+    recommendations: [],
   };
 
   console.log("🚀 Running deployment readiness test...");
@@ -30,7 +30,9 @@ export async function runDeploymentTest(): Promise<DeploymentTestResult> {
   result.supabaseConfigured = isSupabaseConfigured;
   if (!result.supabaseConfigured) {
     result.errors.push("Supabase not configured - missing URL or API key");
-    result.recommendations.push("Set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY environment variables");
+    result.recommendations.push(
+      "Set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY environment variables",
+    );
     return result;
   }
 
@@ -46,7 +48,9 @@ export async function runDeploymentTest(): Promise<DeploymentTestResult> {
       console.log("✅ Supabase connection working");
     } else {
       result.errors.push(`Connection failed: ${error.message}`);
-      result.recommendations.push("Check Supabase project status and network connectivity");
+      result.recommendations.push(
+        "Check Supabase project status and network connectivity",
+      );
     }
   } catch (error: any) {
     result.errors.push(`Connection error: ${error.message}`);
@@ -57,8 +61,14 @@ export async function runDeploymentTest(): Promise<DeploymentTestResult> {
   if (result.connectionWorking) {
     try {
       const requiredTables = [
-        "profiles", "user_stats", "mood_entries", "journal_entries", 
-        "chat_messages", "achievements", "daily_quests", "point_activities"
+        "profiles",
+        "user_stats",
+        "mood_entries",
+        "journal_entries",
+        "chat_messages",
+        "achievements",
+        "daily_quests",
+        "point_activities",
       ];
 
       const tableChecks = await Promise.allSettled(
@@ -68,19 +78,24 @@ export async function runDeploymentTest(): Promise<DeploymentTestResult> {
             throw new Error(`Table ${table}: ${error.message}`);
           }
           return table;
-        })
+        }),
       );
 
       const failedTables = tableChecks
-        .filter((check): check is PromiseRejectedResult => check.status === "rejected")
-        .map(check => check.reason.message);
+        .filter(
+          (check): check is PromiseRejectedResult =>
+            check.status === "rejected",
+        )
+        .map((check) => check.reason.message);
 
       if (failedTables.length === 0) {
         result.databaseTablesExist = true;
         console.log("✅ All required database tables exist");
       } else {
         result.errors.push(...failedTables);
-        result.recommendations.push("Run database migration scripts in Supabase SQL Editor");
+        result.recommendations.push(
+          "Run database migration scripts in Supabase SQL Editor",
+        );
       }
     } catch (error: any) {
       result.errors.push(`Database table check failed: ${error.message}`);
@@ -101,7 +116,9 @@ export async function runDeploymentTest(): Promise<DeploymentTestResult> {
         console.log("✅ Row Level Security appears to be working");
       } else {
         result.errors.push(`RLS check failed: ${error.message}`);
-        result.recommendations.push("Verify RLS policies are properly configured");
+        result.recommendations.push(
+          "Verify RLS policies are properly configured",
+        );
       }
     } catch (error: any) {
       result.errors.push(`RLS test error: ${error.message}`);
@@ -123,7 +140,7 @@ export async function runDeploymentTest(): Promise<DeploymentTestResult> {
   }
 
   // Overall readiness assessment
-  result.overallReady = 
+  result.overallReady =
     result.supabaseConfigured &&
     result.connectionWorking &&
     result.authWorking &&
@@ -141,32 +158,40 @@ export async function runDeploymentTest(): Promise<DeploymentTestResult> {
 
 export function formatDeploymentReport(result: DeploymentTestResult): string {
   const lines: string[] = [];
-  
+
   lines.push("🚀 DEPLOYMENT READINESS REPORT");
   lines.push("================================");
   lines.push("");
-  
+
   lines.push("Configuration Checks:");
-  lines.push(`✅ Supabase Configured: ${result.supabaseConfigured ? "YES" : "NO"}`);
-  lines.push(`✅ Connection Working: ${result.connectionWorking ? "YES" : "NO"}`);
+  lines.push(
+    `✅ Supabase Configured: ${result.supabaseConfigured ? "YES" : "NO"}`,
+  );
+  lines.push(
+    `✅ Connection Working: ${result.connectionWorking ? "YES" : "NO"}`,
+  );
   lines.push(`✅ Authentication Working: ${result.authWorking ? "YES" : "NO"}`);
-  lines.push(`✅ Database Tables Exist: ${result.databaseTablesExist ? "YES" : "NO"}`);
+  lines.push(
+    `✅ Database Tables Exist: ${result.databaseTablesExist ? "YES" : "NO"}`,
+  );
   lines.push(`✅ RLS Enabled: ${result.rlsEnabled ? "YES" : "NO"}`);
   lines.push("");
-  
+
   if (result.errors.length > 0) {
     lines.push("❌ ISSUES FOUND:");
-    result.errors.forEach(error => lines.push(`  • ${error}`));
+    result.errors.forEach((error) => lines.push(`  • ${error}`));
     lines.push("");
   }
-  
+
   if (result.recommendations.length > 0) {
     lines.push("💡 RECOMMENDATIONS:");
-    result.recommendations.forEach(rec => lines.push(`  • ${rec}`));
+    result.recommendations.forEach((rec) => lines.push(`  • ${rec}`));
     lines.push("");
   }
-  
-  lines.push(`🎯 OVERALL STATUS: ${result.overallReady ? "✅ READY FOR DEPLOYMENT" : "❌ NOT READY"}`);
-  
+
+  lines.push(
+    `🎯 OVERALL STATUS: ${result.overallReady ? "✅ READY FOR DEPLOYMENT" : "❌ NOT READY"}`,
+  );
+
   return lines.join("\n");
 }

@@ -42,7 +42,6 @@ type AuthProviderProps = {
   children: React.ReactNode;
 };
 
-
 // Backup user session to localStorage
 const backupUserSession = (userData: User) => {
   try {
@@ -418,7 +417,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
           showNotification({
             type: "encouragement",
             title: "Connection Issue",
-            message: "Unable to connect to server. Please check your internet connection.",
+            message:
+              "Unable to connect to server. Please check your internet connection.",
             duration: 5000,
           });
           return false;
@@ -479,7 +479,6 @@ export function AuthProvider({ children }: AuthProviderProps) {
           ])) as any;
 
           if (error) {
-
             showNotification({
               type: "encouragement",
               title: "Registration Failed",
@@ -512,7 +511,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
           showNotification({
             type: "encouragement",
             title: "Connection Issue",
-            message: "Unable to connect to server. Please check your internet connection.",
+            message:
+              "Unable to connect to server. Please check your internet connection.",
             duration: 5000,
           });
           return false;

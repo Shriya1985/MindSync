@@ -2,17 +2,21 @@ import React, { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { 
-  CheckCircle, 
-  XCircle, 
-  AlertCircle, 
-  RefreshCw, 
+import {
+  CheckCircle,
+  XCircle,
+  AlertCircle,
+  RefreshCw,
   Rocket,
   Database,
   Shield,
-  Key
+  Key,
 } from "lucide-react";
-import { runDeploymentTest, formatDeploymentReport, type DeploymentTestResult } from "@/utils/deploymentTest";
+import {
+  runDeploymentTest,
+  formatDeploymentReport,
+  type DeploymentTestResult,
+} from "@/utils/deploymentTest";
 
 export default function DeploymentTest() {
   const [result, setResult] = useState<DeploymentTestResult | null>(null);
@@ -23,7 +27,7 @@ export default function DeploymentTest() {
     try {
       const testResult = await runDeploymentTest();
       setResult(testResult);
-      
+
       // Also log the formatted report to console
       const report = formatDeploymentReport(testResult);
       console.log(report);
@@ -44,7 +48,7 @@ export default function DeploymentTest() {
 
   const getOverallStatus = () => {
     if (!result) return { text: "Not Tested", color: "gray" };
-    
+
     if (result.overallReady) {
       return { text: "Ready for Deployment", color: "green" };
     } else {
@@ -179,9 +183,7 @@ export default function DeploymentTest() {
                   />
                   <span
                     className={`text-sm font-medium ${
-                      result.overallReady
-                        ? "text-green-700"
-                        : "text-red-700"
+                      result.overallReady ? "text-green-700" : "text-red-700"
                     }`}
                   >
                     {result.overallReady
@@ -190,7 +192,7 @@ export default function DeploymentTest() {
                   </span>
                 </div>
               </div>
-              
+
               {result.overallReady && (
                 <div className="mt-2 text-xs text-green-600 bg-green-50 p-2 rounded">
                   🎉 All systems operational! Your app is ready for deployment.

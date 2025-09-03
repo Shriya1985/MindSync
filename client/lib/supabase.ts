@@ -49,8 +49,7 @@ const createFallbackClient = () => {
       onAuthStateChange: () => ({
         data: { subscription: { unsubscribe: () => {} } },
       }),
-      getUser: () =>
-        Promise.resolve({ data: { user: null }, error: null }),
+      getUser: () => Promise.resolve({ data: { user: null }, error: null }),
     },
     from: () => ({
       select: () => ({
@@ -153,7 +152,10 @@ export const safeGetSession = async (): Promise<any> => {
     return await supabase.auth.getSession();
   } catch (e: any) {
     const msg = e?.message || "";
-    if (msg.includes("Invalid Refresh Token") || msg.includes("Refresh Token Not Found")) {
+    if (
+      msg.includes("Invalid Refresh Token") ||
+      msg.includes("Refresh Token Not Found")
+    ) {
       clearSupabaseAuthStorage();
       try {
         await supabase.auth.signOut();
@@ -169,7 +171,10 @@ export const safeGetUser = async (): Promise<any> => {
     return await supabase.auth.getUser();
   } catch (e: any) {
     const msg = e?.message || "";
-    if (msg.includes("Invalid Refresh Token") || msg.includes("Refresh Token Not Found")) {
+    if (
+      msg.includes("Invalid Refresh Token") ||
+      msg.includes("Refresh Token Not Found")
+    ) {
       clearSupabaseAuthStorage();
       try {
         await supabase.auth.signOut();

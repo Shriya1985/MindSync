@@ -243,13 +243,18 @@ export function DataProvider({ children }: DataProviderProps) {
         const { data: sessionData } = await safeGetSession();
         const sessionUserId = sessionData?.session?.user?.id;
         if (!sessionUserId) {
-          console.warn("⚠️ Connected but not authenticated with Supabase; using offline mode");
+          console.warn(
+            "⚠️ Connected but not authenticated with Supabase; using offline mode",
+          );
           setIsConnected(false);
           loadLocalStorageData();
           return;
         }
         if (sessionUserId !== user.id) {
-          console.warn("⚠️ Session user does not match app user; using offline mode", { sessionUserId, appUserId: user.id });
+          console.warn(
+            "⚠️ Session user does not match app user; using offline mode",
+            { sessionUserId, appUserId: user.id },
+          );
           setIsConnected(false);
           loadLocalStorageData();
           return;

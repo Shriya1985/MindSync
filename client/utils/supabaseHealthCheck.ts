@@ -1,4 +1,9 @@
-import { supabase, isSupabaseConfigured, safeGetSession, safeGetUser } from "@/lib/supabase";
+import {
+  supabase,
+  isSupabaseConfigured,
+  safeGetSession,
+  safeGetUser,
+} from "@/lib/supabase";
 
 export interface HealthCheckResult {
   configured: boolean;
