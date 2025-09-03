@@ -17,7 +17,7 @@ export interface HealthCheckResult {
 // Helper function to add timeout to promises
 const withTimeout = <T>(
   promise: Promise<T>,
-  timeoutMs: number = 5000,
+  timeoutMs: number = 8000,
 ): Promise<T> => {
   return Promise.race([
     promise,
@@ -55,7 +55,7 @@ export const runSupabaseHealthCheck = async (): Promise<HealthCheckResult> => {
       console.log("🔍 Testing basic connection...");
       const connectionTest = supabase.from("profiles").select("id").limit(1);
 
-      const { data, error }: any = await withTimeout(connectionTest, 3000);
+      const { data, error }: any = await withTimeout(connectionTest, 8000);
 
       if (error) {
         console.log("Connection error:", error.message);
@@ -97,7 +97,7 @@ export const runSupabaseHealthCheck = async (): Promise<HealthCheckResult> => {
       const {
         data: { session },
         error,
-      }: any = await withTimeout(authTest, 2000);
+      }: any = await withTimeout(authTest, 4000);
 
       if (error) {
         result.errors.push(`❌ Auth check failed: ${error.message}`);
@@ -115,7 +115,7 @@ export const runSupabaseHealthCheck = async (): Promise<HealthCheckResult> => {
             .single();
 
           const { data: profileData, error: profileError }: any =
-            await withTimeout(profileTest, 2000);
+            await withTimeout(profileTest, 4000);
 
           if (profileError) {
             if (profileError.message.includes("PGRST116")) {
@@ -166,7 +166,7 @@ export const runSupabaseHealthCheck = async (): Promise<HealthCheckResult> => {
           },
         );
 
-        const { error: writeError }: any = await withTimeout(writeTest, 3000);
+        const { error: writeError }: any = await withTimeout(writeTest, 6000);
 
         if (writeError) {
           result.errors.push(`❌ Write test failed: ${writeError.message}`);
