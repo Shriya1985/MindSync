@@ -237,6 +237,20 @@ export function DataProvider({ children }: DataProviderProps) {
       setIsConnected(connectionStatus);
 
       if (connectionStatus) {
+        // Ensure we have an authenticated Supabase session before DB ops
+        const { data: sessionData } = await supabase.auth.getSession();
+        const sessionUserId = sessionData?.session?.user?.id;
+        if (!sessionUserId) {
+          console.warn("⚠️ Connected but not authenticated with Supabase; using offline mode");
+          loadLocalStorageData();
+          return;
+        }
+        if (sessionUserId !== user.id) {
+          console.warn("⚠️ Session user does not match app user; using offline mode", { sessionUserId, appUserId: user.id });
+          loadLocalStorageData();
+          return;
+        }
+
         console.log("✅ Supabase connected, loading data from database");
         console.log("👤 Loading data for user:", user.id);
 
@@ -570,12 +584,12 @@ export function DataProvider({ children }: DataProviderProps) {
       .single();
 
     if (error) {
-      console.error("❌ Error loading user stats:", {
+      const readable = `${error.message || error.code || "Unknown error"}`;
+      console.error("❌ Error loading user stats:", readable, {
         code: error.code || "UNKNOWN",
         message: error.message || "Unknown error",
         details: error.details || "No details available",
         hint: error.hint || "No hint available",
-        fullError: error,
       });
 
       if (
