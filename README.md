@@ -73,13 +73,7 @@ It combines **AI, gamification, and secure cloud technologies** to provide consi
 
 ---
 
-## 📸 Output Screens  
-- Chatbot interface with emotion-aware replies.  
-- Mood tracking dashboard with analytics.  
-- Journaling interface with streak tracking.  
-- Gamification badges and achievements.  
 
----
 
 ## 🏗️ Future Enhancements  
 - Voice-enabled chatbot.  
